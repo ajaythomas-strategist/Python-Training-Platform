@@ -122,7 +122,7 @@ export const classes = [
     trainer: "Dr. Sarah Lee", 
     coTrainers: ["James Carter"],
     lab: "Advanced Computing Lab",
-    sessions: [{ date: "2026-05-15", startTime: "10:00", endTime: "12:00" }],
+    sessions: [{ date: "2026-05-14", startTime: "10:00", endTime: "12:00" }],
     status: "Active"
   },
   { 
@@ -130,7 +130,7 @@ export const classes = [
     trainer: "Michael Chang", 
     coTrainers: [],
     lab: "Room 101",
-    sessions: [{ date: "2026-05-16", startTime: "14:00", endTime: "16:00" }],
+    sessions: [{ date: "2026-05-14", startTime: "14:00", endTime: "16:00" }],
     status: "Active"
   },
   { 
