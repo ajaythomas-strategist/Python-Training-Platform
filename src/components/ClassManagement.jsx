@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Plus, Users, Calendar, MapPin, Edit2, X } from 'lucide-react';
+import { Plus, Users, Calendar, MapPin, Edit2, X, ArrowRightLeft } from 'lucide-react';
 import { classes as initialClasses } from '../data/mockData';
 import StaffSelectionModal from './StaffSelectionModal';
 import LabSelectionModal from './LabSelectionModal';
 
 export default function ClassManagement() {
   const [classes, setClasses] = useState(initialClasses);
+  const [filters, setFilters] = useState({ Active: true, Upcoming: true, Completed: true });
   
   // Modal State
-  const [activeModal, setActiveModal] = useState(null); // 'Trainer', 'Co-Trainer', 'Lab'
+  const [activeModal, setActiveModal] = useState(null); // 'Trainer', 'Co-Trainer', 'Lab', 'Transfer'
   const [activeClassId, setActiveClassId] = useState(null);
+  const [activeSessionIdx, setActiveSessionIdx] = useState(null);
   
   // Date Picker State
   const [showDatePickerFor, setShowDatePickerFor] = useState(null);
@@ -31,8 +33,17 @@ export default function ClassManagement() {
     if (activeModal === 'Trainer') updateClass(activeClassId, 'trainer', value);
     if (activeModal === 'Co-Trainer') updateClass(activeClassId, 'coTrainers', value);
     if (activeModal === 'Lab') updateClass(activeClassId, 'lab', value);
+    if (activeModal === 'Transfer') {
+      const targetClass = classes.find(c => c.id === activeClassId);
+      if (targetClass) {
+        const updatedSessions = [...targetClass.sessions];
+        updatedSessions[activeSessionIdx] = { ...updatedSessions[activeSessionIdx], transferredTo: value };
+        updateClass(activeClassId, 'sessions', updatedSessions);
+      }
+    }
     setActiveModal(null);
     setActiveClassId(null);
+    setActiveSessionIdx(null);
   };
 
   const currentClassObj = classes.find(c => c.id === activeClassId);
@@ -67,6 +78,12 @@ export default function ClassManagement() {
     setNewEndTime(session.endTime);
   };
 
+  const handleTransferSession = (classId, idx) => {
+    setActiveModal('Transfer');
+    setActiveClassId(classId);
+    setActiveSessionIdx(idx);
+  };
+
   const handleRemoveSession = (classId, sessionIndex) => {
     const targetClass = classes.find(c => c.id === classId);
     if (targetClass) {
@@ -75,18 +92,33 @@ export default function ClassManagement() {
     }
   };
 
+  const filteredClasses = classes.filter(cls => filters[cls.status]);
+
   return (
-    <div className="animate-fade-in">
+    <div className="p-6 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h1>Program & Class Management</h1>
-        <button className="btn btn-primary">
-          <Plus size={18} />
-          Create Class
-        </button>
+        <h2 className="text-2xl font-bold text-gray-800">Class Management</h2>
+        
+        <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+          <span className="text-sm font-semibold text-gray-600 mr-2">Filter Status:</span>
+          {['Active', 'Upcoming', 'Completed'].map(status => (
+            <label key={status} className="flex items-center gap-2 cursor-pointer group">
+              <input 
+                type="checkbox" 
+                checked={filters[status]} 
+                onChange={() => setFilters({ ...filters, [status]: !filters[status] })}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className={`text-sm font-medium transition-colors ${filters[status] ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-600'}`}>
+                {status}
+              </span>
+            </label>
+          ))}
+        </div>
       </div>
 
       <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1.5rem' }}>
-        {classes.map(cls => (
+        {filteredClasses.map(cls => (
           <div key={cls.id} className="card flex-col" style={{ gap: '1rem', minHeight: '350px' }}>
             
             <div className="flex justify-between items-start">
@@ -114,16 +146,43 @@ export default function ClassManagement() {
                 <div className="flex-1">
                   <div style={{ fontWeight: 600, marginBottom: '4px' }}>Number of Sessions Added: {cls.sessions.length}</div>
                   {cls.sessions.map((session, idx) => (
-                    <div key={idx} className="flex justify-between items-center bg-gray-50 mb-1" style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-                      <span>{session.date} • {session.startTime} - {session.endTime}</span>
-                      <div className="flex gap-2">
-                        <button onClick={() => handleEditSession(cls.id, session, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
-                          <Edit2 size={14} />
-                        </button>
-                        <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
-                          <X size={14} />
-                        </button>
+                    <div key={idx} 
+                      className="flex flex-col mb-3" 
+                      style={{ 
+                        padding: '10px 14px', 
+                        borderRadius: '8px', 
+                        backgroundColor: session.transferredTo ? '#EEF2FF' : '#F9FAFB', 
+                        border: session.transferredTo ? '1px solid #C7D2FE' : '1px solid #E5E7EB',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                      }}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#374151' }}>
+                          {session.date} • {session.startTime} - {session.endTime}
+                        </span>
+                        <div className="flex gap-3">
+                          <button 
+                            onClick={() => handleTransferSession(cls.id, idx)} 
+                            title="Transfer Session"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: session.transferredTo ? '#4F46E5' : '#6366F1' }}
+                          >
+                            <ArrowRightLeft size={16} />
+                          </button>
+                          <button onClick={() => handleEditSession(cls.id, session, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
+                            <Edit2 size={16} />
+                          </button>
+                          <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
+                            <X size={16} />
+                          </button>
+                        </div>
                       </div>
+                      {session.transferredTo && session.transferredTo !== 'Unassigned' && (
+                        <div className="mt-2 flex items-center gap-1">
+                          <span className="badge badge-blue" style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '12px' }}>
+                            Transferred to: {session.transferredTo}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   ))}
                   
@@ -229,9 +288,9 @@ export default function ClassManagement() {
       </div>
 
       <StaffSelectionModal 
-        isOpen={activeModal === 'Trainer' || activeModal === 'Co-Trainer'}
+        isOpen={activeModal === 'Trainer' || activeModal === 'Co-Trainer' || activeModal === 'Transfer'}
         onClose={() => setActiveModal(null)}
-        role={activeModal}
+        role={activeModal === 'Transfer' ? 'Trainer' : activeModal}
         onSelect={handleModalSelect}
         currentClass={currentClassObj}
         allClasses={classes}
