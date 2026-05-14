@@ -119,6 +119,9 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
                   <span style={{ fontSize: '0.875rem', color: '#4B5563', fontWeight: 500 }}>
                     Assigned Sessions: {staff.assignedSessionsCount || 0}
                   </span>
+                  <span style={{ fontSize: '0.75rem', color: '#6B7280', fontWeight: 500 }}>
+                    Total Hours: {staff.hours || 0} hrs
+                  </span>
                   
                   {hasConflict ? (
                     <span className="badge badge-danger" style={{ fontSize: '0.75rem', padding: '2px 6px' }}>
