@@ -6,8 +6,8 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'users', label: 'User Management', icon: <Users size={20} /> },
     { id: 'reports', label: 'User Reports', icon: <Star size={20} /> },
-    { id: 'labs', label: 'Lab Management', icon: <FlaskConical size={20} /> },
     { id: 'classes', label: 'Class', icon: <BookOpen size={20} /> },
+    { id: 'labs', label: 'Lab Management', icon: <FlaskConical size={20} /> },
     { id: 'reviews', label: 'Reviews & Ratings', icon: <Star size={20} /> },
   ];
 

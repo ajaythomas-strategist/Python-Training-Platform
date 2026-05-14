@@ -141,91 +141,94 @@ export default function ClassManagement() {
             
             <div className="flex flex-col gap-3 mt-2">
               
-              <div className="flex items-start gap-2" style={{ fontSize: '0.875rem', color: '#4B5563' }}>
-                <Calendar size={16} color="#F59E0B" style={{ marginTop: '2px' }} />
-                <div className="flex-1">
-                  <div style={{ fontWeight: 600, marginBottom: '4px' }}>Number of Sessions Added: {cls.sessions.length}</div>
-                  {cls.sessions.map((session, idx) => (
-                    <div key={idx} 
-                      className="flex flex-col mb-3" 
-                      style={{ 
-                        padding: '10px 14px', 
-                        borderRadius: '8px', 
-                        backgroundColor: session.transferredTo ? '#EEF2FF' : '#F9FAFB', 
-                        border: session.transferredTo ? '1px solid #C7D2FE' : '1px solid #E5E7EB',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                      }}
-                    >
-                      <div className="flex justify-between items-center">
-                        <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#374151' }}>
-                          {session.date} • {session.startTime} - {session.endTime}
-                        </span>
-                        <div className="flex gap-3">
-                          <button 
-                            onClick={() => handleTransferSession(cls.id, idx)} 
-                            title="Transfer Session"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: session.transferredTo ? '#4F46E5' : '#6366F1' }}
-                          >
-                            <ArrowRightLeft size={16} />
-                          </button>
-                          <button onClick={() => handleEditSession(cls.id, session, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
-                            <Edit2 size={16} />
-                          </button>
-                          <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
-                            <X size={16} />
-                          </button>
-                        </div>
+            {/* Sessions Section */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2 mb-1" style={{ fontSize: '0.875rem', color: '#4B5563' }}>
+                <Calendar size={16} color="#F59E0B" />
+                <span style={{ fontWeight: 600 }}>Number of Sessions Added: {cls.sessions.length}</span>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                {cls.sessions.map((session, idx) => (
+                  <div key={idx} 
+                    className="flex flex-col" 
+                    style={{ 
+                      padding: '12px', 
+                      borderRadius: '6px', 
+                      backgroundColor: session.transferredTo ? '#EEF2FF' : '#F9FAFB', 
+                      border: session.transferredTo ? '1px solid #C7D2FE' : '1px solid #E5E7EB',
+                    }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>
+                        {session.date} • {session.startTime} - {session.endTime}
+                      </span>
+                      <div className="flex items-center gap-4">
+                        <button 
+                          onClick={() => handleTransferSession(cls.id, idx)} 
+                          title="Transfer Session"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: session.transferredTo ? '#4F46E5' : '#6366F1' }}
+                        >
+                          <ArrowRightLeft size={16} />
+                        </button>
+                        <button onClick={() => handleEditSession(cls.id, session, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
+                          <X size={16} />
+                        </button>
                       </div>
-                      {session.transferredTo && session.transferredTo !== 'Unassigned' && (
-                        <div className="mt-2 flex items-center gap-1">
-                          <span className="badge badge-blue" style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '12px' }}>
-                            Transferred to: {session.transferredTo}
-                          </span>
-                        </div>
-                      )}
                     </div>
-                  ))}
-                  
-                  <div className="mt-2">
-                    {showDatePickerFor === cls.id ? (
-                      <div className="flex flex-col gap-2 p-2 border rounded" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
-                        <input 
-                          type="date" 
-                          value={newDate} 
-                          onChange={(e) => setNewDate(e.target.value)}
-                          style={{ width: '100%', padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
-                        />
-                        <div className="flex gap-2">
-                          <input 
-                            type="time" 
-                            value={newStartTime} 
-                            onChange={(e) => setNewStartTime(e.target.value)}
-                            style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
-                            placeholder="Start"
-                          />
-                          <input 
-                            type="time" 
-                            value={newEndTime} 
-                            onChange={(e) => setNewEndTime(e.target.value)}
-                            style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
-                            placeholder="End"
-                          />
-                        </div>
-                        <div className="flex justify-end gap-2 mt-1">
-                          <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); }} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Cancel</button>
-                          <button onClick={() => handleAddSession(cls.id)} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>
-                            {editingSessionIdx !== null ? 'Update' : 'Add'}
-                          </button>
-                        </div>
+                    {session.transferredTo && session.transferredTo !== 'Unassigned' && (
+                      <div className="mt-1 flex items-center">
+                        <span style={{ fontSize: '0.7rem', color: '#4F46E5', fontWeight: 600 }}>
+                          Transferred to: {session.transferredTo}
+                        </span>
                       </div>
-                    ) : (
-                      <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '4px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', color: '#6B7280' }}>
-                        + Add Session
-                      </button>
                     )}
                   </div>
-                </div>
+                ))}
               </div>
+              
+              <div className="mt-1">
+                {showDatePickerFor === cls.id ? (
+                  <div className="flex flex-col gap-2 p-2 border rounded" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
+                    <input 
+                      type="date" 
+                      value={newDate} 
+                      onChange={(e) => setNewDate(e.target.value)}
+                      style={{ width: '100%', padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                    />
+                    <div className="flex gap-2">
+                      <input 
+                        type="time" 
+                        value={newStartTime} 
+                        onChange={(e) => setNewStartTime(e.target.value)}
+                        style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                        placeholder="Start"
+                      />
+                      <input 
+                        type="time" 
+                        value={newEndTime} 
+                        onChange={(e) => setNewEndTime(e.target.value)}
+                        style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                        placeholder="End"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2 mt-1">
+                      <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); }} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Cancel</button>
+                      <button onClick={() => handleAddSession(cls.id)} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>
+                        {editingSessionIdx !== null ? 'Update' : 'Add'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', color: '#6B7280' }}>
+                    + Add Session
+                  </button>
+                )}
+              </div>
+            </div>
 
               <div style={{ borderTop: '1px solid #E5E7EB', margin: '8px 0' }}></div>
 
