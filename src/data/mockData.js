@@ -60,7 +60,7 @@ export const users = [
   // Trainers & Co-Trainers
   { 
     id: 3, name: "Dr. Sarah Lee", email: "sarah.lee@college.edu", phone: "+1 555-2201", department: "Computer Science", role: "Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=3",
-    sessions: 45, classes: 12, hours: 120, missedSessions: 2, rating: 4.8, 
+    sessions: 45, classes: 12, hours: 120, missedSessions: 2, rating: 4.8, availability: "Available", assignedSessionsCount: 12,
     sessionReports: [
       { date: "2026-05-11", session: "Python Fundamentals", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 2, rating: 4.9 },
       { date: "2026-05-13", session: "Data Structures Deep Dive", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 3, rating: 4.7 }
@@ -73,7 +73,7 @@ export const users = [
   },
   { 
     id: 4, name: "James Carter", email: "james.c@college.edu", phone: "+1 555-3301", department: "Information Tech", role: "Co-Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=4",
-    sessions: 30, classes: 8, hours: 80, missedSessions: 0, rating: 4.5, 
+    sessions: 30, classes: 8, hours: 80, missedSessions: 0, rating: 4.5, availability: "On Leave", assignedSessionsCount: 8,
     sessionReports: [
       { date: "2026-05-11", session: "Lab Assistance", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 2, rating: 4.5, trainer: "Dr. Sarah Lee" }
     ],
@@ -84,7 +84,7 @@ export const users = [
   },
   { 
     id: 6, name: "Michael Chang", email: "michael.c@college.edu", phone: "+1 555-2202", department: "Electronics", role: "Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=6",
-    sessions: 50, classes: 15, hours: 140, missedSessions: 1, rating: 4.2, 
+    sessions: 50, classes: 15, hours: 140, missedSessions: 1, rating: 4.2, availability: "Busy", assignedSessionsCount: 15,
     sessionReports: [
       { date: "2026-05-10", session: "Intro to Python", batch: "Batch B - Afternoon", lab: "Room 101", hours: 2, rating: 4.1 }
     ],
@@ -99,38 +99,34 @@ export const users = [
 export const classes = [
   { 
     id: "1 BCA A", 
-    program: "Computer Applications", 
     trainer: "Dr. Sarah Lee", 
     coTrainer: "James Carter",
-    department: "Computer Science",
-    schedule: "Mon, Wed, Fri - 10:00 AM",
+    lab: "Advanced Computing Lab",
+    sessions: ["2026-05-15T10:00"],
     status: "Active"
   },
   { 
     id: "1 BSC CS", 
-    program: "Computer Science", 
     trainer: "Michael Chang", 
-    coTrainer: "Not Assigned",
-    department: "Computer Science",
-    schedule: "Tue, Thu - 2:00 PM",
+    coTrainer: "Unassigned",
+    lab: "Room 101",
+    sessions: ["2026-05-16T14:00"],
     status: "Active"
   },
   { 
     id: "1 BBA", 
-    program: "Business Administration", 
     trainer: "Unassigned", 
     coTrainer: "Unassigned",
-    department: "Business Admin",
-    schedule: "Mon, Thu - 10:00 AM",
+    lab: "Unassigned",
+    sessions: [],
     status: "Upcoming"
   },
   { 
     id: "1 BCOM", 
-    program: "Commerce", 
     trainer: "Unassigned", 
     coTrainer: "Unassigned",
-    department: "Commerce",
-    schedule: "Wed, Fri - 2:00 PM",
+    lab: "Unassigned",
+    sessions: [],
     status: "Upcoming"
   }
 ];

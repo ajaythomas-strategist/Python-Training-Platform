@@ -1,8 +1,56 @@
-import React from 'react';
-import { Plus, Users, Calendar, MapPin } from 'lucide-react';
-import { classes } from '../data/mockData';
+import React, { useState } from 'react';
+import { Plus, Users, Calendar, MapPin, Edit2, X } from 'lucide-react';
+import { classes as initialClasses } from '../data/mockData';
+import StaffSelectionModal from './StaffSelectionModal';
+import LabSelectionModal from './LabSelectionModal';
 
 export default function ClassManagement() {
+  const [classes, setClasses] = useState(initialClasses);
+  
+  // Modal State
+  const [activeModal, setActiveModal] = useState(null); // 'Trainer', 'Co-Trainer', 'Lab'
+  const [activeClassId, setActiveClassId] = useState(null);
+  
+  // Date Picker State
+  const [showDatePickerFor, setShowDatePickerFor] = useState(null);
+  const [newDate, setNewDate] = useState('');
+
+  const updateClass = (classId, field, value) => {
+    setClasses(classes.map(c => c.id === classId ? { ...c, [field]: value } : c));
+  };
+
+  const handleOpenModal = (modalType, classId) => {
+    setActiveModal(modalType);
+    setActiveClassId(classId);
+  };
+
+  const handleModalSelect = (value) => {
+    if (activeModal === 'Trainer') updateClass(activeClassId, 'trainer', value);
+    if (activeModal === 'Co-Trainer') updateClass(activeClassId, 'coTrainer', value);
+    if (activeModal === 'Lab') updateClass(activeClassId, 'lab', value);
+    setActiveModal(null);
+    setActiveClassId(null);
+  };
+
+  const handleAddSession = (classId) => {
+    if (!newDate) return;
+    const targetClass = classes.find(c => c.id === classId);
+    if (targetClass && targetClass.sessions.length < 4) {
+      const updatedSessions = [...targetClass.sessions, newDate];
+      updateClass(classId, 'sessions', updatedSessions);
+    }
+    setShowDatePickerFor(null);
+    setNewDate('');
+  };
+
+  const handleRemoveSession = (classId, sessionIndex) => {
+    const targetClass = classes.find(c => c.id === classId);
+    if (targetClass) {
+      const updatedSessions = targetClass.sessions.filter((_, idx) => idx !== sessionIndex);
+      updateClass(classId, 'sessions', updatedSessions);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -15,46 +63,125 @@ export default function ClassManagement() {
 
       <div className="dashboard-grid">
         {classes.map(cls => (
-          <div key={cls.id} className="card">
-            <div className="flex justify-between items-center mb-4">
-              <span className={`badge ${cls.status === 'Active' ? 'badge-green' : 'badge-blue'}`}>
-                {cls.status}
-              </span>
-              <span style={{ color: '#6B7280', fontSize: '0.875rem', fontWeight: 600 }}>{cls.program}</span>
+          <div key={cls.id} className="card flex-col" style={{ gap: '1rem' }}>
+            
+            <div className="flex justify-between items-start">
+              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>{cls.id}</h2>
+              <select 
+                value={cls.status}
+                onChange={(e) => updateClass(cls.id, 'status', e.target.value)}
+                style={{
+                  padding: '4px 8px', borderRadius: '4px', border: '1px solid #E5E7EB', fontSize: '0.875rem',
+                  backgroundColor: cls.status === 'Active' ? '#ECFDF5' : cls.status === 'Completed' ? '#EFF6FF' : '#FFFBEB',
+                  color: cls.status === 'Active' ? '#059669' : cls.status === 'Completed' ? '#3B82F6' : '#D97706',
+                  fontWeight: 600, outline: 'none', cursor: 'pointer'
+                }}
+              >
+                <option value="Upcoming">Upcoming</option>
+                <option value="Active">Active</option>
+                <option value="Completed">Completed</option>
+              </select>
             </div>
             
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{cls.id}</h2>
-            
-            <div className="flex flex-col gap-2 mt-4" style={{ fontSize: '0.875rem', color: '#4B5563' }}>
-              <div className="flex items-center gap-2">
-                <MapPin size={16} color="#8B5CF6" />
-                <span>{cls.department}</span>
+            <div className="flex flex-col gap-3 mt-2">
+              
+              <div className="flex items-start gap-2" style={{ fontSize: '0.875rem', color: '#4B5563' }}>
+                <Calendar size={16} color="#F59E0B" style={{ marginTop: '2px' }} />
+                <div className="flex-1">
+                  <div style={{ fontWeight: 600, marginBottom: '4px' }}>Sessions ({cls.sessions.length}/4)</div>
+                  {cls.sessions.map((session, idx) => (
+                    <div key={idx} className="flex justify-between items-center bg-gray-50 mb-1" style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+                      <span>{new Date(session).toLocaleString()}</span>
+                      <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {cls.sessions.length < 4 && (
+                    <div className="mt-2">
+                      {showDatePickerFor === cls.id ? (
+                        <div className="flex gap-2">
+                          <input 
+                            type="datetime-local" 
+                            value={newDate} 
+                            onChange={(e) => setNewDate(e.target.value)}
+                            style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                          />
+                          <button onClick={() => handleAddSession(cls.id)} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Add</button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '4px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', color: '#6B7280' }}>
+                          + Add Session
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Users size={16} color="#06B6D4" />
-                <span>Trainer: {cls.trainer}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users size={16} color="#6B7280" />
-                <span>Co-Trainer: {cls.coTrainer}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar size={16} color="#F59E0B" />
-                <span>{cls.schedule}</span>
-              </div>
-            </div>
 
-            <div className="mt-4 pt-4" style={{ borderTop: '1px solid #E5E7EB', display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-outline w-full" style={{ justifyContent: 'center' }}>
-                Edit Details
-              </button>
-              <button className="btn btn-primary w-full" style={{ justifyContent: 'center' }}>
-                Assign Staff
-              </button>
+              <div 
+                className="flex items-center justify-between" 
+                style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
+                onClick={() => handleOpenModal('Lab', cls.id)}
+              >
+                <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
+                  <MapPin size={16} color="#8B5CF6" />
+                  <span style={{ fontWeight: 500 }}>Lab:</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span style={{ color: cls.lab === 'Unassigned' ? '#9CA3AF' : '#1F2937' }}>{cls.lab}</span>
+                  <Edit2 size={12} color="#9CA3AF" />
+                </div>
+              </div>
+
+              <div 
+                className="flex items-center justify-between" 
+                style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
+                onClick={() => handleOpenModal('Trainer', cls.id)}
+              >
+                <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
+                  <Users size={16} color="#06B6D4" />
+                  <span style={{ fontWeight: 500 }}>Trainer:</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span style={{ color: cls.trainer === 'Unassigned' ? '#9CA3AF' : '#1F2937' }}>{cls.trainer}</span>
+                  <Edit2 size={12} color="#9CA3AF" />
+                </div>
+              </div>
+
+              <div 
+                className="flex items-center justify-between" 
+                style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
+                onClick={() => handleOpenModal('Co-Trainer', cls.id)}
+              >
+                <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
+                  <Users size={16} color="#6B7280" />
+                  <span style={{ fontWeight: 500 }}>Co-Trainer:</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span style={{ color: cls.coTrainer === 'Unassigned' ? '#9CA3AF' : '#1F2937' }}>{cls.coTrainer}</span>
+                  <Edit2 size={12} color="#9CA3AF" />
+                </div>
+              </div>
+
             </div>
           </div>
         ))}
       </div>
+
+      <StaffSelectionModal 
+        isOpen={activeModal === 'Trainer' || activeModal === 'Co-Trainer'}
+        onClose={() => setActiveModal(null)}
+        role={activeModal}
+        onSelect={handleModalSelect}
+      />
+
+      <LabSelectionModal 
+        isOpen={activeModal === 'Lab'}
+        onClose={() => setActiveModal(null)}
+        onSelect={handleModalSelect}
+      />
     </div>
   );
 }
