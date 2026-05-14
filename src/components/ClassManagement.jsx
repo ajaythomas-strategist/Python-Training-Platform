@@ -20,10 +20,10 @@ export default function ClassManagement() {
               <span className={`badge ${cls.status === 'Active' ? 'badge-green' : 'badge-blue'}`}>
                 {cls.status}
               </span>
-              <span style={{ color: '#6B7280', fontSize: '0.875rem', fontWeight: 600 }}>{cls.id}</span>
+              <span style={{ color: '#6B7280', fontSize: '0.875rem', fontWeight: 600 }}>{cls.program}</span>
             </div>
             
-            <h2 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>{cls.program}</h2>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{cls.id}</h2>
             
             <div className="flex flex-col gap-2 mt-4" style={{ fontSize: '0.875rem', color: '#4B5563' }}>
               <div className="flex items-center gap-2">

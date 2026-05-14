@@ -13,7 +13,7 @@ export const users = [
   
   // Students
   { 
-    id: 1, name: "Alice Johnson", email: "alice.j@college.edu", phone: "+1 555-1101", batch: "Batch A - Morning", role: "Student", gender: "Female", highSchool: "Springfield High", photo: "https://i.pravatar.cc/150?u=1", attendance: 92, score: "88%", comments: "Excellent participation.",
+    id: 1, name: "Alice Johnson", email: "alice.j@college.edu", phone: "+1 555-1101", batch: "1 BCA A", role: "Student", gender: "Female", highSchool: "Springfield High", photo: "https://i.pravatar.cc/150?u=1", attendance: 92, score: "88%", comments: "Excellent participation.",
     detailedReport: {
       sessions: [
         { date: "2026-05-10", sessionName: "Intro to Python", attendance: "Present" },
@@ -28,7 +28,7 @@ export const users = [
     }
   },
   { 
-    id: 2, name: "Bob Smith", email: "bob.s@college.edu", phone: "+1 555-1102", batch: "Batch B - Afternoon", role: "Student", gender: "Male", highSchool: "Westview High", photo: "https://i.pravatar.cc/150?u=2", attendance: 75, score: "72%", comments: "Needs to focus more on assignments.",
+    id: 2, name: "Bob Smith", email: "bob.s@college.edu", phone: "+1 555-1102", batch: "1 BSC CS", role: "Student", gender: "Male", highSchool: "Westview High", photo: "https://i.pravatar.cc/150?u=2", attendance: 75, score: "72%", comments: "Needs to focus more on assignments.",
     detailedReport: {
       sessions: [
         { date: "2026-05-10", sessionName: "Intro to Python", attendance: "Present" },
@@ -42,7 +42,7 @@ export const users = [
     }
   },
   { 
-    id: 5, name: "Emily Davis", email: "emily.d@college.edu", phone: "+1 555-1105", batch: "Batch A - Morning", role: "Student", gender: "Female", highSchool: "Northwood Academy", photo: "https://i.pravatar.cc/150?u=5", attendance: 98, score: "95%", comments: "Top of the class.",
+    id: 5, name: "Emily Davis", email: "emily.d@college.edu", phone: "+1 555-1105", batch: "1 BBA", role: "Student", gender: "Female", highSchool: "Northwood Academy", photo: "https://i.pravatar.cc/150?u=5", attendance: 98, score: "95%", comments: "Top of the class.",
     detailedReport: {
       sessions: [
         { date: "2026-05-10", sessionName: "Intro to Python", attendance: "Present" },
@@ -98,8 +98,8 @@ export const users = [
 
 export const classes = [
   { 
-    id: "CS101", 
-    program: "Web Development Bootcamp", 
+    id: "1 BCA A", 
+    program: "Computer Applications", 
     trainer: "Dr. Sarah Lee", 
     coTrainer: "James Carter",
     department: "Computer Science",
@@ -107,14 +107,32 @@ export const classes = [
     status: "Active"
   },
   { 
-    id: "DS200", 
-    program: "Data Science Fundamentals", 
+    id: "1 BSC CS", 
+    program: "Computer Science", 
     trainer: "Michael Chang", 
     coTrainer: "Not Assigned",
-    department: "Data Science",
+    department: "Computer Science",
     schedule: "Tue, Thu - 2:00 PM",
     status: "Active"
   },
+  { 
+    id: "1 BBA", 
+    program: "Business Administration", 
+    trainer: "Unassigned", 
+    coTrainer: "Unassigned",
+    department: "Business Admin",
+    schedule: "Mon, Thu - 10:00 AM",
+    status: "Upcoming"
+  },
+  { 
+    id: "1 BCOM", 
+    program: "Commerce", 
+    trainer: "Unassigned", 
+    coTrainer: "Unassigned",
+    department: "Commerce",
+    schedule: "Wed, Fri - 2:00 PM",
+    status: "Upcoming"
+  }
 ];
 
 export const labs = [
