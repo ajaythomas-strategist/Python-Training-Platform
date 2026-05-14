@@ -1,7 +1,7 @@
 import React from 'react';
-import { LayoutDashboard, Users, BookOpen, Star, FlaskConical, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, Star, FlaskConical, ShieldAlert, LogOut } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab }) {
+export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'users', label: 'User Management', icon: <Users size={20} /> },
@@ -12,7 +12,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="sidebar-logo flex-col items-start gap-1">
         <div className="flex items-center gap-2">
           <div className="avatar">TM</div>
@@ -23,7 +23,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           SUPER ADMIN
         </div>
       </div>
-      <nav className="sidebar-nav mt-4">
+      <nav className="sidebar-nav mt-4" style={{ flex: 1 }}>
         {menuItems.map((item) => (
           <div
             key={item.id}
@@ -35,6 +35,16 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           </div>
         ))}
       </nav>
+      <div className="sidebar-footer" style={{ padding: '20px', borderTop: '1px solid #E5E7EB' }}>
+        <div 
+          className="nav-item" 
+          onClick={onLogout}
+          style={{ color: '#EF4444', cursor: 'pointer' }}
+        >
+          <LogOut size={20} />
+          <span>Logout</span>
+        </div>
+      </div>
     </aside>
   );
 }

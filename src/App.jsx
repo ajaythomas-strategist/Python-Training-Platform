@@ -6,9 +6,15 @@ import LabManagement from './components/LabManagement';
 import ClassManagement from './components/ClassManagement';
 import UserReports from './components/UserReports';
 import ReviewSystem from './components/ReviewSystem';
+import Login from './components/Login';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  if (!isAuthenticated) {
+    return <Login onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -24,7 +30,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={() => setIsAuthenticated(false)} />
       <main className="main-content">
         {renderContent()}
       </main>
