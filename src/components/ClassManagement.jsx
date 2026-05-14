@@ -13,6 +13,7 @@ export default function ClassManagement() {
   
   // Date Picker State
   const [showDatePickerFor, setShowDatePickerFor] = useState(null);
+  const [editingSessionIdx, setEditingSessionIdx] = useState(null);
   const [newDate, setNewDate] = useState('');
   const [newStartTime, setNewStartTime] = useState('');
   const [newEndTime, setNewEndTime] = useState('');
@@ -40,13 +41,30 @@ export default function ClassManagement() {
     if (!newDate || !newStartTime || !newEndTime) return;
     const targetClass = classes.find(c => c.id === classId);
     if (targetClass) {
-      const updatedSessions = [...targetClass.sessions, { date: newDate, startTime: newStartTime, endTime: newEndTime }];
+      let updatedSessions;
+      if (editingSessionIdx !== null) {
+        // Update existing
+        updatedSessions = [...targetClass.sessions];
+        updatedSessions[editingSessionIdx] = { date: newDate, startTime: newStartTime, endTime: newEndTime };
+      } else {
+        // Add new
+        updatedSessions = [...targetClass.sessions, { date: newDate, startTime: newStartTime, endTime: newEndTime }];
+      }
       updateClass(classId, 'sessions', updatedSessions);
     }
     setShowDatePickerFor(null);
+    setEditingSessionIdx(null);
     setNewDate('');
     setNewStartTime('');
     setNewEndTime('');
+  };
+
+  const handleEditSession = (classId, session, idx) => {
+    setShowDatePickerFor(classId);
+    setEditingSessionIdx(idx);
+    setNewDate(session.date);
+    setNewStartTime(session.startTime);
+    setNewEndTime(session.endTime);
   };
 
   const handleRemoveSession = (classId, sessionIndex) => {
@@ -98,9 +116,14 @@ export default function ClassManagement() {
                   {cls.sessions.map((session, idx) => (
                     <div key={idx} className="flex justify-between items-center bg-gray-50 mb-1" style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
                       <span>{session.date} • {session.startTime} - {session.endTime}</span>
-                      <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
-                        <X size={14} />
-                      </button>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleEditSession(cls.id, session, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
+                          <Edit2 size={14} />
+                        </button>
+                        <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
+                          <X size={14} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                   
@@ -130,8 +153,10 @@ export default function ClassManagement() {
                           />
                         </div>
                         <div className="flex justify-end gap-2 mt-1">
-                          <button onClick={() => setShowDatePickerFor(null)} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Cancel</button>
-                          <button onClick={() => handleAddSession(cls.id)} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Add</button>
+                          <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); }} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Cancel</button>
+                          <button onClick={() => handleAddSession(cls.id)} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>
+                            {editingSessionIdx !== null ? 'Update' : 'Add'}
+                          </button>
                         </div>
                       </div>
                     ) : (
@@ -184,21 +209,19 @@ export default function ClassManagement() {
                   <Users size={16} color="#6B7280" />
                   <span style={{ fontWeight: 500 }}>Co-Trainers:</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span style={{ color: (!cls.coTrainers || cls.coTrainers.length === 0) ? '#9CA3AF' : '#1F2937', fontWeight: 500 }}>
-                    {(!cls.coTrainers || cls.coTrainers.length === 0) ? 'Unassigned' : `${cls.coTrainers.length} Assigned`}
-                  </span>
-                  <Edit2 size={12} color="#9CA3AF" />
+                <div className="flex items-start gap-2">
+                  <div className="flex flex-col items-end">
+                    {(!cls.coTrainers || cls.coTrainers.length === 0) ? (
+                      <span style={{ color: '#9CA3AF', fontWeight: 500 }}>Unassigned</span>
+                    ) : (
+                      cls.coTrainers.map((ct, idx) => (
+                        <span key={idx} style={{ color: '#1F2937', fontWeight: 500, fontSize: '0.875rem' }}>{ct}</span>
+                      ))
+                    )}
+                  </div>
+                  <Edit2 size={12} color="#9CA3AF" style={{ marginTop: '4px' }} />
                 </div>
               </div>
-
-              {cls.coTrainers && cls.coTrainers.length > 0 && (
-                <div className="flex flex-col gap-1 mt-1 pl-8">
-                  {cls.coTrainers.map((ct, idx) => (
-                    <span key={idx} style={{ fontSize: '0.75rem', color: '#6B7280' }}>• {ct}</span>
-                  ))}
-                </div>
-              )}
 
             </div>
           </div>
