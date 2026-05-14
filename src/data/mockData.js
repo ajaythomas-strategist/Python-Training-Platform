@@ -100,7 +100,7 @@ export const classes = [
   { 
     id: "1 BCA A", 
     trainer: "Dr. Sarah Lee", 
-    coTrainer: "James Carter",
+    coTrainers: ["James Carter"],
     lab: "Advanced Computing Lab",
     sessions: ["2026-05-15T10:00"],
     status: "Active"
@@ -108,7 +108,7 @@ export const classes = [
   { 
     id: "1 BSC CS", 
     trainer: "Michael Chang", 
-    coTrainer: "Unassigned",
+    coTrainers: [],
     lab: "Room 101",
     sessions: ["2026-05-16T14:00"],
     status: "Active"
@@ -116,7 +116,7 @@ export const classes = [
   { 
     id: "1 BBA", 
     trainer: "Unassigned", 
-    coTrainer: "Unassigned",
+    coTrainers: [],
     lab: "Unassigned",
     sessions: [],
     status: "Upcoming"
@@ -124,7 +124,7 @@ export const classes = [
   { 
     id: "1 BCOM", 
     trainer: "Unassigned", 
-    coTrainer: "Unassigned",
+    coTrainers: [],
     lab: "Unassigned",
     sessions: [],
     status: "Upcoming"

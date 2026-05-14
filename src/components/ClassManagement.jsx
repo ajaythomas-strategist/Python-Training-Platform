@@ -26,11 +26,13 @@ export default function ClassManagement() {
 
   const handleModalSelect = (value) => {
     if (activeModal === 'Trainer') updateClass(activeClassId, 'trainer', value);
-    if (activeModal === 'Co-Trainer') updateClass(activeClassId, 'coTrainer', value);
+    if (activeModal === 'Co-Trainer') updateClass(activeClassId, 'coTrainers', value);
     if (activeModal === 'Lab') updateClass(activeClassId, 'lab', value);
     setActiveModal(null);
     setActiveClassId(null);
   };
+
+  const currentClassObj = classes.find(c => c.id === activeClassId);
 
   const handleAddSession = (classId) => {
     if (!newDate) return;
@@ -120,9 +122,11 @@ export default function ClassManagement() {
                 </div>
               </div>
 
+              <div style={{ borderTop: '1px solid #E5E7EB', margin: '8px 0' }}></div>
+
               <div 
                 className="flex items-center justify-between" 
-                style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
+                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
                 onClick={() => handleOpenModal('Lab', cls.id)}
               >
                 <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
@@ -130,14 +134,14 @@ export default function ClassManagement() {
                   <span style={{ fontWeight: 500 }}>Lab:</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span style={{ color: cls.lab === 'Unassigned' ? '#9CA3AF' : '#1F2937' }}>{cls.lab}</span>
+                  <span style={{ color: cls.lab === 'Unassigned' ? '#9CA3AF' : '#1F2937', fontWeight: 500 }}>{cls.lab}</span>
                   <Edit2 size={12} color="#9CA3AF" />
                 </div>
               </div>
 
               <div 
                 className="flex items-center justify-between" 
-                style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
+                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
                 onClick={() => handleOpenModal('Trainer', cls.id)}
               >
                 <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
@@ -145,25 +149,35 @@ export default function ClassManagement() {
                   <span style={{ fontWeight: 500 }}>Trainer:</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span style={{ color: cls.trainer === 'Unassigned' ? '#9CA3AF' : '#1F2937' }}>{cls.trainer}</span>
+                  <span style={{ color: cls.trainer === 'Unassigned' ? '#9CA3AF' : '#1F2937', fontWeight: 500 }}>{cls.trainer}</span>
                   <Edit2 size={12} color="#9CA3AF" />
                 </div>
               </div>
 
               <div 
                 className="flex items-center justify-between" 
-                style={{ fontSize: '0.875rem', padding: '8px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
+                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
                 onClick={() => handleOpenModal('Co-Trainer', cls.id)}
               >
                 <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
                   <Users size={16} color="#6B7280" />
-                  <span style={{ fontWeight: 500 }}>Co-Trainer:</span>
+                  <span style={{ fontWeight: 500 }}>Co-Trainers:</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span style={{ color: cls.coTrainer === 'Unassigned' ? '#9CA3AF' : '#1F2937' }}>{cls.coTrainer}</span>
+                  <span style={{ color: (!cls.coTrainers || cls.coTrainers.length === 0) ? '#9CA3AF' : '#1F2937', fontWeight: 500 }}>
+                    {(!cls.coTrainers || cls.coTrainers.length === 0) ? 'Unassigned' : `${cls.coTrainers.length} Assigned`}
+                  </span>
                   <Edit2 size={12} color="#9CA3AF" />
                 </div>
               </div>
+
+              {cls.coTrainers && cls.coTrainers.length > 0 && (
+                <div className="flex flex-col gap-1 mt-1 pl-8">
+                  {cls.coTrainers.map((ct, idx) => (
+                    <span key={idx} style={{ fontSize: '0.75rem', color: '#6B7280' }}>• {ct}</span>
+                  ))}
+                </div>
+              )}
 
             </div>
           </div>
@@ -175,12 +189,16 @@ export default function ClassManagement() {
         onClose={() => setActiveModal(null)}
         role={activeModal}
         onSelect={handleModalSelect}
+        currentClass={currentClassObj}
+        allClasses={classes}
       />
 
       <LabSelectionModal 
         isOpen={activeModal === 'Lab'}
         onClose={() => setActiveModal(null)}
         onSelect={handleModalSelect}
+        currentClass={currentClassObj}
+        allClasses={classes}
       />
     </div>
   );
