@@ -7,7 +7,45 @@ import LabSelectionModal from './LabSelectionModal';
 export default function ClassManagement() {
   const [classes, setClasses] = useState(initialClasses);
   const [filters, setFilters] = useState({ Active: true, Upcoming: true, Completed: true });
-  
+
+  const getComputedStatus = (cls) => {
+    // Completed is manual
+    if (cls.status === 'Completed') return 'Completed';
+
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 1. Session Not Selected -> Upcoming
+    if (!cls.sessions || cls.sessions.length === 0) return 'Upcoming';
+
+    // 2. Batch from Tomorrow onwards -> Upcoming
+    const hasTodaySession = cls.sessions.some(s => s.date === today);
+    const earliestSession = cls.sessions.reduce((min, s) => s.date < min ? s.date : min, cls.sessions[0].date);
+
+    // 3. Status Active automatically based on date (today)
+    if (hasTodaySession) return 'Active';
+    
+    if (earliestSession > today) return 'Upcoming';
+
+    // If past sessions exist but not today, and not marked Completed, we keep original status or default to Active
+    return cls.status;
+  };
+
+  React.useEffect(() => {
+    let changed = false;
+    const newClasses = classes.map(cls => {
+      const autoStatus = getComputedStatus(cls);
+      if (cls.status !== autoStatus) {
+        changed = true;
+        return { ...cls, status: autoStatus };
+      }
+      return cls;
+    });
+
+    if (changed) {
+      setClasses(newClasses);
+    }
+  }, [classes]);
+
   // Modal State
   const [activeModal, setActiveModal] = useState(null); // 'Trainer', 'Co-Trainer', 'Lab', 'Transfer'
   const [activeClassId, setActiveClassId] = useState(null);
