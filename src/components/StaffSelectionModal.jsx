@@ -24,12 +24,16 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
       (c.trainer === staffName || (c.coTrainers && c.coTrainers.includes(staffName)))
     );
 
-    // Check if any of those other classes share a session date with current class
+    // Check if any of those other classes share a session date and time overlap with current class
     for (const oc of otherClasses) {
       if (!oc.sessions) continue;
       for (const currentSession of currentClass.sessions) {
-        if (oc.sessions.includes(currentSession)) {
-          return true;
+        for (const os of oc.sessions) {
+          if (os.date === currentSession.date) {
+            if (currentSession.startTime < os.endTime && os.startTime < currentSession.endTime) {
+              return true;
+            }
+          }
         }
       }
     }

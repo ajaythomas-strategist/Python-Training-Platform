@@ -14,6 +14,8 @@ export default function ClassManagement() {
   // Date Picker State
   const [showDatePickerFor, setShowDatePickerFor] = useState(null);
   const [newDate, setNewDate] = useState('');
+  const [newStartTime, setNewStartTime] = useState('');
+  const [newEndTime, setNewEndTime] = useState('');
 
   const updateClass = (classId, field, value) => {
     setClasses(classes.map(c => c.id === classId ? { ...c, [field]: value } : c));
@@ -35,14 +37,16 @@ export default function ClassManagement() {
   const currentClassObj = classes.find(c => c.id === activeClassId);
 
   const handleAddSession = (classId) => {
-    if (!newDate) return;
+    if (!newDate || !newStartTime || !newEndTime) return;
     const targetClass = classes.find(c => c.id === classId);
-    if (targetClass && targetClass.sessions.length < 4) {
-      const updatedSessions = [...targetClass.sessions, newDate];
+    if (targetClass) {
+      const updatedSessions = [...targetClass.sessions, { date: newDate, startTime: newStartTime, endTime: newEndTime }];
       updateClass(classId, 'sessions', updatedSessions);
     }
     setShowDatePickerFor(null);
     setNewDate('');
+    setNewStartTime('');
+    setNewEndTime('');
   };
 
   const handleRemoveSession = (classId, sessionIndex) => {
@@ -90,35 +94,52 @@ export default function ClassManagement() {
               <div className="flex items-start gap-2" style={{ fontSize: '0.875rem', color: '#4B5563' }}>
                 <Calendar size={16} color="#F59E0B" style={{ marginTop: '2px' }} />
                 <div className="flex-1">
-                  <div style={{ fontWeight: 600, marginBottom: '4px' }}>Sessions ({cls.sessions.length}/4)</div>
+                  <div style={{ fontWeight: 600, marginBottom: '4px' }}>Number of Sessions Added: {cls.sessions.length}</div>
                   {cls.sessions.map((session, idx) => (
                     <div key={idx} className="flex justify-between items-center bg-gray-50 mb-1" style={{ padding: '4px 8px', borderRadius: '4px', backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-                      <span>{new Date(session).toLocaleString()}</span>
+                      <span>{session.date} • {session.startTime} - {session.endTime}</span>
                       <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
                         <X size={14} />
                       </button>
                     </div>
                   ))}
                   
-                  {cls.sessions.length < 4 && (
-                    <div className="mt-2">
-                      {showDatePickerFor === cls.id ? (
+                  <div className="mt-2">
+                    {showDatePickerFor === cls.id ? (
+                      <div className="flex flex-col gap-2 p-2 border rounded" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
+                        <input 
+                          type="date" 
+                          value={newDate} 
+                          onChange={(e) => setNewDate(e.target.value)}
+                          style={{ width: '100%', padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                        />
                         <div className="flex gap-2">
                           <input 
-                            type="datetime-local" 
-                            value={newDate} 
-                            onChange={(e) => setNewDate(e.target.value)}
+                            type="time" 
+                            value={newStartTime} 
+                            onChange={(e) => setNewStartTime(e.target.value)}
                             style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                            placeholder="Start"
                           />
+                          <input 
+                            type="time" 
+                            value={newEndTime} 
+                            onChange={(e) => setNewEndTime(e.target.value)}
+                            style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                            placeholder="End"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2 mt-1">
+                          <button onClick={() => setShowDatePickerFor(null)} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Cancel</button>
                           <button onClick={() => handleAddSession(cls.id)} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Add</button>
                         </div>
-                      ) : (
-                        <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '4px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', color: '#6B7280' }}>
-                          + Add Session
-                        </button>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    ) : (
+                      <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '4px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', color: '#6B7280' }}>
+                        + Add Session
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
