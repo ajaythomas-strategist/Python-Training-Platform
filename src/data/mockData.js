@@ -152,17 +152,17 @@ export const classes = [
 ];
 
 export const labs = [
-  { id: "LAB-1", name: "Advanced Computing Lab", department: "Computer Science", assignedAdmin: "Admin Alpha", assignedTrainer: "Dr. Sarah Lee", capacity: 40, status: "Active" },
-  { id: "LAB-2", name: "Electronics Prototyping", department: "Electronics", assignedAdmin: "Admin Beta", assignedTrainer: "Michael Chang", capacity: 25, status: "Maintenance" },
+  { id: "LAB-1", name: "Advanced Computing Lab", department: "Computer Science", assignedAdmin: "Admin Alpha", assignedTrainer: "Dr. Sarah Lee", capacity: 40, status: "Available" },
+  { id: "LAB-2", name: "Electronics Prototyping", department: "Electronics", assignedAdmin: "Admin Beta", assignedTrainer: "Michael Chang", capacity: 25, status: "Not Available" },
   { id: "LAB-3", name: "Data Mining Center", department: "Data Science", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 30, status: "Available" },
   // 8 Additional Labs
   { id: "LAB-4", name: "AI Research Lab", department: "Computer Science", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 20, status: "Available" },
   { id: "LAB-5", name: "Networking Lab", department: "Information Tech", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 35, status: "Available" },
-  { id: "LAB-6", name: "Cybersecurity Lab", department: "Information Tech", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 30, status: "Active" },
-  { id: "LAB-7", name: "Robotics Center", department: "Electronics", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 25, status: "Maintenance" },
+  { id: "LAB-6", name: "Cybersecurity Lab", department: "Information Tech", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 30, status: "Available" },
+  { id: "LAB-7", name: "Robotics Center", department: "Electronics", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 25, status: "Not Available" },
   { id: "LAB-8", name: "Software Engineering Lab", department: "Computer Science", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 50, status: "Available" },
   { id: "LAB-9", name: "IoT Innovation Lab", department: "Electronics", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 15, status: "Available" },
-  { id: "LAB-10", name: "Cloud Computing Lab", department: "Computer Science", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 40, status: "Active" },
+  { id: "LAB-10", name: "Cloud Computing Lab", department: "Computer Science", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 40, status: "Available" },
   { id: "LAB-11", name: "Big Data Lab", department: "Data Science", assignedAdmin: "Unassigned", assignedTrainer: "Unassigned", capacity: 30, status: "Available" }
 ];
 

@@ -80,11 +80,10 @@ export default function LabSelectionModal({ isOpen, onClose, onSelect, currentCl
                     </span>
                   ) : (
                     <span className={`badge ${
-                      lab.status === 'Active' ? 'badge-green' : 
-                      lab.status === 'Available' ? 'badge-blue' : 'badge-danger'
+                      lab.status === 'Available' ? 'badge-green' : 'badge-danger'
                     }`} style={{ fontSize: '0.75rem', padding: '2px 6px' }}>
-                      {(lab.status === 'Active' || lab.status === 'Available') && <CheckCircle size={12} style={{ marginRight: '4px' }}/>}
-                      {lab.status === 'Maintenance' && <AlertTriangle size={12} style={{ marginRight: '4px' }}/>}
+                      {lab.status === 'Available' && <CheckCircle size={12} style={{ marginRight: '4px' }}/>}
+                      {lab.status === 'Not Available' && <AlertTriangle size={12} style={{ marginRight: '4px' }}/>}
                       {lab.status}
                     </span>
                   )}
