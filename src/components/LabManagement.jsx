@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Users, Shield, Monitor, Calendar, Info, Clock, Cpu } from 'lucide-react';
+import { Plus, Users, Shield, Monitor, Info, Cpu } from 'lucide-react';
 import { labs, classes as allClasses } from '../data/mockData';
-import LabScheduleModal from './LabScheduleModal';
 
 export default function LabManagement() {
   const today = new Date().toISOString().split('T')[0];
@@ -9,8 +8,6 @@ export default function LabManagement() {
   const [toDate, setToDate] = useState(today);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  
-  const [selectedLabSchedule, setSelectedLabSchedule] = useState(null);
 
   const getLabStatus = (labName) => {
     const startD = fromDate || toDate || today;
@@ -39,48 +36,26 @@ export default function LabManagement() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Lab Management</h2>
-          <p className="text-sm text-gray-500">Defaulting to Today's Status: <strong>{today}</strong></p>
+          <p className="text-sm text-gray-500">Facility tracking for <strong>{today}</strong></p>
         </div>
         
-        <div className="flex flex-col gap-2 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+          <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Date From:</span>
-              <input 
-                type="date" 
-                value={fromDate} 
-                onChange={(e) => setFromDate(e.target.value)}
-                className="px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <span className="text-xs font-semibold text-gray-400 uppercase">From:</span>
+              <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="px-2 py-1 border rounded text-sm outline-none focus:border-blue-500" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Date To:</span>
-              <input 
-                type="date" 
-                value={toDate} 
-                onChange={(e) => setToDate(e.target.value)}
-                className="px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Start Time:</span>
-              <input 
-                type="time" 
-                value={startTime} 
-                onChange={(e) => setStartTime(e.target.value)}
-                className="px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <span className="text-xs font-semibold text-gray-400 uppercase">To:</span>
+              <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="px-2 py-1 border rounded text-sm outline-none focus:border-blue-500" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">End Time:</span>
-              <input 
-                type="time" 
-                value={endTime} 
-                onChange={(e) => setEndTime(e.target.value)}
-                className="px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <span className="text-xs font-semibold text-gray-400 uppercase">Time:</span>
+              <div className="flex items-center gap-1">
+                <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="px-2 py-1 border rounded text-sm outline-none w-24" />
+                <span className="text-gray-300">-</span>
+                <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="px-2 py-1 border rounded text-sm outline-none w-24" />
+              </div>
             </div>
           </div>
         </div>
@@ -100,61 +75,57 @@ export default function LabManagement() {
             <div key={lab.id} className="card flex-col transition-all duration-300" 
               style={{ 
                 gap: '1rem', 
-                minHeight: '420px',
-                backgroundColor: isBusy ? '#F3F4F6' : '#F0FDF4', // Grey for Busy, Light Green for Available
-                border: isBusy ? '1px solid #D1D5DB' : '1px solid #BBF7D0',
-                opacity: isBusy ? 0.9 : 1
+                minHeight: '380px',
+                backgroundColor: isBusy ? '#F3F4F6' : '#FFFFFF', // Grey for Busy, White for Available
+                border: '1px solid #E5E7EB',
+                boxShadow: isBusy ? 'none' : '0 1px 3px rgba(0,0,0,0.05)'
               }}>
               <div className="flex justify-between items-start">
                 <div className="flex flex-col gap-2">
-                  <span className={`badge ${isBusy ? 'badge-neutral' : 'badge-green'}`} 
+                  <span className={`badge`} 
                     style={{ 
                       alignSelf: 'flex-start', 
                       padding: '4px 12px', 
                       fontSize: '0.75rem', 
                       fontWeight: 700,
-                      backgroundColor: isBusy ? '#6B7280' : '#22C55E',
+                      backgroundColor: isBusy ? '#6B7280' : '#10B981',
                       color: 'white'
                     }}>
                     {availability.status}
                   </span>
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{lab.id}</span>
                 </div>
-                <button 
-                  onClick={() => setSelectedLabSchedule(lab.name)}
-                  className="p-2 bg-white rounded-lg border border-gray-100 hover:shadow-md transition-shadow"
-                  title="View Schedule Calendar"
-                >
-                  <Calendar size={20} color="#6366F1" />
-                </button>
+                <div className={`p-2 rounded-lg border ${isBusy ? 'bg-gray-200 border-gray-300' : 'bg-green-50 border-green-100'} transition-colors`}>
+                  <Monitor size={20} className={isBusy ? 'text-gray-500' : 'text-green-600'} />
+                </div>
               </div>
               
               <div>
                 <h2 className="text-xl font-bold text-gray-800 mb-1">{lab.name}</h2>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <div className={`w-2 h-2 rounded-full ${isBusy ? 'bg-gray-400' : 'bg-green-400'}`}></div>
+                  <div className={`w-2 h-2 rounded-full ${isBusy ? 'bg-gray-400' : 'bg-green-500'}`}></div>
                   Computer Lab • {lab.department}
                 </div>
               </div>
               
-              <div className="flex flex-col gap-3 py-4 border-y border-gray-100" style={{ fontSize: '0.875rem' }}>
+              <div className="flex flex-col gap-4 py-5 border-y border-gray-100" style={{ fontSize: '0.875rem' }}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Shield size={16} className="text-gray-500" />
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Shield size={18} className="text-gray-400" />
                     <span className="font-medium">System Admin</span>
                   </div>
                   <span className="font-semibold text-gray-800">{lab.assignedAdmin}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Users size={16} className="text-gray-500" />
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Users size={18} className="text-gray-400" />
                     <span className="font-medium">Lab Trainer</span>
                   </div>
                   <span className="font-semibold text-gray-800">{lab.assignedTrainer}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Cpu size={16} className="text-gray-500" />
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <Cpu size={18} className="text-gray-400" />
                     <span className="font-medium">Workstations</span>
                   </div>
                   <span className="font-semibold text-gray-800">{lab.capacity} Units</span>
@@ -162,41 +133,28 @@ export default function LabManagement() {
               </div>
 
               {isBusy && availability.class && (
-                <div className="bg-white p-3 rounded-lg border border-gray-200 flex items-start gap-2">
-                  <Info size={14} className="text-gray-500 mt-0.5" />
+                <div className="bg-white p-3 rounded-lg border border-gray-200 flex items-start gap-2 shadow-sm">
+                  <Info size={14} className="text-red-400 mt-0.5" />
                   <div className="flex flex-col">
                     <p className="text-xs text-gray-700 leading-relaxed">
-                      Occupied by <strong>{availability.class}</strong>
+                      Booked by <strong>{availability.class}</strong>
                     </p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">
-                      Time Slot: {availability.session}
+                    <p className="text-[10px] text-red-500 font-bold uppercase mt-1">
+                      Slot: {availability.session}
                     </p>
                   </div>
                 </div>
               )}
 
-              <div className="mt-auto flex gap-3">
-                <button className="btn btn-outline flex-1 justify-center py-2.5" style={{ backgroundColor: 'white' }}>
+              <div className="mt-auto">
+                <button className="btn btn-outline w-full justify-center py-3 text-sm font-bold transition-all hover:bg-gray-50" style={{ backgroundColor: 'white' }}>
                   Edit Lab
-                </button>
-                <button 
-                  onClick={() => setSelectedLabSchedule(lab.name)}
-                  className="btn btn-primary flex-1 justify-center py-2.5"
-                >
-                  View Schedule
                 </button>
               </div>
             </div>
           );
         })}
       </div>
-
-      <LabScheduleModal 
-        isOpen={!!selectedLabSchedule}
-        onClose={() => setSelectedLabSchedule(null)}
-        labName={selectedLabSchedule}
-        allClasses={allClasses}
-      />
     </div>
   );
 }
