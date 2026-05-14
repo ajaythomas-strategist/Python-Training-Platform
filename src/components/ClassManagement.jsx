@@ -61,9 +61,9 @@ export default function ClassManagement() {
         </button>
       </div>
 
-      <div className="dashboard-grid">
+      <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1.5rem' }}>
         {classes.map(cls => (
-          <div key={cls.id} className="card flex-col" style={{ gap: '1rem' }}>
+          <div key={cls.id} className="card flex-col" style={{ gap: '1rem', minHeight: '350px' }}>
             
             <div className="flex justify-between items-start">
               <h2 style={{ fontSize: '1.25rem', margin: 0 }}>{cls.id}</h2>
