@@ -56,6 +56,10 @@ export const users = [
       ]
     }
   },
+  // Extra Students for edge cases
+  { id: 31, name: "Zara Ali", email: "zara.a@college.edu", phone: "31", batch: "1 PERFECT", role: "Student", attendance: 100, score: "100%", photo: "https://i.pravatar.cc/150?u=31", detailedReport: { sessions: [{ date: "2026-05-15", sessionName: "Perfect Session", attendance: "Present" }], performance: [] } },
+  { id: 32, name: "Liam Bond", email: "liam.b@college.edu", phone: "32", batch: "1 STRUGGLE", role: "Student", attendance: 40, score: "45%", photo: "https://i.pravatar.cc/150?u=32", detailedReport: { sessions: [{ date: "2026-05-15", sessionName: "Hard Session", attendance: "Absent" }], performance: [] } },
+  { id: 33, name: "Noah King", email: "noah.k@college.edu", phone: "33", batch: "1 STRUGGLE", role: "Student", attendance: 35, score: "40%", photo: "https://i.pravatar.cc/150?u=33", detailedReport: { sessions: [{ date: "2026-05-15", sessionName: "Hard Session", attendance: "Absent" }], performance: [] } },
   
   // Trainers & Co-Trainers
   { 
@@ -69,7 +73,12 @@ export const users = [
       { date: "2026-05-10", session: "Intro to Python", batch: "Batch B - Afternoon", lab: "Room 101", hours: 2, direction: "To", partner: "Michael Chang", reason: "Sick Leave" },
       { date: "2026-05-12", session: "Algorithms 101", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 2, direction: "From", partner: "James Carter", reason: "Covering shift", rating: 4.8 }
     ],
-    feedback: ["Great methodology.", "Very clear explanations.", "Could use more real-world examples."]
+    feedback: ["Great methodology.", "Very clear explanations.", "Could use more real-world examples."],
+    sessionReports: [
+      { date: "2026-05-11", session: "Python Fundamentals", batch: "1 BCA A", lab: "Advanced Computing Lab", hours: 2, rating: 4.9 },
+      { date: "2026-05-13", session: "Data Structures Deep Dive", batch: "1 BCA A", lab: "Advanced Computing Lab", hours: 3, rating: 4.7 },
+      { date: "2026-05-15", session: "Algorithms 101", batch: "1 BCA A", lab: "Advanced Computing Lab", hours: 2, rating: 4.8 }
+    ]
   },
   { 
     id: 4, name: "James Carter", email: "james.c@college.edu", phone: "+1 555-3301", department: "Information Tech", role: "Co-Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=4",
@@ -80,7 +89,10 @@ export const users = [
     transferredSessions: [
       { date: "2026-05-12", session: "Algorithms 101", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 2, direction: "To", partner: "Dr. Sarah Lee", reason: "Conference" }
     ],
-    feedback: ["Very helpful during lab hours.", "Answers questions patiently."]
+    feedback: ["Very helpful during lab hours.", "Answers questions patiently."],
+    sessionReports: [
+      { date: "2026-05-11", session: "Lab Assistance", batch: "1 BCA A", lab: "Advanced Computing Lab", hours: 2, rating: 4.5, trainer: "Dr. Sarah Lee" }
+    ]
   },
   { 
     id: 6, name: "Michael Chang", email: "michael.c@college.edu", phone: "+1 555-2202", department: "Electronics", role: "Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=6",
@@ -92,25 +104,41 @@ export const users = [
       { date: "2026-04-20", session: "Hardware Basics", batch: "Batch C - Evening", lab: "Electronics Prototyping", hours: 3, direction: "To", partner: "Dr. Sarah Lee", reason: "Personal Emergency" },
       { date: "2026-05-10", session: "Intro to Python", batch: "Batch B - Afternoon", lab: "Room 101", hours: 2, direction: "From", partner: "Dr. Sarah Lee", reason: "Covering shift", rating: 4.5 }
     ],
-    feedback: ["Good pacing.", "Sometimes hard to follow the slides.", "Responsive to emails.", "Awesome technical depth."]
+    feedback: ["Good pacing.", "Sometimes hard to follow the slides.", "Responsive to emails.", "Awesome technical depth."],
+    sessionReports: [
+      { date: "2026-05-10", session: "Intro to Python", batch: "1 BSC CS", lab: "Room 101", hours: 2, rating: 4.1 },
+      { date: "2026-05-15", session: "Advanced Python", batch: "1 BSC CS", lab: "Room 101", hours: 2, rating: 4.4 }
+    ]
   },
 
   // 8 Additional Trainers
-  { id: 10, name: "Prof. Alan Turing", email: "alan@college.edu", phone: "+1 555-4001", department: "Computer Science", role: "Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=10", sessions: 20, classes: 5, hours: 40, missedSessions: 0, rating: 4.9, availability: "Available", assignedSessionsCount: 5, sessionReports: [], transferredSessions: [], feedback: [] },
+  { id: 10, name: "Prof. Alan Turing", email: "alan@college.edu", phone: "+1 555-4001", department: "Computer Science", role: "Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=10", sessions: 20, classes: 5, hours: 40, missedSessions: 0, rating: 4.9, availability: "Available", assignedSessionsCount: 5, feedback: ["Visionary approach.", "Brilliant logic examples."], 
+    sessionReports: [
+      { date: "2026-05-15", session: "Commerce Tech", batch: "1 BCOM", lab: "Advanced Computing Lab", hours: 2, rating: 4.9 }
+    ], transferredSessions: [] },
   { id: 11, name: "Grace Hopper", email: "grace@college.edu", phone: "+1 555-4002", department: "Information Tech", role: "Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=11", sessions: 22, classes: 6, hours: 45, missedSessions: 1, rating: 4.8, availability: "Busy", assignedSessionsCount: 6, sessionReports: [], transferredSessions: [], feedback: [] },
   { id: 12, name: "Ada Lovelace", email: "ada@college.edu", phone: "+1 555-4003", department: "Data Science", role: "Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=12", sessions: 18, classes: 4, hours: 35, missedSessions: 0, rating: 4.7, availability: "Available", assignedSessionsCount: 4, sessionReports: [], transferredSessions: [], feedback: [] },
   { id: 13, name: "Dennis Ritchie", email: "dennis@college.edu", phone: "+1 555-4004", department: "Computer Science", role: "Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=13", sessions: 30, classes: 8, hours: 60, missedSessions: 0, rating: 4.6, availability: "On Leave", assignedSessionsCount: 8, sessionReports: [], transferredSessions: [], feedback: [] },
   { id: 14, name: "Linus Torvalds", email: "linus@college.edu", phone: "+1 555-4005", department: "Information Tech", role: "Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=14", sessions: 25, classes: 7, hours: 50, missedSessions: 2, rating: 4.5, availability: "Available", assignedSessionsCount: 7, sessionReports: [], transferredSessions: [], feedback: [] },
-  { id: 15, name: "Margaret Hamilton", email: "margaret@college.edu", phone: "+1 555-4006", department: "Electronics", role: "Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=15", sessions: 40, classes: 10, hours: 80, missedSessions: 0, rating: 5.0, availability: "Available", assignedSessionsCount: 10, sessionReports: [], transferredSessions: [], feedback: [] },
+  { id: 15, name: "Margaret Hamilton", email: "margaret@college.edu", phone: "+1 555-4006", department: "Electronics", role: "Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=15", sessions: 40, classes: 10, hours: 80, missedSessions: 0, rating: 5.0, availability: "Available", assignedSessionsCount: 10, feedback: ["Exceptional clarity.", "Best session ever!"], 
+    sessionReports: [
+      { date: "2026-05-15", session: "Management Basics", batch: "1 BBA", lab: "Room 101", hours: 2, rating: 5.0 }
+    ], transferredSessions: [] },
   { id: 16, name: "Tim Berners-Lee", email: "tim@college.edu", phone: "+1 555-4007", department: "Web Development", role: "Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=16", sessions: 15, classes: 3, hours: 30, missedSessions: 0, rating: 4.8, availability: "Busy", assignedSessionsCount: 3, sessionReports: [], transferredSessions: [], feedback: [] },
   { id: 17, name: "Hedy Lamarr", email: "hedy@college.edu", phone: "+1 555-4008", department: "Electronics", role: "Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=17", sessions: 28, classes: 6, hours: 56, missedSessions: 1, rating: 4.9, availability: "Available", assignedSessionsCount: 6, sessionReports: [], transferredSessions: [], feedback: [] },
 
   // 8 Additional Co-Trainers
   { id: 20, name: "John Doe", email: "john@college.edu", phone: "+1 555-5001", department: "Computer Science", role: "Co-Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=20", sessions: 10, classes: 2, hours: 20, missedSessions: 0, rating: 4.2, availability: "Available", assignedSessionsCount: 2, sessionReports: [], transferredSessions: [], feedback: [] },
-  { id: 21, name: "Jane Smith", email: "jane@college.edu", phone: "+1 555-5002", department: "Information Tech", role: "Co-Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=21", sessions: 12, classes: 3, hours: 24, missedSessions: 0, rating: 4.3, availability: "Available", assignedSessionsCount: 3, sessionReports: [], transferredSessions: [], feedback: [] },
+  { id: 21, name: "Jane Smith", email: "jane@college.edu", phone: "+1 555-5002", department: "Information Tech", role: "Co-Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=21", sessions: 12, classes: 3, hours: 24, missedSessions: 0, rating: 4.3, availability: "Available", assignedSessionsCount: 3, feedback: ["Very patient with doubts."], 
+    sessionReports: [
+      { date: "2026-05-15", session: "Management Support", batch: "1 BBA", lab: "Room 101", hours: 2, rating: 4.4 }
+    ], transferredSessions: [] },
   { id: 22, name: "Mike Johnson", email: "mike@college.edu", phone: "+1 555-5003", department: "Data Science", role: "Co-Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=22", sessions: 8, classes: 2, hours: 16, missedSessions: 0, rating: 4.0, availability: "Busy", assignedSessionsCount: 2, sessionReports: [], transferredSessions: [], feedback: [] },
   { id: 23, name: "Emily White", email: "emily.w@college.edu", phone: "+1 555-5004", department: "Computer Science", role: "Co-Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=23", sessions: 15, classes: 4, hours: 30, missedSessions: 0, rating: 4.5, availability: "Available", assignedSessionsCount: 4, sessionReports: [], transferredSessions: [], feedback: [] },
-  { id: 24, name: "Chris Green", email: "chris@college.edu", phone: "+1 555-5005", department: "Information Tech", role: "Co-Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=24", sessions: 20, classes: 5, hours: 40, missedSessions: 1, rating: 4.1, availability: "Available", assignedSessionsCount: 5, sessionReports: [], transferredSessions: [], feedback: [] },
+  { id: 24, name: "Chris Green", email: "chris@college.edu", phone: "+1 555-5005", department: "Information Tech", role: "Co-Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=24", sessions: 20, classes: 5, hours: 40, missedSessions: 1, rating: 4.1, availability: "Available", assignedSessionsCount: 5, feedback: ["Solid technical support."], 
+    sessionReports: [
+      { date: "2026-05-15", session: "Commerce Support", batch: "1 BCOM", lab: "Advanced Computing Lab", hours: 2, rating: 4.2 }
+    ], transferredSessions: [] },
   { id: 25, name: "Sophia Brown", email: "sophia@college.edu", phone: "+1 555-5006", department: "Electronics", role: "Co-Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=25", sessions: 5, classes: 1, hours: 10, missedSessions: 0, rating: 4.8, availability: "On Leave", assignedSessionsCount: 1, sessionReports: [], transferredSessions: [], feedback: [] },
   { id: 26, name: "David Black", email: "david@college.edu", phone: "+1 555-5007", department: "Web Development", role: "Co-Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=26", sessions: 18, classes: 4, hours: 36, missedSessions: 0, rating: 4.4, availability: "Available", assignedSessionsCount: 4, sessionReports: [], transferredSessions: [], feedback: [] },
   { id: 27, name: "Olivia Gray", email: "olivia@college.edu", phone: "+1 555-5008", department: "Data Science", role: "Co-Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=27", sessions: 22, classes: 6, hours: 44, missedSessions: 0, rating: 4.6, availability: "Busy", assignedSessionsCount: 6, sessionReports: [], transferredSessions: [], feedback: [] }
@@ -122,7 +150,23 @@ export const classes = [
     trainer: "Dr. Sarah Lee", 
     coTrainers: ["James Carter"],
     lab: "Advanced Computing Lab",
-    sessions: [{ date: "2026-05-14", startTime: "10:00", endTime: "12:00" }],
+    sessions: [{ date: "2026-05-15", startTime: "13:00", endTime: "15:00" }],
+    status: "Active"
+  },
+  { 
+    id: "1 PERFECT", 
+    trainer: "Margaret Hamilton", 
+    coTrainers: ["Jane Smith"],
+    lab: "AI Research Lab",
+    sessions: [{ date: "2026-05-15", startTime: "08:00", endTime: "10:00" }],
+    status: "Active"
+  },
+  { 
+    id: "1 STRUGGLE", 
+    trainer: "Dennis Ritchie", 
+    coTrainers: ["Mike Johnson", "John Doe"],
+    lab: "Cybersecurity Lab",
+    sessions: [{ date: "2026-05-15", startTime: "16:00", endTime: "18:00" }],
     status: "Active"
   },
   { 
