@@ -66,15 +66,6 @@ export const users = [
     id: 3, name: "Dr. Sarah Lee", email: "sarah.lee@college.edu", phone: "+1 555-2201", department: "Computer Science", role: "Trainer", gender: "Female", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=3",
     sessions: 45, classes: 12, hours: 120, missedSessions: 2, rating: 4.8, availability: "Available", assignedSessionsCount: 12,
     sessionReports: [
-      { date: "2026-05-11", session: "Python Fundamentals", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 2, rating: 4.9 },
-      { date: "2026-05-13", session: "Data Structures Deep Dive", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 3, rating: 4.7 }
-    ],
-    transferredSessions: [
-      { date: "2026-05-10", session: "Intro to Python", batch: "Batch B - Afternoon", lab: "Room 101", hours: 2, direction: "To", partner: "Michael Chang", reason: "Sick Leave" },
-      { date: "2026-05-12", session: "Algorithms 101", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 2, direction: "From", partner: "James Carter", reason: "Covering shift", rating: 4.8 }
-    ],
-    feedback: ["Great methodology.", "Very clear explanations.", "Could use more real-world examples."],
-    sessionReports: [
       { date: "2026-05-11", session: "Python Fundamentals", batch: "1 BCA A", lab: "Advanced Computing Lab", hours: 2, rating: 4.9 },
       { date: "2026-05-13", session: "Data Structures Deep Dive", batch: "1 BCA A", lab: "Advanced Computing Lab", hours: 3, rating: 4.7 },
       { date: "2026-05-15", session: "Algorithms 101", batch: "1 BCA A", lab: "Advanced Computing Lab", hours: 2, rating: 4.8 }
@@ -84,27 +75,12 @@ export const users = [
     id: 4, name: "James Carter", email: "james.c@college.edu", phone: "+1 555-3301", department: "Information Tech", role: "Co-Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=4",
     sessions: 30, classes: 8, hours: 80, missedSessions: 0, rating: 4.5, availability: "On Leave", assignedSessionsCount: 8,
     sessionReports: [
-      { date: "2026-05-11", session: "Lab Assistance", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 2, rating: 4.5, trainer: "Dr. Sarah Lee" }
-    ],
-    transferredSessions: [
-      { date: "2026-05-12", session: "Algorithms 101", batch: "Batch A - Morning", lab: "Advanced Computing Lab", hours: 2, direction: "To", partner: "Dr. Sarah Lee", reason: "Conference" }
-    ],
-    feedback: ["Very helpful during lab hours.", "Answers questions patiently."],
-    sessionReports: [
       { date: "2026-05-11", session: "Lab Assistance", batch: "1 BCA A", lab: "Advanced Computing Lab", hours: 2, rating: 4.5, trainer: "Dr. Sarah Lee" }
     ]
   },
   { 
     id: 6, name: "Michael Chang", email: "michael.c@college.edu", phone: "+1 555-2202", department: "Electronics", role: "Trainer", gender: "Male", highSchool: "N/A", photo: "https://i.pravatar.cc/150?u=6",
     sessions: 50, classes: 15, hours: 140, missedSessions: 1, rating: 4.2, availability: "Busy", assignedSessionsCount: 15,
-    sessionReports: [
-      { date: "2026-05-10", session: "Intro to Python", batch: "Batch B - Afternoon", lab: "Room 101", hours: 2, rating: 4.1 }
-    ],
-    transferredSessions: [
-      { date: "2026-04-20", session: "Hardware Basics", batch: "Batch C - Evening", lab: "Electronics Prototyping", hours: 3, direction: "To", partner: "Dr. Sarah Lee", reason: "Personal Emergency" },
-      { date: "2026-05-10", session: "Intro to Python", batch: "Batch B - Afternoon", lab: "Room 101", hours: 2, direction: "From", partner: "Dr. Sarah Lee", reason: "Covering shift", rating: 4.5 }
-    ],
-    feedback: ["Good pacing.", "Sometimes hard to follow the slides.", "Responsive to emails.", "Awesome technical depth."],
     sessionReports: [
       { date: "2026-05-10", session: "Intro to Python", batch: "1 BSC CS", lab: "Room 101", hours: 2, rating: 4.1 },
       { date: "2026-05-15", session: "Advanced Python", batch: "1 BSC CS", lab: "Room 101", hours: 2, rating: 4.4 }

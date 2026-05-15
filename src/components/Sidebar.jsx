@@ -1,9 +1,10 @@
 import React from 'react';
-import { LayoutDashboard, Users, BookOpen, Star, FlaskConical, ShieldAlert, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, Star, FlaskConical, ShieldAlert, LogOut, Trophy } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+    { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={20} /> },
     { id: 'users', label: 'User Management', icon: <Users size={20} /> },
     { id: 'reports', label: 'User Reports', icon: <Star size={20} /> },
     { id: 'classes', label: 'Class', icon: <BookOpen size={20} /> },

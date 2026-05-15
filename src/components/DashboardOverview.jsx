@@ -1,46 +1,55 @@
 import React, { useState } from 'react';
-import { Users, UserCheck, BookOpen, Percent, Eye, X, Trophy, Star, Medal, Monitor, Shield, Cpu, User, Info, MessageSquare, ClipboardList } from 'lucide-react';
+import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageSquare, ClipboardList, Shield } from 'lucide-react';
 import { users, classes } from '../data/mockData';
 
 export default function DashboardOverview() {
   const [selectedBatchForAbsents, setSelectedBatchForAbsents] = useState(null);
   const [selectedBatchForComments, setSelectedBatchForComments] = useState(null);
   const [selectedBatchForActivity, setSelectedBatchForActivity] = useState(null);
+  const [upcomingRange, setUpcomingRange] = useState({ from: "", to: "" });
+  const [completedRange, setCompletedRange] = useState({ from: "", to: "" });
 
   const trainers = users.filter(u => u.role === 'Trainer');
   const coTrainers = users.filter(u => u.role === 'Co-Trainer');
   const students = users.filter(u => u.role === 'Student');
   
-  const parseScore = (scoreStr) => parseInt(scoreStr?.replace('%', '') || '0');
-
-  // 1. Top 3 Students Overall
-  const topOverallStudents = [...students]
-    .sort((a, b) => parseScore(b.score) - parseScore(a.score))
-    .slice(0, 3);
-
-  // 2. Top 3 Students in each Batch
-  const batchGroups = students.reduce((acc, s) => {
-    if (!acc[s.batch]) acc[s.batch] = [];
-    acc[s.batch].push(s);
-    return acc;
-  }, {});
-
-  const topStudentsPerBatch = Object.keys(batchGroups).map(batchId => {
-    const sorted = [...batchGroups[batchId]]
-      .sort((a, b) => parseScore(b.score) - parseScore(a.score))
-      .slice(0, 3);
-    return { batch: batchId, toppers: sorted };
-  });
-
-  // 3. Top 3 Trainers & Co-Trainers
-  const topTrainers = [...trainers].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 3);
-  const topCoTrainers = [...coTrainers].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 3);
-
   const totalAttendance = students.reduce((acc, s) => acc + (s.attendance || 0), 0);
   const avgAttendance = students.length > 0 ? (totalAttendance / students.length).toFixed(1) : 0;
 
   const today = "2026-05-15";
   const tomorrow = "2026-05-16";
+
+  const getSessionsByRange = (range, defaultType) => {
+    let dates = [];
+    
+    if (range.from && range.to) {
+      const start = new Date(range.from);
+      const end = new Date(range.to);
+      const current = new Date(start);
+      
+      while (current <= end) {
+        dates.push(current.toISOString().split('T')[0]);
+        current.setDate(current.getDate() + 1);
+      }
+    } else {
+      if (defaultType === 'upcoming') {
+        dates = [tomorrow];
+      } else {
+        dates = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(d.getDate() - (i + 1));
+          return d.toISOString().split('T')[0];
+        }).reverse();
+      }
+    }
+
+    const allBatches = [];
+    dates.forEach(date => {
+      const dayBatches = mapSessionToBatch(date);
+      allBatches.push(...dayBatches.map(b => ({ ...b, actualDate: date })));
+    });
+    return allBatches;
+  };
 
   const mapSessionToBatch = (sessionDate) => {
     return classes.flatMap(cls => {
@@ -82,7 +91,8 @@ export default function DashboardOverview() {
   };
 
   const todayBatches = mapSessionToBatch(today);
-  const tomorrowBatches = mapSessionToBatch(tomorrow);
+  const tomorrowBatches = getSessionsByRange(upcomingRange, 'upcoming');
+  const completedBatches = getSessionsByRange(completedRange, 'completed');
 
   return (
     <div className="animate-fade-in p-6">
@@ -199,11 +209,41 @@ export default function DashboardOverview() {
       {/* Upcoming Session Table */}
       <div className="card mb-12 flex-col" style={{ gap: '1.5rem' }}>
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <div className="p-2 bg-amber-50 rounded-lg text-amber-600"><ClipboardList size={20} /></div>
-            Upcoming Session
-          </h2>
-          <p className="text-xs text-gray-500 font-medium bg-gray-50 px-3 py-1 rounded-full border border-gray-100">Scheduled for {tomorrow}</p>
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="p-2 bg-amber-50 rounded-lg text-amber-600"><ClipboardList size={20} /></div>
+              Upcoming Session
+            </h2>
+            <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-1.5 ml-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-400 uppercase">From:</span>
+                <input 
+                  type="date" 
+                  value={upcomingRange.from}
+                  onChange={(e) => setUpcomingRange(prev => ({ ...prev, from: e.target.value }))}
+                  className="bg-transparent border-none text-sm font-medium text-gray-700 outline-none cursor-pointer"
+                />
+              </div>
+              <div className="w-px h-4 bg-gray-200"></div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-400 uppercase">To:</span>
+                <input 
+                  type="date" 
+                  value={upcomingRange.to}
+                  onChange={(e) => setUpcomingRange(prev => ({ ...prev, to: e.target.value }))}
+                  className="bg-transparent border-none text-sm font-medium text-gray-700 outline-none cursor-pointer"
+                />
+              </div>
+              {(upcomingRange.from || upcomingRange.to) && (
+                <button onClick={() => setUpcomingRange({ from: "", to: "" })} className="text-gray-400 hover:text-red-500 ml-1">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 font-medium bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+            {upcomingRange.from && upcomingRange.to ? `Showing ${upcomingRange.from} to ${upcomingRange.to}` : `Scheduled for ${tomorrow}`}
+          </p>
         </div>
         <div className="table-container">
           <table className="w-full">
@@ -245,141 +285,129 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      <div style={{ borderTop: '2px solid #E5E7EB', margin: '40px 0' }}></div>
+      <div style={{ height: '40px' }}></div>
 
-      {/* Leader Board Header */}
-      <h1 className="text-3xl font-black text-gray-800 mb-8 tracking-tight">Leader Board</h1>
-
-      {/* Row 1: Overall Leaders in Lab Card Design */}
-      <div className="dashboard-grid mb-10" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1.5rem' }}>
-        {/* Top 3 Students Overall */}
-        <div className="card flex-col" style={{ gap: '1rem', minHeight: '380px', border: '1px solid #E5E7EB' }}>
-          <div className="flex justify-between items-start mb-[-8px]">
-            <span className="badge" style={{ backgroundColor: '#10B981', color: 'white', fontWeight: 700, fontSize: '0.75rem', padding: '4px 12px' }}>TOP RANKED</span>
-            <div className="p-2 bg-green-50 rounded-lg border border-green-100">
-              <Trophy size={20} className="text-green-600" />
-            </div>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-800 mb-1">Top 3 Students</h2>
-            <div className="text-sm text-gray-500 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              Overall Academic Excellence
-            </div>
-          </div>
-          <div className="flex flex-col gap-4 py-5 border-y border-gray-100" style={{ fontSize: '0.875rem' }}>
-            {topOverallStudents.map((s, idx) => (
-              <div key={s.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-gray-600">
-                  <User size={18} className="text-gray-400" />
-                  <span className="font-medium text-gray-700">{idx + 1}. {s.name}</span>
-                </div>
-                <span className="font-bold text-indigo-600">{s.score}</span>
+      {/* Completed Session Table */}
+      <div className="card mb-12 flex-col" style={{ gap: '1.5rem' }}>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="p-2 bg-green-50 rounded-lg text-green-600"><Shield size={20} /></div>
+              Completed Session
+            </h2>
+            <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-1.5 ml-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-400 uppercase">From:</span>
+                <input 
+                  type="date" 
+                  value={completedRange.from}
+                  onChange={(e) => setCompletedRange(prev => ({ ...prev, from: e.target.value }))}
+                  className="bg-transparent border-none text-sm font-medium text-gray-700 outline-none cursor-pointer"
+                />
               </div>
-            ))}
+              <div className="w-px h-4 bg-gray-200"></div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-400 uppercase">To:</span>
+                <input 
+                  type="date" 
+                  value={completedRange.to}
+                  onChange={(e) => setCompletedRange(prev => ({ ...prev, to: e.target.value }))}
+                  className="bg-transparent border-none text-sm font-medium text-gray-700 outline-none cursor-pointer"
+                />
+              </div>
+              {(completedRange.from || completedRange.to) && (
+                <button onClick={() => setCompletedRange({ from: "", to: "" })} className="text-gray-400 hover:text-red-500 ml-1">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
-          <div className="mt-auto">
-            <button className="btn btn-outline w-full justify-center py-3 text-sm font-bold">View All Rankings</button>
-          </div>
+          <p className="text-xs text-gray-500 font-medium bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+            {completedRange.from && completedRange.to ? `Showing ${completedRange.from} to ${completedRange.to}` : "Showing last week's sessions"}
+          </p>
         </div>
-
-        {/* Top 3 Trainers */}
-        <div className="card flex-col" style={{ gap: '1rem', minHeight: '380px', border: '1px solid #E5E7EB' }}>
-          <div className="flex justify-between items-start mb-[-8px]">
-            <span className="badge" style={{ backgroundColor: '#6366F1', color: 'white', fontWeight: 700, fontSize: '0.75rem', padding: '4px 12px' }}>TOP RATED</span>
-            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
-              <Star size={20} className="text-indigo-600 fill-indigo-600" />
-            </div>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-800 mb-1">Top 3 Trainers</h2>
-            <div className="text-sm text-gray-500 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-              Teaching Performance
-            </div>
-          </div>
-          <div className="flex flex-col gap-4 py-5 border-y border-gray-100" style={{ fontSize: '0.875rem' }}>
-            {topTrainers.map((t, idx) => (
-              <div key={t.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-gray-600">
-                  <Users size={18} className="text-gray-400" />
-                  <span className="font-medium text-gray-700">{idx + 1}. {t.name}</span>
-                </div>
-                <span className="font-bold text-gray-800">{t.rating} ★</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-auto">
-            <button className="btn btn-outline w-full justify-center py-3 text-sm font-bold">View Feedback</button>
-          </div>
-        </div>
-
-        {/* Top 3 Co-Trainers */}
-        <div className="card flex-col" style={{ gap: '1rem', minHeight: '380px', border: '1px solid #E5E7EB' }}>
-          <div className="flex justify-between items-start mb-[-8px]">
-            <span className="badge" style={{ backgroundColor: '#3B82F6', color: 'white', fontWeight: 700, fontSize: '0.75rem', padding: '4px 12px' }}>SUPPORT STARS</span>
-            <div className="p-2 bg-blue-50 rounded-lg border border-blue-100">
-              <Medal size={20} className="text-blue-600" />
-            </div>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-800 mb-1">Top 3 Co-Trainers</h2>
-            <div className="text-sm text-gray-500 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              Support Performance
-            </div>
-          </div>
-          <div className="flex flex-col gap-4 py-5 border-y border-gray-100" style={{ fontSize: '0.875rem' }}>
-            {topCoTrainers.map((t, idx) => (
-              <div key={t.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-gray-600">
-                  <Users size={18} className="text-gray-400" />
-                  <span className="font-medium text-gray-700">{idx + 1}. {t.name}</span>
-                </div>
-                <span className="font-bold text-gray-800">{t.rating} ★</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-auto">
-            <button className="btn btn-outline w-full justify-center py-3 text-sm font-bold">View Feedback</button>
-          </div>
+        <div className="table-container">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch Name</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Students</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer & Rating</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers & Rating</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {completedBatches.length > 0 ? completedBatches.map((batch, idx) => (
+                <tr key={`${batch.id}-${idx}`} className="border-t border-gray-50 text-sm">
+                  <td className="py-4">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-gray-800">{batch.id}</span>
+                      {batch.actualDate && <span className="text-[10px] text-gray-400 font-medium">{batch.actualDate}</span>}
+                    </div>
+                  </td>
+                  <td className="py-4 text-center font-bold text-gray-600">{batch.sessionNo}</td>
+                  <td className="py-4 text-gray-500">{batch.sessionTime}</td>
+                  <td className="py-4 text-gray-600 font-medium">{batch.lab}</td>
+                  <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
+                  <td className="py-4">
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden" style={{ width: '60px' }}>
+                        <div className={`h-full ${Number(batch.attendancePct) > 80 ? 'bg-green-500' : 'bg-orange-500'}`} style={{ width: `${batch.attendancePct}%` }} />
+                      </div>
+                      <span className="font-bold text-gray-700 text-xs w-8">{batch.attendancePct}%</span>
+                    </div>
+                  </td>
+                  <td className="py-4 text-center">
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-red-500 font-bold">{batch.absentCount}</span>
+                      <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 border border-gray-100 shadow-sm" onClick={() => setSelectedBatchForAbsents(batch)}>
+                        <Eye size={14} />
+                      </button>
+                    </div>
+                  </td>
+                  <td className="py-4">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-gray-800">{batch.trainerData.name}</span>
+                      <span className="text-xs text-amber-500 flex items-center gap-1"><Star size={10} fill="currentColor" /> {batch.trainerData.rating}</span>
+                    </div>
+                  </td>
+                  <td className="py-4">
+                    <div className="flex flex-col gap-1">
+                      {batch.coTrainersData.map((ct, idx) => (
+                        <div key={idx} className="flex flex-col">
+                          <span className="text-gray-700">{ct.name}</span>
+                          {ct.rating !== 'N/A' && <span className="text-[10px] text-amber-500 flex items-center gap-1"><Star size={8} fill="currentColor" /> {ct.rating}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      <button className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Comments" onClick={() => setSelectedBatchForComments(batch)}>
+                        <MessageSquare size={16} />
+                      </button>
+                      <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Activity Reports" onClick={() => setSelectedBatchForActivity(batch)}>
+                        <ClipboardList size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan="10" className="py-12 text-center text-gray-400 italic font-medium">No completed sessions found for the selected filter.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Row 2+ onwards: Batch Wise Toppers in Lab Card Design */}
-      <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1.5rem' }}>
-        {topStudentsPerBatch.map(({ batch, toppers }) => (
-          <div key={batch} className="card flex-col" style={{ gap: '1rem', minHeight: '380px', border: '1px solid #E5E7EB' }}>
-            <div className="flex justify-between items-start mb-2">
-              <h2 className="text-xl font-bold text-gray-800 m-0">{batch} Toppers</h2>
-              <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-                <Monitor size={20} className="text-gray-400" />
-              </div>
-            </div>
-            
-            <div className="text-sm text-gray-500 flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-              Top 3 Students in Batch
-            </div>
-            
-            <div className="flex flex-col gap-4 py-5 border-y border-gray-100" style={{ fontSize: '0.875rem' }}>
-              {toppers.map((s, idx) => (
-                <div key={s.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <User size={18} className={idx === 0 ? 'text-indigo-500' : 'text-gray-300'} />
-                    <span className={`font-medium ${idx === 0 ? 'text-gray-800 font-bold' : 'text-gray-600'}`}>{idx + 1}. {s.name}</span>
-                  </div>
-                  <span className={`font-bold ${idx === 0 ? 'text-indigo-600' : 'text-gray-500'}`}>{s.score}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-auto">
-              <button className="btn btn-outline w-full justify-center py-3 text-sm font-bold">View Batch Report</button>
-            </div>
-          </div>
-        ))}
-      </div>
 
       {/* Absent Students Modal */}
       {selectedBatchForAbsents && (

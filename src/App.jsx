@@ -6,6 +6,7 @@ import LabManagement from './components/LabManagement';
 import ClassManagement from './components/ClassManagement';
 import UserReports from './components/UserReports';
 import ReviewSystem from './components/ReviewSystem';
+import Leaderboard from './components/Leaderboard';
 import Login from './components/Login';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
       case 'classes': return <ClassManagement />;
       case 'reviews': return <ReviewSystem />;
       case 'reports': return <UserReports />;
+      case 'leaderboard': return <Leaderboard />;
       default: return <DashboardOverview />;
     }
   };
