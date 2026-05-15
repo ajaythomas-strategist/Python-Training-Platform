@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
 import { Search, Plus, Edit2, Trash2, KeyRound, Upload } from 'lucide-react';
-import { users } from '../data/mockData';
+import { users as initialUsers } from '../data/mockData';
 import BulkUploadModal from './BulkUploadModal';
 import UserDetailsModal from './UserDetailsModal';
+import AddUserModal from './AddUserModal';
 
 export default function UserManagement() {
+  const [usersList, setUsersList] = useState(initialUsers);
   const [activeRole, setActiveRole] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const roles = ['All', 'Admin', 'Student', 'Trainer', 'Co-Trainer'];
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = usersList.filter(user => 
     (activeRole === 'All' || user.role === activeRole) &&
     (user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
      (user.department && user.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
      (user.batch && user.batch.toLowerCase().includes(searchTerm.toLowerCase())))
   );
+
+  const handleAddUser = (newUser) => {
+    setUsersList([newUser, ...usersList]);
+  };
 
   return (
     <div className="animate-fade-in">
@@ -28,7 +35,7 @@ export default function UserManagement() {
             <Upload size={18} />
             Bulk Upload
           </button>
-          <button className="btn btn-primary">
+          <button className="btn btn-primary" onClick={() => setIsAddUserOpen(true)}>
             <Plus size={18} />
             Add User
           </button>
@@ -149,6 +156,12 @@ export default function UserManagement() {
         isOpen={isBulkUploadOpen} 
         onClose={() => setIsBulkUploadOpen(false)} 
         role={activeRole === 'All' ? 'User' : activeRole}
+      />
+
+      <AddUserModal 
+        isOpen={isAddUserOpen} 
+        onClose={() => setIsAddUserOpen(false)} 
+        onAdd={handleAddUser}
       />
 
       <UserDetailsModal 

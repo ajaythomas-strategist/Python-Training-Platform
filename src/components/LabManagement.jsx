@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Plus, Users, Shield, Monitor, Info, Cpu } from 'lucide-react';
-import { labs, classes as allClasses } from '../data/mockData';
+import { labs as initialLabs, classes as allClasses } from '../data/mockData';
+import AddLabModal from './AddLabModal';
 
 export default function LabManagement() {
+  const [labsList, setLabsList] = useState(initialLabs);
+  const [isAddLabOpen, setIsAddLabOpen] = useState(false);
   const today = new Date().toISOString().split('T')[0];
   const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
@@ -29,6 +32,10 @@ export default function LabManagement() {
       }
     }
     return { status: 'Available', type: 'success' };
+  };
+
+  const handleAddLab = (newLab) => {
+    setLabsList([...labsList, newLab]);
   };
 
   return (
@@ -60,14 +67,14 @@ export default function LabManagement() {
           </div>
         </div>
 
-        <button className="btn btn-primary self-start">
+        <button className="btn btn-primary self-start" onClick={() => setIsAddLabOpen(true)}>
           <Plus size={18} />
           Create New Lab
         </button>
       </div>
 
       <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1.5rem' }}>
-        {labs.map(lab => {
+        {labsList.map(lab => {
           const availability = getLabStatus(lab.name);
           const isBusy = availability.type === 'danger';
           
@@ -76,7 +83,7 @@ export default function LabManagement() {
               style={{ 
                 gap: '1rem', 
                 minHeight: '380px',
-                backgroundColor: isBusy ? '#F3F4F6' : '#FFFFFF', // Grey for Busy, White for Available
+                backgroundColor: isBusy ? '#F3F4F6' : '#FFFFFF', 
                 border: '1px solid #E5E7EB',
                 boxShadow: isBusy ? 'none' : '0 1px 3px rgba(0,0,0,0.05)'
               }}>
@@ -155,6 +162,12 @@ export default function LabManagement() {
           );
         })}
       </div>
+
+      <AddLabModal 
+        isOpen={isAddLabOpen} 
+        onClose={() => setIsAddLabOpen(false)} 
+        onAdd={handleAddLab}
+      />
     </div>
   );
 }
