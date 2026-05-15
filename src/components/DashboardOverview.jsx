@@ -118,6 +118,7 @@ export default function DashboardOverview() {
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch Name</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Students</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
@@ -132,6 +133,7 @@ export default function DashboardOverview() {
                   <td className="py-4 font-bold text-gray-800">{batch.id}</td>
                   <td className="py-4 text-center font-bold text-gray-600">{batch.sessionNo}</td>
                   <td className="py-4 text-gray-500">{batch.sessionTime}</td>
+                  <td className="py-4 text-gray-600 font-medium">{batch.lab}</td>
                   <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
                   <td className="py-4">
                     <div className="flex items-center justify-center gap-3">
