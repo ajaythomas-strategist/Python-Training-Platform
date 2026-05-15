@@ -142,7 +142,7 @@ export default function DashboardOverview() {
                     </div>
                   </td>
                   <td className="py-4 text-center">
-                    <div className="flex items-center justify-center gap-3">
+                    <div className="flex items-center justify-center gap-5">
                       <span className="text-red-500 font-bold">{batch.absentCount}</span>
                       <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400" onClick={() => setSelectedBatchForAbsents(batch)}>
                         <Eye size={16} />
