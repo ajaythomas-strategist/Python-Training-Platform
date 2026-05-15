@@ -2,8 +2,9 @@ import React from 'react';
 import { X, Star, Clock, Calendar } from 'lucide-react';
 
 export default function TrainerReportModal({ user, isOpen, onClose }) {
-  if (!isOpen || !user || !user.sessionReports) return null;
+  if (!isOpen || !user) return null;
 
+  const sessionReports = user.sessionReports || [];
   const transferredTo = user.transferredSessions?.filter(ts => ts.direction === 'To') || [];
   const takenFrom = user.transferredSessions?.filter(ts => ts.direction === 'From') || [];
 
