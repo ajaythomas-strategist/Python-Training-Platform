@@ -3,9 +3,10 @@ import { Plus, Users, Shield, Monitor, Info, Cpu } from 'lucide-react';
 import { labs as initialLabs, classes as allClasses } from '../data/mockData';
 import AddLabModal from './AddLabModal';
 
-export default function LabManagement() {
+export default function LabManagement({ userRole }) {
   const [labsList, setLabsList] = useState(initialLabs);
   const [isAddLabOpen, setIsAddLabOpen] = useState(false);
+  const isAdmin = userRole === 'Admin';
   const today = new Date().toISOString().split('T')[0];
   const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
@@ -67,10 +68,12 @@ export default function LabManagement() {
           </div>
         </div>
 
-        <button className="btn btn-primary self-start" onClick={() => setIsAddLabOpen(true)}>
-          <Plus size={18} />
-          Create New Lab
-        </button>
+        {!isAdmin && (
+          <button className="btn btn-primary self-start" onClick={() => setIsAddLabOpen(true)}>
+            <Plus size={18} />
+            Create New Lab
+          </button>
+        )}
       </div>
 
       <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1.5rem' }}>
@@ -153,11 +156,13 @@ export default function LabManagement() {
                 </div>
               )}
 
-              <div className="mt-auto">
-                <button className="btn btn-outline w-full justify-center py-3 text-sm font-bold transition-all hover:bg-gray-50" style={{ backgroundColor: 'white' }}>
-                  Edit Lab
-                </button>
-              </div>
+              {!isAdmin && (
+                <div className="mt-auto">
+                  <button className="btn btn-outline w-full justify-center py-3 text-sm font-bold transition-all hover:bg-gray-50" style={{ backgroundColor: 'white' }}>
+                    Edit Lab
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}

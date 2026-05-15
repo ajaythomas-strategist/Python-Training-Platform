@@ -1,16 +1,19 @@
 import React from 'react';
 import { LayoutDashboard, Users, BookOpen, Star, FlaskConical, ShieldAlert, LogOut, Trophy } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
-  const menuItems = [
+export default function Sidebar({ activeTab, setActiveTab, onLogout, userRole }) {
+  const allItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={20} /> },
-    { id: 'users', label: 'User Management', icon: <Users size={20} /> },
+    { id: 'users', label: 'User Management', icon: <Users size={20} />, superOnly: true },
     { id: 'reports', label: 'User Reports', icon: <Star size={20} /> },
     { id: 'classes', label: 'Class', icon: <BookOpen size={20} /> },
+    { id: 'material', label: 'Material', icon: <BookOpen size={20} />, superOnly: true },
     { id: 'labs', label: 'Lab Management', icon: <FlaskConical size={20} /> },
     { id: 'reviews', label: 'Reviews & Ratings', icon: <Star size={20} /> },
   ];
+
+  const menuItems = allItems.filter(item => !item.superOnly || userRole === 'SuperAdmin');
 
   return (
     <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -19,9 +22,9 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
           <div className="avatar">TM</div>
           TrainMaster
         </div>
-        <div className="badge badge-purple flex items-center gap-1 mt-2" style={{ fontSize: '0.65rem' }}>
+        <div className={`badge ${userRole === 'SuperAdmin' ? 'badge-purple' : 'bg-blue-100 text-blue-600'} flex items-center gap-1 mt-2`} style={{ fontSize: '0.65rem' }}>
           <ShieldAlert size={12} />
-          SUPER ADMIN
+          {userRole === 'SuperAdmin' ? 'SUPER ADMIN' : 'ADMIN'}
         </div>
       </div>
       <nav className="sidebar-nav mt-4" style={{ flex: 1 }}>

@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageSquare, ClipboardList, Shield } from 'lucide-react';
+import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageSquare, ClipboardList, Shield, ClipboardCheck } from 'lucide-react';
 import { users, classes } from '../data/mockData';
 
 export default function DashboardOverview() {
   const [selectedBatchForAbsents, setSelectedBatchForAbsents] = useState(null);
   const [selectedBatchForComments, setSelectedBatchForComments] = useState(null);
   const [selectedBatchForActivity, setSelectedBatchForActivity] = useState(null);
+  const [selectedBatchForEvaluation, setSelectedBatchForEvaluation] = useState(null);
+  const [evaluationRating, setEvaluationRating] = useState(0);
+  const [evaluationFeedback, setEvaluationFeedback] = useState('');
   const [upcomingRange, setUpcomingRange] = useState({ from: "", to: "" });
   const [completedRange, setCompletedRange] = useState({ from: "", to: "" });
 
@@ -194,6 +197,13 @@ export default function DashboardOverview() {
                       </button>
                       <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Activity Reports" onClick={() => setSelectedBatchForActivity(batch)}>
                         <ClipboardList size={16} />
+                      </button>
+                      <button className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors" title="Evaluate Session" onClick={() => {
+                        setSelectedBatchForEvaluation(batch);
+                        setEvaluationRating(0);
+                        setEvaluationFeedback('');
+                      }}>
+                        <ClipboardCheck size={16} />
                       </button>
                     </div>
                   </td>
@@ -527,6 +537,72 @@ export default function DashboardOverview() {
             </div>
             
             <button className="btn btn-primary w-full mt-8 py-4" onClick={() => setSelectedBatchForActivity(null)} style={{ justifyContent: 'center' }}>Close</button>
+          </div>
+        </div>
+      )}
+      {/* Session Evaluation Modal */}
+      {selectedBatchForEvaluation && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '500px', padding: '32px', borderRadius: '24px', border: 'none' }}>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 m-0">Evaluate Session</h2>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#6B7280' }}>Batch: {selectedBatchForEvaluation.id} • Session {selectedBatchForEvaluation.sessionNo}</p>
+              </div>
+              <button onClick={() => setSelectedBatchForEvaluation(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
+            </div>
+            
+            <div className="flex flex-col gap-6">
+              {/* Rating Section */}
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">Performance Rating</label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button 
+                      key={star}
+                      onClick={() => setEvaluationRating(star)}
+                      className="p-1 transition-transform hover:scale-110"
+                    >
+                      <Star 
+                        size={32} 
+                        className={star <= evaluationRating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'} 
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Feedback Section */}
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">Administrative Feedback</label>
+                <textarea 
+                  rows={4}
+                  className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm leading-relaxed"
+                  placeholder="Enter detailed feedback about the trainer, student engagement, or facility quality..."
+                  value={evaluationFeedback}
+                  onChange={(e) => setEvaluationFeedback(e.target.value)}
+                />
+              </div>
+            </div>
+            
+            <div className="flex gap-4 mt-8">
+              <button 
+                className="btn btn-outline flex-1 py-4 justify-center" 
+                onClick={() => setSelectedBatchForEvaluation(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-primary flex-1 py-4 justify-center" 
+                style={{ background: 'linear-gradient(to right, #10B981, #059669)', border: 'none' }}
+                onClick={() => {
+                  console.log(`Evaluation Saved for ${selectedBatchForEvaluation.id}: ${evaluationRating} stars, ${evaluationFeedback}`);
+                  setSelectedBatchForEvaluation(null);
+                }}
+              >
+                Submit Review
+              </button>
+            </div>
           </div>
         </div>
       )}

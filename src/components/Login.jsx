@@ -9,9 +9,11 @@ export default function Login({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Super Admin Credentials
+    // Credentials Check
     if (username === '8129214289' && password === 'AjayThomas@1') {
-      onLogin();
+      onLogin('SuperAdmin');
+    } else if (username === '101' && password === '101') {
+      onLogin('Admin');
     } else {
       setError('Invalid username or password');
     }

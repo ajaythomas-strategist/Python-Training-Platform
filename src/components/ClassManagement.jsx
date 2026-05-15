@@ -4,9 +4,10 @@ import { classes as initialClasses } from '../data/mockData';
 import StaffSelectionModal from './StaffSelectionModal';
 import LabSelectionModal from './LabSelectionModal';
 
-export default function ClassManagement() {
+export default function ClassManagement({ userRole }) {
   const [classes, setClasses] = useState(initialClasses);
   const [filters, setFilters] = useState({ Active: true, Upcoming: true, Completed: true });
+  const isAdmin = userRole === 'Admin';
 
   const getComputedStatus = (cls) => {
     // Completed is manual
@@ -161,20 +162,31 @@ export default function ClassManagement() {
             
             <div className="flex justify-between items-start">
               <h2 style={{ fontSize: '1.25rem', margin: 0 }}>{cls.id}</h2>
-              <select 
-                value={cls.status}
-                onChange={(e) => updateClass(cls.id, 'status', e.target.value)}
-                style={{
-                  padding: '4px 8px', borderRadius: '4px', border: '1px solid #E5E7EB', fontSize: '0.875rem',
+              {isAdmin ? (
+                <span style={{
+                  padding: '4px 12px', borderRadius: '4px', fontSize: '0.875rem',
                   backgroundColor: cls.status === 'Active' ? '#ECFDF5' : cls.status === 'Completed' ? '#EFF6FF' : '#FFFBEB',
                   color: cls.status === 'Active' ? '#059669' : cls.status === 'Completed' ? '#3B82F6' : '#D97706',
-                  fontWeight: 600, outline: 'none', cursor: 'pointer'
-                }}
-              >
-                <option value="Upcoming">Upcoming</option>
-                <option value="Active">Active</option>
-                <option value="Completed">Completed</option>
-              </select>
+                  fontWeight: 700
+                }}>
+                  {cls.status}
+                </span>
+              ) : (
+                <select 
+                  value={cls.status}
+                  onChange={(e) => updateClass(cls.id, 'status', e.target.value)}
+                  style={{
+                    padding: '4px 8px', borderRadius: '4px', border: '1px solid #E5E7EB', fontSize: '0.875rem',
+                    backgroundColor: cls.status === 'Active' ? '#ECFDF5' : cls.status === 'Completed' ? '#EFF6FF' : '#FFFBEB',
+                    color: cls.status === 'Active' ? '#059669' : cls.status === 'Completed' ? '#3B82F6' : '#D97706',
+                    fontWeight: 600, outline: 'none', cursor: 'pointer'
+                  }}
+                >
+                  <option value="Upcoming">Upcoming</option>
+                  <option value="Active">Active</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              )}
             </div>
             
             <div className="flex flex-col gap-3 mt-2">
@@ -201,21 +213,23 @@ export default function ClassManagement() {
                       <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>
                         {session.date} • {session.startTime} - {session.endTime}
                       </span>
-                      <div className="flex items-center gap-4">
-                        <button 
-                          onClick={() => handleTransferSession(cls.id, idx)} 
-                          title="Transfer Session"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: session.transferredTo ? '#4F46E5' : '#6366F1' }}
-                        >
-                          <ArrowRightLeft size={16} />
-                        </button>
-                        <button onClick={() => handleEditSession(cls.id, session, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
-                          <Edit2 size={16} />
-                        </button>
-                        <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
-                          <X size={16} />
-                        </button>
-                      </div>
+                      {!isAdmin && (
+                        <div className="flex items-center gap-4">
+                          <button 
+                            onClick={() => handleTransferSession(cls.id, idx)} 
+                            title="Transfer Session"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: session.transferredTo ? '#4F46E5' : '#6366F1' }}
+                          >
+                            <ArrowRightLeft size={16} />
+                          </button>
+                          <button onClick={() => handleEditSession(cls.id, session, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
+                            <Edit2 size={16} />
+                          </button>
+                          <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
+                            <X size={16} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                     {session.transferredTo && session.transferredTo !== 'Unassigned' && (
                       <div className="mt-1 flex items-center">
@@ -228,52 +242,54 @@ export default function ClassManagement() {
                 ))}
               </div>
               
-              <div className="mt-1">
-                {showDatePickerFor === cls.id ? (
-                  <div className="flex flex-col gap-2 p-2 border rounded" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
-                    <input 
-                      type="date" 
-                      value={newDate} 
-                      onChange={(e) => setNewDate(e.target.value)}
-                      style={{ width: '100%', padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
-                    />
-                    <div className="flex gap-2">
+              {!isAdmin && (
+                <div className="mt-1">
+                  {showDatePickerFor === cls.id ? (
+                    <div className="flex flex-col gap-2 p-2 border rounded" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
                       <input 
-                        type="time" 
-                        value={newStartTime} 
-                        onChange={(e) => setNewStartTime(e.target.value)}
-                        style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
-                        placeholder="Start"
+                        type="date" 
+                        value={newDate} 
+                        onChange={(e) => setNewDate(e.target.value)}
+                        style={{ width: '100%', padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
                       />
-                      <input 
-                        type="time" 
-                        value={newEndTime} 
-                        onChange={(e) => setNewEndTime(e.target.value)}
-                        style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
-                        placeholder="End"
-                      />
+                      <div className="flex gap-2">
+                        <input 
+                          type="time" 
+                          value={newStartTime} 
+                          onChange={(e) => setNewStartTime(e.target.value)}
+                          style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                          placeholder="Start"
+                        />
+                        <input 
+                          type="time" 
+                          value={newEndTime} 
+                          onChange={(e) => setNewEndTime(e.target.value)}
+                          style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                          placeholder="End"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2 mt-1">
+                        <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); }} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Cancel</button>
+                        <button onClick={() => handleAddSession(cls.id)} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>
+                          {editingSessionIdx !== null ? 'Update' : 'Add'}
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex justify-end gap-2 mt-1">
-                      <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); }} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Cancel</button>
-                      <button onClick={() => handleAddSession(cls.id)} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>
-                        {editingSessionIdx !== null ? 'Update' : 'Add'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', color: '#6B7280' }}>
-                    + Add Session
-                  </button>
-                )}
-              </div>
+                  ) : (
+                    <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', color: '#6B7280' }}>
+                      + Add Session
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
               <div style={{ borderTop: '1px solid #E5E7EB', margin: '8px 0' }}></div>
 
               <div 
                 className="flex items-center justify-between" 
-                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
-                onClick={() => handleOpenModal('Lab', cls.id)}
+                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: isAdmin ? 'default' : 'pointer', backgroundColor: '#F9FAFB' }}
+                onClick={() => !isAdmin && handleOpenModal('Lab', cls.id)}
               >
                 <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
                   <MapPin size={16} color="#8B5CF6" />
@@ -281,14 +297,14 @@ export default function ClassManagement() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span style={{ color: cls.lab === 'Unassigned' ? '#9CA3AF' : '#1F2937', fontWeight: 500 }}>{cls.lab}</span>
-                  <Edit2 size={12} color="#9CA3AF" />
+                  {!isAdmin && <Edit2 size={12} color="#9CA3AF" />}
                 </div>
               </div>
 
               <div 
                 className="flex items-center justify-between" 
-                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
-                onClick={() => handleOpenModal('Trainer', cls.id)}
+                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: isAdmin ? 'default' : 'pointer', backgroundColor: '#F9FAFB' }}
+                onClick={() => !isAdmin && handleOpenModal('Trainer', cls.id)}
               >
                 <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
                   <Users size={16} color="#06B6D4" />
@@ -296,14 +312,14 @@ export default function ClassManagement() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span style={{ color: cls.trainer === 'Unassigned' ? '#9CA3AF' : '#1F2937', fontWeight: 500 }}>{cls.trainer}</span>
-                  <Edit2 size={12} color="#9CA3AF" />
+                  {!isAdmin && <Edit2 size={12} color="#9CA3AF" />}
                 </div>
               </div>
 
               <div 
                 className="flex items-center justify-between" 
-                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: '#F9FAFB' }}
-                onClick={() => handleOpenModal('Co-Trainer', cls.id)}
+                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: isAdmin ? 'default' : 'pointer', backgroundColor: '#F9FAFB' }}
+                onClick={() => !isAdmin && handleOpenModal('Co-Trainer', cls.id)}
               >
                 <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
                   <Users size={16} color="#6B7280" />
@@ -319,7 +335,7 @@ export default function ClassManagement() {
                       ))
                     )}
                   </div>
-                  <Edit2 size={12} color="#9CA3AF" style={{ marginTop: '4px' }} />
+                  {!isAdmin && <Edit2 size={12} color="#9CA3AF" style={{ marginTop: '4px' }} />}
                 </div>
               </div>
 

@@ -7,32 +7,38 @@ import ClassManagement from './components/ClassManagement';
 import UserReports from './components/UserReports';
 import ReviewsAndRatings from './components/ReviewsAndRatings';
 import Leaderboard from './components/Leaderboard';
+import Materials from './components/Materials';
 import Login from './components/Login';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState(null); // 'SuperAdmin' or 'Admin'
   const [activeTab, setActiveTab] = useState('dashboard');
 
   if (!isAuthenticated) {
-    return <Login onLogin={() => setIsAuthenticated(true)} />;
+    return <Login onLogin={(role) => {
+      setIsAuthenticated(true);
+      setUserRole(role);
+    }} />;
   }
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <DashboardOverview />;
-      case 'users': return <UserManagement />;
-      case 'labs': return <LabManagement />;
-      case 'classes': return <ClassManagement />;
-      case 'reviews': return <ReviewsAndRatings />;
-      case 'reports': return <UserReports />;
-      case 'leaderboard': return <Leaderboard />;
-      default: return <DashboardOverview />;
+      case 'dashboard': return <DashboardOverview userRole={userRole} />;
+      case 'users': return <UserManagement userRole={userRole} />;
+      case 'labs': return <LabManagement userRole={userRole} />;
+      case 'classes': return <ClassManagement userRole={userRole} />;
+      case 'material': return <Materials userRole={userRole} />;
+      case 'reviews': return <ReviewsAndRatings userRole={userRole} />;
+      case 'reports': return <UserReports userRole={userRole} />;
+      case 'leaderboard': return <Leaderboard userRole={userRole} />;
+      default: return <DashboardOverview userRole={userRole} />;
     }
   };
 
   return (
     <div className="app-container">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={() => setIsAuthenticated(false)} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={() => setIsAuthenticated(false)} userRole={userRole} />
       <main className="main-content">
         {renderContent()}
       </main>
