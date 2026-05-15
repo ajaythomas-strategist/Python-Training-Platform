@@ -120,32 +120,36 @@ export default function DashboardOverview({ userRole, userName }) {
       </div>
       
       {/* Stat Cards */}
-      <div className="dashboard-grid mb-12" style={{ gridTemplateColumns: isTrainer ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)', gap: '1.5rem' }}>
+      <div className="dashboard-grid mb-12" style={{ 
+        display: 'grid',
+        gridTemplateColumns: isTrainer ? 'repeat(6, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', 
+        gap: '1rem' 
+      }}>
         {isTrainer ? (
           <>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon blue"><BookOpen size={24} /></div>
-              <div className="stat-content"><h3>Total Batches</h3><p>{trainerKPIs.totalBatches}</p></div>
+            <div className="card stat-card" style={{ padding: '1rem' }}>
+              <div className="stat-icon blue" style={{ width: '36px', height: '36px' }}><BookOpen size={18} /></div>
+              <div className="stat-content"><h3 style={{ fontSize: '0.7rem' }}>Total Batches</h3><p style={{ fontSize: '1.25rem' }}>{trainerKPIs.totalBatches}</p></div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon green" style={{ backgroundColor: '#ECFDF5', color: '#10B981' }}><Shield size={24} /></div>
-              <div className="stat-content"><h3>Completed Batches</h3><p>{trainerKPIs.completedBatches}</p></div>
+            <div className="card stat-card" style={{ padding: '1rem' }}>
+              <div className="stat-icon green" style={{ width: '36px', height: '36px', backgroundColor: '#ECFDF5', color: '#10B981' }}><Shield size={18} /></div>
+              <div className="stat-content"><h3 style={{ fontSize: '0.7rem' }}>Completed</h3><p style={{ fontSize: '1.25rem' }}>{trainerKPIs.completedBatches}</p></div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon orange"><BookOpen size={24} /></div>
-              <div className="stat-content"><h3>Remaining Batches</h3><p>{trainerKPIs.remainingBatches}</p></div>
+            <div className="card stat-card" style={{ padding: '1rem' }}>
+              <div className="stat-icon orange" style={{ width: '36px', height: '36px' }}><BookOpen size={18} /></div>
+              <div className="stat-content"><h3 style={{ fontSize: '0.7rem' }}>Remaining</h3><p style={{ fontSize: '1.25rem' }}>{trainerKPIs.remainingBatches}</p></div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon purple"><Users size={24} /></div>
-              <div className="stat-content"><h3>Total Sessions</h3><p>{trainerKPIs.totalSessions}</p></div>
+            <div className="card stat-card" style={{ padding: '1rem' }}>
+              <div className="stat-icon purple" style={{ width: '36px', height: '36px' }}><Users size={18} /></div>
+              <div className="stat-content"><h3 style={{ fontSize: '0.7rem' }}>Total Sessions</h3><p style={{ fontSize: '1.25rem' }}>{trainerKPIs.totalSessions}</p></div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon cyan"><Percent size={24} /></div>
-              <div className="stat-content"><h3>Sessions Completed</h3><p>{trainerKPIs.completedSessions}</p></div>
+            <div className="card stat-card" style={{ padding: '1rem' }}>
+              <div className="stat-icon cyan" style={{ width: '36px', height: '36px' }}><Percent size={18} /></div>
+              <div className="stat-content"><h3 style={{ fontSize: '0.7rem' }}>Completed</h3><p style={{ fontSize: '1.25rem' }}>{trainerKPIs.completedSessions}</p></div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon blue" style={{ backgroundColor: '#EEF2FF', color: '#4F46E5' }}><BookOpen size={24} /></div>
-              <div className="stat-content"><h3>Remaining Sessions</h3><p>{trainerKPIs.remainingSessions}</p></div>
+            <div className="card stat-card" style={{ padding: '1rem' }}>
+              <div className="stat-icon blue" style={{ width: '36px', height: '36px', backgroundColor: '#EEF2FF', color: '#4F46E5' }}><BookOpen size={18} /></div>
+              <div className="stat-content"><h3 style={{ fontSize: '0.7rem' }}>Remaining</h3><p style={{ fontSize: '1.25rem' }}>{trainerKPIs.remainingSessions}</p></div>
             </div>
           </>
         ) : (
