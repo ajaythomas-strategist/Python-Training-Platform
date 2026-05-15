@@ -67,16 +67,8 @@ export default function DashboardOverview() {
   return (
     <div className="animate-fade-in p-6">
       <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-          <p className="text-sm text-gray-500">Live tracking for <strong>{today}</strong></p>
-        </div>
-        <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-           <div className="flex items-center gap-2">
-            <Percent size={18} className="text-green-500" />
-            <span className="text-sm font-bold text-gray-700">System Attendance: {avgAttendance}%</span>
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+        <p className="text-sm text-gray-500">Live tracking for <strong>{today}</strong></p>
       </div>
       
       {/* Stat Cards */}
