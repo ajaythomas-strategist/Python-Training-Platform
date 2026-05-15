@@ -1,12 +1,15 @@
 import React from 'react';
 import { Trophy, Star, Medal, Monitor, User, Users } from 'lucide-react';
-import { users } from '../data/mockData';
+import { users, classes } from '../data/mockData';
 
-export default function Leaderboard() {
+export default function Leaderboard({ userRole, userName }) {
   const trainers = users.filter(u => u.role === 'Trainer');
   const coTrainers = users.filter(u => u.role === 'Co-Trainer');
   const students = users.filter(u => u.role === 'Student');
   
+  const isTrainer = userRole === 'Trainer';
+  const trainerBatches = isTrainer ? classes.filter(c => c.trainer === userName).map(c => c.id) : [];
+
   const parseScore = (scoreStr) => parseInt(scoreStr?.replace('%', '') || '0');
 
   // 1. Top 3 Students Overall
@@ -21,12 +24,14 @@ export default function Leaderboard() {
     return acc;
   }, {});
 
-  const topStudentsPerBatch = Object.keys(batchGroups).map(batchId => {
-    const sorted = [...batchGroups[batchId]]
-      .sort((a, b) => parseScore(b.score) - parseScore(a.score))
-      .slice(0, 3);
-    return { batch: batchId, toppers: sorted };
-  });
+  const topStudentsPerBatch = Object.keys(batchGroups)
+    .filter(batchId => isTrainer ? trainerBatches.includes(batchId) : true)
+    .map(batchId => {
+      const sorted = [...batchGroups[batchId]]
+        .sort((a, b) => parseScore(b.score) - parseScore(a.score))
+        .slice(0, 3);
+      return { batch: batchId, toppers: sorted };
+    });
 
   // 3. Top 3 Trainers & Co-Trainers
   const topTrainers = [...trainers].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 3);
