@@ -86,22 +86,22 @@ export default function DashboardOverview() {
       </div>
       
       {/* Stat Cards */}
-      <div className="dashboard-grid mb-12">
+      <div className="dashboard-grid mb-12" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         <div className="card stat-card">
           <div className="stat-icon blue"><Users size={24} /></div>
           <div className="stat-content"><h3>Total Trainers</h3><p>{trainers.length}</p></div>
         </div>
         <div className="card stat-card">
           <div className="stat-icon purple"><UserCheck size={24} /></div>
-          <div className="stat-content"><h3>Co-Trainers</h3><p>{coTrainers.length}</p></div>
+          <div className="stat-content"><h3>Co Trainers</h3><p>{coTrainers.length}</p></div>
         </div>
         <div className="card stat-card">
           <div className="stat-icon cyan"><BookOpen size={24} /></div>
-          <div className="stat-content"><h3>Active Classes</h3><p>{classes.filter(c => c.status === 'Active').length}</p></div>
+          <div className="stat-content"><h3>No. of Batches</h3><p>{classes.length}</p></div>
         </div>
         <div className="card stat-card">
-          <div className="stat-icon green"><Percent size={24} /></div>
-          <div className="stat-content"><h3>Attendance</h3><p>{avgAttendance}%</p></div>
+          <div className="stat-icon orange"><Users size={24} /></div>
+          <div className="stat-content"><h3>Total Students</h3><p>{students.length}</p></div>
         </div>
       </div>
 
