@@ -150,7 +150,10 @@ export const classes = [
     trainer: "Dr. Sarah Lee", 
     coTrainers: ["James Carter"],
     lab: "Advanced Computing Lab",
-    sessions: [{ date: "2026-05-15", startTime: "13:00", endTime: "15:00" }],
+    sessions: [
+      { date: "2026-05-15", startTime: "13:00", endTime: "15:00", transferredFrom: "Prof. Alan Turing" },
+      { date: "2026-05-16", startTime: "10:00", endTime: "12:00" }
+    ],
     status: "Active"
   },
   { 
@@ -172,25 +175,28 @@ export const classes = [
   { 
     id: "1 BSC CS", 
     trainer: "Michael Chang", 
-    coTrainers: [],
+    coTrainers: ["Emily White"],
     lab: "Room 101",
-    sessions: [{ date: "2026-05-14", startTime: "14:00", endTime: "16:00" }],
+    sessions: [
+      { date: "2026-05-14", startTime: "14:00", endTime: "16:00" },
+      { date: "2026-05-16", startTime: "13:00", endTime: "15:00" }
+    ],
     status: "Active"
   },
   { 
     id: "1 BBA", 
-    trainer: "Unassigned", 
-    coTrainers: [],
-    lab: "Unassigned",
-    sessions: [],
+    trainer: "Dr. Sarah Lee", 
+    coTrainers: ["Jane Smith"],
+    lab: "Advanced Computing Lab",
+    sessions: [{ date: "2026-05-16", startTime: "08:00", endTime: "10:00" }],
     status: "Upcoming"
   },
   { 
     id: "1 BCOM", 
-    trainer: "Unassigned", 
+    trainer: "Michael Chang", 
     coTrainers: [],
-    lab: "Unassigned",
-    sessions: [],
+    lab: "Room 101",
+    sessions: [{ date: "2026-05-16", startTime: "15:30", endTime: "17:30" }],
     status: "Upcoming"
   }
 ];

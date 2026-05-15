@@ -39,44 +39,50 @@ export default function DashboardOverview() {
   const totalAttendance = students.reduce((acc, s) => acc + (s.attendance || 0), 0);
   const avgAttendance = students.length > 0 ? (totalAttendance / students.length).toFixed(1) : 0;
 
-  const today = new Date().toISOString().split('T')[0];
-  
-  const todayBatches = classes.filter(cls => 
-    cls.sessions && cls.sessions.some(s => s.date === today)
-  ).map(cls => {
-    const batchStudents = students.filter(s => s.batch === cls.id);
-    const session = cls.sessions.find(s => s.date === today);
-    
-    const attendanceRecords = batchStudents.map(s => {
-      const todaySession = s.detailedReport?.sessions?.find(rs => rs.date === today);
-      return { ...s, sessionStatus: todaySession?.attendance || 'Unknown' };
+  const today = "2026-05-15";
+  const tomorrow = "2026-05-16";
+
+  const mapSessionToBatch = (sessionDate) => {
+    return classes.flatMap(cls => {
+      const session = cls.sessions.find(s => s.date === sessionDate);
+      if (!session) return [];
+
+      const batchStudents = students.filter(s => s.batch === cls.id);
+      const attendanceRecords = batchStudents.map(s => {
+        const dSession = s.detailedReport?.sessions?.find(rs => rs.date === sessionDate);
+        return { ...s, sessionStatus: dSession?.attendance || 'Unknown' };
+      });
+
+      const presentCount = attendanceRecords.filter(r => r.sessionStatus === 'Present').length;
+      const absentStudents = attendanceRecords.filter(r => r.sessionStatus === 'Absent');
+      const attendancePct = batchStudents.length > 0 ? ((presentCount / batchStudents.length) * 100).toFixed(0) : 0;
+      
+      const trainer = users.find(u => u.name === cls.trainer);
+      const coTrainerList = users.filter(u => cls.coTrainers?.includes(u.name));
+      const sessionNo = cls.sessions.indexOf(session) + 1;
+
+      return {
+        ...cls,
+        sessionNo,
+        trainerData: trainer ? { name: trainer.name, rating: trainer.rating } : { name: cls.trainer, rating: 'N/A' },
+        coTrainersData: coTrainerList.length > 0 ? coTrainerList.map(ct => ({ name: ct.name, rating: ct.rating })) : [{ name: 'None', rating: 'N/A' }],
+        studentCount: batchStudents.length,
+        attendancePct,
+        absentCount: absentStudents.length,
+        absentStudents,
+        sessionTime: `${session.startTime} - ${session.endTime}`,
+        transferredFrom: session.transferredFrom,
+        comments: {
+          trainer: trainer?.feedback || [],
+          coTrainer: coTrainerList.flatMap(ct => ct.feedback || [])
+        },
+        activity: trainer?.sessionReports?.filter(r => r.batch === cls.id) || []
+      };
     });
+  };
 
-    const presentCount = attendanceRecords.filter(r => r.sessionStatus === 'Present').length;
-    const absentStudents = attendanceRecords.filter(r => r.sessionStatus === 'Absent');
-    const attendancePct = batchStudents.length > 0 ? ((presentCount / batchStudents.length) * 100).toFixed(0) : 0;
-
-    const trainer = users.find(u => u.name === cls.trainer);
-    const coTrainerList = users.filter(u => cls.coTrainers?.includes(u.name));
-    const sessionNo = cls.sessions.indexOf(session) + 1;
-
-    return {
-      ...cls,
-      sessionNo,
-      trainerData: trainer ? { name: trainer.name, rating: trainer.rating } : { name: cls.trainer, rating: 'N/A' },
-      coTrainersData: coTrainerList.length > 0 ? coTrainerList.map(ct => ({ name: ct.name, rating: ct.rating })) : [{ name: 'None', rating: 'N/A' }],
-      studentCount: batchStudents.length,
-      attendancePct,
-      absentCount: absentStudents.length,
-      absentStudents,
-      sessionTime: `${session.startTime} - ${session.endTime}`,
-      comments: {
-        trainer: trainer?.feedback || [],
-        coTrainer: coTrainerList.flatMap(ct => ct.feedback || [])
-      },
-      activity: trainer?.sessionReports?.filter(r => r.batch === cls.id) || []
-    };
-  });
+  const todayBatches = mapSessionToBatch(today);
+  const tomorrowBatches = mapSessionToBatch(tomorrow);
 
   return (
     <div className="animate-fade-in p-6">
@@ -106,7 +112,7 @@ export default function DashboardOverview() {
       </div>
 
       {/* Today's Attendance Table */}
-      <div className="card mb-12 flex-col" style={{ gap: '1.5rem' }}>
+      <div className="card mb-24 flex-col" style={{ gap: '1.5rem' }}>
         <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
           <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600"><BookOpen size={20} /></div>
           Today's Batch
@@ -153,7 +159,11 @@ export default function DashboardOverview() {
                   </td>
                   <td className="py-4">
                     <div className="flex flex-col">
-                      <span className="font-medium text-gray-800">{batch.trainerData.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-medium ${batch.transferredFrom ? 'text-green-600' : 'text-gray-800'}`}>
+                          {batch.trainerData.name}
+                        </span>
+                      </div>
                       <span className="text-xs text-amber-500 flex items-center gap-1"><Star size={10} fill="currentColor" /> {batch.trainerData.rating}</span>
                     </div>
                   </td>
@@ -179,6 +189,57 @@ export default function DashboardOverview() {
                   </td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style={{ height: '40px' }}></div>
+
+      {/* Upcoming Session Table */}
+      <div className="card mb-12 flex-col" style={{ gap: '1.5rem' }}>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <div className="p-2 bg-amber-50 rounded-lg text-amber-600"><ClipboardList size={20} /></div>
+            Upcoming Session
+          </h2>
+          <p className="text-xs text-gray-500 font-medium bg-gray-50 px-3 py-1 rounded-full border border-gray-100">Scheduled for {tomorrow}</p>
+        </div>
+        <div className="table-container">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch Name</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Students</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer Name</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tomorrowBatches.length > 0 ? tomorrowBatches.map(batch => (
+                <tr key={batch.id} className="border-t border-gray-50 text-sm">
+                  <td className="py-4 font-bold text-gray-800">{batch.id}</td>
+                  <td className="py-4 text-center font-bold text-gray-600">{batch.sessionNo}</td>
+                  <td className="py-4 text-gray-500">{batch.sessionTime}</td>
+                  <td className="py-4 text-gray-600 font-medium">{batch.lab}</td>
+                  <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
+                  <td className="py-4 text-gray-800 font-medium">{batch.trainerData.name}</td>
+                  <td className="py-4">
+                    <div className="flex flex-col gap-1">
+                      {batch.coTrainersData.map((ct, idx) => (
+                        <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan="7" className="py-12 text-center text-gray-400 italic font-medium">No sessions scheduled for tomorrow.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
