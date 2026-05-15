@@ -11,9 +11,11 @@ export default function Login({ onLogin }) {
     e.preventDefault();
     // Credentials Check
     if (username === '8129214289' && password === 'AjayThomas@1') {
-      onLogin('SuperAdmin');
+      onLogin('SuperAdmin', 'Super Admin');
     } else if (username === '101' && password === '101') {
-      onLogin('Admin');
+      onLogin('Admin', 'Standard Admin');
+    } else if (username === '201' && password === '201') {
+      onLogin('Trainer', 'Dr. Sarah Lee');
     } else {
       setError('Invalid username or password');
     }

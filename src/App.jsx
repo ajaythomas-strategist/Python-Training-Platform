@@ -8,37 +8,51 @@ import UserReports from './components/UserReports';
 import ReviewsAndRatings from './components/ReviewsAndRatings';
 import Leaderboard from './components/Leaderboard';
 import Materials from './components/Materials';
+import AttendanceTab from './components/AttendanceTab';
 import Login from './components/Login';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState(null); // 'SuperAdmin' or 'Admin'
+  const [userRole, setUserRole] = useState(null); // 'SuperAdmin', 'Admin', or 'Trainer'
+  const [userName, setUserName] = useState('');
   const [activeTab, setActiveTab] = useState('dashboard');
 
   if (!isAuthenticated) {
-    return <Login onLogin={(role) => {
+    return <Login onLogin={(role, name) => {
       setIsAuthenticated(true);
       setUserRole(role);
+      setUserName(name || '');
     }} />;
   }
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <DashboardOverview userRole={userRole} />;
-      case 'users': return <UserManagement userRole={userRole} />;
-      case 'labs': return <LabManagement userRole={userRole} />;
-      case 'classes': return <ClassManagement userRole={userRole} />;
-      case 'material': return <Materials userRole={userRole} />;
-      case 'reviews': return <ReviewsAndRatings userRole={userRole} />;
-      case 'reports': return <UserReports userRole={userRole} />;
-      case 'leaderboard': return <Leaderboard userRole={userRole} />;
-      default: return <DashboardOverview userRole={userRole} />;
+      case 'dashboard': return <DashboardOverview userRole={userRole} userName={userName} />;
+      case 'users': return <UserManagement userRole={userRole} userName={userName} />;
+      case 'labs': return <LabManagement userRole={userRole} userName={userName} />;
+      case 'classes': return <ClassManagement userRole={userRole} userName={userName} />;
+      case 'material': return <Materials userRole={userRole} userName={userName} />;
+      case 'reviews': return <ReviewsAndRatings userRole={userRole} userName={userName} />;
+      case 'reports': return <UserReports userRole={userRole} userName={userName} />;
+      case 'leaderboard': return <Leaderboard userRole={userRole} userName={userName} />;
+      case 'attendance': return <AttendanceTab userRole={userRole} userName={userName} />;
+      default: return <DashboardOverview userRole={userRole} userName={userName} />;
     }
   };
 
   return (
     <div className="app-container">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={() => setIsAuthenticated(false)} userRole={userRole} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onLogout={() => {
+          setIsAuthenticated(false);
+          setUserRole(null);
+          setUserName('');
+        }} 
+        userRole={userRole} 
+        userName={userName}
+      />
       <main className="main-content">
         {renderContent()}
       </main>

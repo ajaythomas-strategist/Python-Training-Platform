@@ -1,5 +1,5 @@
 import React from 'react';
-import { Monitor, Shield, Users, Settings, Info } from 'lucide-react';
+import { Monitor, Shield, Users, Settings, Info, Plus, Pencil } from 'lucide-react';
 
 const sessions = [
   { id: 1, code: 'SESSION-1', title: 'Python Fundamentals', category: 'Python Training • Core Module', admin: 'Unassigned', trainer: 'Unassigned', resources: 'Pending', status: 'Upcoming' },
@@ -37,6 +37,15 @@ export default function Materials({ userRole }) {
               <p className="text-xs text-gray-500 font-medium mt-1">{session.category}</p>
             </div>
 
+            {/* Topics List Placeholder */}
+            {!isAdmin && (
+              <div className="space-y-3">
+                <button className="w-full py-2.5 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 text-xs font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                  <Plus size={14} /> Add Topic
+                </button>
+              </div>
+            )}
+
             {/* Metadata Rows */}
             <div className="space-y-3 mt-2">
               <div className="flex justify-between items-center">
@@ -44,7 +53,10 @@ export default function Materials({ userRole }) {
                   <Shield size={14} />
                   <span className="text-xs font-semibold">Material Admin</span>
                 </div>
-                <span className="text-xs font-bold text-gray-800">{session.admin}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-800">{session.admin}</span>
+                  {!isAdmin && <Pencil size={12} className="text-gray-300 cursor-pointer hover:text-indigo-600" />}
+                </div>
               </div>
 
               <div className="flex justify-between items-center">
@@ -52,7 +64,10 @@ export default function Materials({ userRole }) {
                   <Users size={14} />
                   <span className="text-xs font-semibold">Lead Trainer</span>
                 </div>
-                <span className="text-xs font-bold text-gray-800">{session.trainer}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-800">{session.trainer}</span>
+                  {!isAdmin && <Pencil size={12} className="text-gray-300 cursor-pointer hover:text-indigo-600" />}
+                </div>
               </div>
 
               <div className="flex justify-between items-center">
@@ -60,7 +75,10 @@ export default function Materials({ userRole }) {
                   <Settings size={14} />
                   <span className="text-xs font-semibold">Resources</span>
                 </div>
-                <span className="text-xs font-bold text-gray-800">{session.resources}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-800">{session.resources}</span>
+                  {!isAdmin && <Pencil size={12} className="text-gray-300 cursor-pointer hover:text-indigo-600" />}
+                </div>
               </div>
 
               <div className="flex items-start gap-2 text-gray-400 bg-gray-50 p-2 rounded-lg border border-gray-100 mt-2">

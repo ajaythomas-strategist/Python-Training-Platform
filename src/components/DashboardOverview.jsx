@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageSquare, ClipboardList, Shield, ClipboardCheck } from 'lucide-react';
 import { users, classes } from '../data/mockData';
 
-export default function DashboardOverview() {
+export default function DashboardOverview({ userRole, userName }) {
   const [selectedBatchForAbsents, setSelectedBatchForAbsents] = useState(null);
   const [selectedBatchForComments, setSelectedBatchForComments] = useState(null);
   const [selectedBatchForActivity, setSelectedBatchForActivity] = useState(null);
@@ -12,10 +12,24 @@ export default function DashboardOverview() {
   const [upcomingRange, setUpcomingRange] = useState({ from: "", to: "" });
   const [completedRange, setCompletedRange] = useState({ from: "", to: "" });
 
+  const isTrainer = userRole === 'Trainer';
+  
+  // Filter data for Trainer
+  const myClasses = isTrainer ? classes.filter(c => c.trainer === userName) : classes;
   const trainers = users.filter(u => u.role === 'Trainer');
   const coTrainers = users.filter(u => u.role === 'Co-Trainer');
   const students = users.filter(u => u.role === 'Student');
   
+  // Trainer Specific KPIs
+  const trainerKPIs = isTrainer ? {
+    totalBatches: myClasses.length,
+    completedBatches: myClasses.filter(c => c.status === 'Completed').length,
+    remainingBatches: myClasses.filter(c => c.status !== 'Completed').length,
+    totalSessions: myClasses.reduce((acc, c) => acc + (c.sessions?.length || 0), 0),
+    completedSessions: myClasses.reduce((acc, c) => acc + (c.sessions?.filter(s => s.date < "2026-05-15").length || 0), 0),
+    remainingSessions: myClasses.reduce((acc, c) => acc + (c.sessions?.filter(s => s.date >= "2026-05-15").length || 0), 0),
+  } : null;
+
   const totalAttendance = students.reduce((acc, s) => acc + (s.attendance || 0), 0);
   const avgAttendance = students.length > 0 ? (totalAttendance / students.length).toFixed(1) : 0;
 
@@ -55,7 +69,8 @@ export default function DashboardOverview() {
   };
 
   const mapSessionToBatch = (sessionDate) => {
-    return classes.flatMap(cls => {
+    const relevantClasses = isTrainer ? classes.filter(c => c.trainer === userName) : classes;
+    return relevantClasses.flatMap(cls => {
       const session = cls.sessions.find(s => s.date === sessionDate);
       if (!session) return [];
 
@@ -105,23 +120,54 @@ export default function DashboardOverview() {
       </div>
       
       {/* Stat Cards */}
-      <div className="dashboard-grid mb-12" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-        <div className="card stat-card">
-          <div className="stat-icon blue"><Users size={24} /></div>
-          <div className="stat-content"><h3>Total Trainers</h3><p>{trainers.length}</p></div>
-        </div>
-        <div className="card stat-card">
-          <div className="stat-icon purple"><UserCheck size={24} /></div>
-          <div className="stat-content"><h3>Co Trainers</h3><p>{coTrainers.length}</p></div>
-        </div>
-        <div className="card stat-card">
-          <div className="stat-icon cyan"><BookOpen size={24} /></div>
-          <div className="stat-content"><h3>No. of Batches</h3><p>{classes.length}</p></div>
-        </div>
-        <div className="card stat-card">
-          <div className="stat-icon orange"><Users size={24} /></div>
-          <div className="stat-content"><h3>Total Students</h3><p>{students.length}</p></div>
-        </div>
+      <div className="dashboard-grid mb-12" style={{ gridTemplateColumns: isTrainer ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)', gap: '1.5rem' }}>
+        {isTrainer ? (
+          <>
+            <div className="card stat-card" style={{ padding: '1.5rem' }}>
+              <div className="stat-icon blue"><BookOpen size={24} /></div>
+              <div className="stat-content"><h3>Total Batches</h3><p>{trainerKPIs.totalBatches}</p></div>
+            </div>
+            <div className="card stat-card" style={{ padding: '1.5rem' }}>
+              <div className="stat-icon green" style={{ backgroundColor: '#ECFDF5', color: '#10B981' }}><Shield size={24} /></div>
+              <div className="stat-content"><h3>Completed Batches</h3><p>{trainerKPIs.completedBatches}</p></div>
+            </div>
+            <div className="card stat-card" style={{ padding: '1.5rem' }}>
+              <div className="stat-icon orange"><BookOpen size={24} /></div>
+              <div className="stat-content"><h3>Remaining Batches</h3><p>{trainerKPIs.remainingBatches}</p></div>
+            </div>
+            <div className="card stat-card" style={{ padding: '1.5rem' }}>
+              <div className="stat-icon purple"><Users size={24} /></div>
+              <div className="stat-content"><h3>Total Sessions</h3><p>{trainerKPIs.totalSessions}</p></div>
+            </div>
+            <div className="card stat-card" style={{ padding: '1.5rem' }}>
+              <div className="stat-icon cyan"><Percent size={24} /></div>
+              <div className="stat-content"><h3>Sessions Completed</h3><p>{trainerKPIs.completedSessions}</p></div>
+            </div>
+            <div className="card stat-card" style={{ padding: '1.5rem' }}>
+              <div className="stat-icon blue" style={{ backgroundColor: '#EEF2FF', color: '#4F46E5' }}><BookOpen size={24} /></div>
+              <div className="stat-content"><h3>Remaining Sessions</h3><p>{trainerKPIs.remainingSessions}</p></div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="card stat-card">
+              <div className="stat-icon blue"><Users size={24} /></div>
+              <div className="stat-content"><h3>Total Trainers</h3><p>{trainers.length}</p></div>
+            </div>
+            <div className="card stat-card">
+              <div className="stat-icon purple"><UserCheck size={24} /></div>
+              <div className="stat-content"><h3>Co Trainers</h3><p>{coTrainers.length}</p></div>
+            </div>
+            <div className="card stat-card">
+              <div className="stat-icon cyan"><BookOpen size={24} /></div>
+              <div className="stat-content"><h3>No. of Batches</h3><p>{classes.length}</p></div>
+            </div>
+            <div className="card stat-card">
+              <div className="stat-icon orange"><Users size={24} /></div>
+              <div className="stat-content"><h3>Total Students</h3><p>{students.length}</p></div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Today's Attendance Table */}
@@ -139,11 +185,10 @@ export default function DashboardOverview() {
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Students</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer & Rating</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers & Rating</th>
-                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Actions</th>
+                {!isTrainer && <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -154,6 +199,13 @@ export default function DashboardOverview() {
                   <td className="py-4 text-gray-500">{batch.sessionTime}</td>
                   <td className="py-4 text-gray-600 font-medium">{batch.lab}</td>
                   <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
+                  <td className="py-4">
+                    <div className="flex flex-col gap-1">
+                      {batch.coTrainersData.map((ct, idx) => (
+                        <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
+                      ))}
+                    </div>
+                  </td>
                   <td className="py-4">
                     <div className="flex items-center justify-center gap-3">
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden" style={{ width: '60px' }}>
@@ -170,43 +222,25 @@ export default function DashboardOverview() {
                       </button>
                     </div>
                   </td>
-                  <td className="py-4">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className={`font-medium ${batch.transferredFrom ? 'text-green-600' : 'text-gray-800'}`}>
-                          {batch.trainerData.name}
-                        </span>
+                  {!isTrainer && (
+                    <td className="py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <button className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Comments" onClick={() => setSelectedBatchForComments(batch)}>
+                          <MessageSquare size={16} />
+                        </button>
+                        <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Activity Reports" onClick={() => setSelectedBatchForActivity(batch)}>
+                          <ClipboardList size={16} />
+                        </button>
+                        <button className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors" title="Evaluate Session" onClick={() => {
+                          setSelectedBatchForEvaluation(batch);
+                          setEvaluationRating(0);
+                          setEvaluationFeedback('');
+                        }}>
+                          <ClipboardCheck size={16} />
+                        </button>
                       </div>
-                      <span className="text-xs text-amber-500 flex items-center gap-1"><Star size={10} fill="currentColor" /> {batch.trainerData.rating}</span>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <div className="flex flex-col gap-1">
-                      {batch.coTrainersData.map((ct, idx) => (
-                        <div key={idx} className="flex flex-col">
-                          <span className="text-gray-700">{ct.name}</span>
-                          {ct.rating !== 'N/A' && <span className="text-[10px] text-amber-500 flex items-center gap-1"><Star size={8} fill="currentColor" /> {ct.rating}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <button className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Comments" onClick={() => setSelectedBatchForComments(batch)}>
-                        <MessageSquare size={16} />
-                      </button>
-                      <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Activity Reports" onClick={() => setSelectedBatchForActivity(batch)}>
-                        <ClipboardList size={16} />
-                      </button>
-                      <button className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors" title="Evaluate Session" onClick={() => {
-                        setSelectedBatchForEvaluation(batch);
-                        setEvaluationRating(0);
-                        setEvaluationFeedback('');
-                      }}>
-                        <ClipboardCheck size={16} />
-                      </button>
-                    </div>
-                  </td>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -264,7 +298,7 @@ export default function DashboardOverview() {
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Students</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer Name</th>
+                {!isTrainer && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer Name</th>}
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>
               </tr>
             </thead>
@@ -276,7 +310,7 @@ export default function DashboardOverview() {
                   <td className="py-4 text-gray-500">{batch.sessionTime}</td>
                   <td className="py-4 text-gray-600 font-medium">{batch.lab}</td>
                   <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
-                  <td className="py-4 text-gray-800 font-medium">{batch.trainerData.name}</td>
+                  {!isTrainer && <td className="py-4 text-gray-800 font-medium">{batch.trainerData.name}</td>}
                   <td className="py-4">
                     <div className="flex flex-col gap-1">
                       {batch.coTrainersData.map((ct, idx) => (
@@ -287,7 +321,7 @@ export default function DashboardOverview() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-gray-400 italic font-medium">No sessions scheduled for tomorrow.</td>
+                  <td colSpan={isTrainer ? "6" : "7"} className="py-12 text-center text-gray-400 italic font-medium">No sessions scheduled for tomorrow.</td>
                 </tr>
               )}
             </tbody>
@@ -345,11 +379,10 @@ export default function DashboardOverview() {
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Students</th>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer & Rating</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers & Rating</th>
-                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Actions</th>
+                {!isTrainer && <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -366,6 +399,13 @@ export default function DashboardOverview() {
                   <td className="py-4 text-gray-600 font-medium">{batch.lab}</td>
                   <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
                   <td className="py-4">
+                    <div className="flex flex-col gap-1">
+                      {batch.coTrainersData.map((ct, idx) => (
+                        <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="py-4">
                     <div className="flex items-center justify-center gap-3">
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden" style={{ width: '60px' }}>
                         <div className={`h-full ${Number(batch.attendancePct) > 80 ? 'bg-green-500' : 'bg-orange-500'}`} style={{ width: `${batch.attendancePct}%` }} />
@@ -381,36 +421,22 @@ export default function DashboardOverview() {
                       </button>
                     </div>
                   </td>
-                  <td className="py-4">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-gray-800">{batch.trainerData.name}</span>
-                      <span className="text-xs text-amber-500 flex items-center gap-1"><Star size={10} fill="currentColor" /> {batch.trainerData.rating}</span>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <div className="flex flex-col gap-1">
-                      {batch.coTrainersData.map((ct, idx) => (
-                        <div key={idx} className="flex flex-col">
-                          <span className="text-gray-700">{ct.name}</span>
-                          {ct.rating !== 'N/A' && <span className="text-[10px] text-amber-500 flex items-center gap-1"><Star size={8} fill="currentColor" /> {ct.rating}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <button className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Comments" onClick={() => setSelectedBatchForComments(batch)}>
-                        <MessageSquare size={16} />
-                      </button>
-                      <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Activity Reports" onClick={() => setSelectedBatchForActivity(batch)}>
-                        <ClipboardList size={16} />
-                      </button>
-                    </div>
-                  </td>
+                  {!isTrainer && (
+                    <td className="py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <button className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Comments" onClick={() => setSelectedBatchForComments(batch)}>
+                          <MessageSquare size={16} />
+                        </button>
+                        <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Activity Reports" onClick={() => setSelectedBatchForActivity(batch)}>
+                          <ClipboardList size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="10" className="py-12 text-center text-gray-400 italic font-medium">No completed sessions found for the selected filter.</td>
+                  <td colSpan={isTrainer ? "8" : "10"} className="py-12 text-center text-gray-400 italic font-medium">No completed sessions found for the selected filter.</td>
                 </tr>
               )}
             </tbody>

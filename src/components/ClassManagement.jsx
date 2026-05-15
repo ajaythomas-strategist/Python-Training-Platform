@@ -4,10 +4,10 @@ import { classes as initialClasses } from '../data/mockData';
 import StaffSelectionModal from './StaffSelectionModal';
 import LabSelectionModal from './LabSelectionModal';
 
-export default function ClassManagement({ userRole }) {
+export default function ClassManagement({ userRole, userName }) {
   const [classes, setClasses] = useState(initialClasses);
   const [filters, setFilters] = useState({ Active: true, Upcoming: true, Completed: true });
-  const isAdmin = userRole === 'Admin';
+  const isAdmin = userRole === 'Admin' || userRole === 'Trainer';
 
   const getComputedStatus = (cls) => {
     // Completed is manual
@@ -131,7 +131,11 @@ export default function ClassManagement({ userRole }) {
     }
   };
 
-  const filteredClasses = classes.filter(cls => filters[cls.status]);
+  const filteredClasses = classes.filter(cls => {
+    const matchStatus = filters[cls.status];
+    const matchTrainer = userRole === 'Trainer' ? cls.trainer === userName : true;
+    return matchStatus && matchTrainer;
+  });
 
   return (
     <div className="p-6 animate-fade-in">
