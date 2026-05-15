@@ -116,11 +116,11 @@ export default function DashboardOverview() {
             <thead>
               <tr>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch Name</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Students</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Students</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
+                <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer & Rating</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers & Rating</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Actions</th>
@@ -130,22 +130,22 @@ export default function DashboardOverview() {
               {todayBatches.map(batch => (
                 <tr key={batch.id} className="border-t border-gray-50 text-sm">
                   <td className="py-4 font-bold text-gray-800">{batch.id}</td>
-                  <td className="py-4 text-center">{batch.sessionNo}</td>
+                  <td className="py-4 text-center font-bold text-gray-600">{batch.sessionNo}</td>
                   <td className="py-4 text-gray-500">{batch.sessionTime}</td>
-                  <td className="py-4">{batch.studentCount}</td>
+                  <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
                   <td className="py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden" style={{ minWidth: '60px' }}>
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden" style={{ width: '60px' }}>
                         <div className={`h-full ${Number(batch.attendancePct) > 80 ? 'bg-green-500' : 'bg-orange-500'}`} style={{ width: `${batch.attendancePct}%` }} />
                       </div>
-                      <span className="font-bold text-gray-700">{batch.attendancePct}%</span>
+                      <span className="font-bold text-gray-700 text-xs w-8">{batch.attendancePct}%</span>
                     </div>
                   </td>
                   <td className="py-4 text-center">
-                    <div className="flex items-center justify-center gap-10">
-                      <span className="text-red-500 font-bold text-lg">{batch.absentCount}</span>
-                      <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 ml-2" onClick={() => setSelectedBatchForAbsents(batch)}>
-                        <Eye size={18} />
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-red-500 font-bold">{batch.absentCount}</span>
+                      <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 border border-gray-100 shadow-sm" onClick={() => setSelectedBatchForAbsents(batch)}>
+                        <Eye size={14} />
                       </button>
                     </div>
                   </td>
