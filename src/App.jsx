@@ -5,7 +5,7 @@ import UserManagement from './components/UserManagement';
 import LabManagement from './components/LabManagement';
 import ClassManagement from './components/ClassManagement';
 import UserReports from './components/UserReports';
-import ReviewSystem from './components/ReviewSystem';
+import ReviewsAndRatings from './components/ReviewsAndRatings';
 import Leaderboard from './components/Leaderboard';
 import Login from './components/Login';
 
@@ -23,7 +23,7 @@ function App() {
       case 'users': return <UserManagement />;
       case 'labs': return <LabManagement />;
       case 'classes': return <ClassManagement />;
-      case 'reviews': return <ReviewSystem />;
+      case 'reviews': return <ReviewsAndRatings />;
       case 'reports': return <UserReports />;
       case 'leaderboard': return <Leaderboard />;
       default: return <DashboardOverview />;
