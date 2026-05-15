@@ -16,6 +16,10 @@ export default function Login({ onLogin }) {
       onLogin('Admin', 'Standard Admin');
     } else if (username === '201' && password === '201') {
       onLogin('Trainer', 'Dr. Sarah Lee');
+    } else if (username === '301' && password === '301') {
+      onLogin('Co-Trainer', 'James Carter');
+    } else if (username === '401' && password === '401') {
+      onLogin('Student', 'Emily Davis');
     } else {
       setError('Invalid username or password');
     }

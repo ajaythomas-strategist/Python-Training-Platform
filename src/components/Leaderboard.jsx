@@ -7,8 +7,8 @@ export default function Leaderboard({ userRole, userName }) {
   const coTrainers = users.filter(u => u.role === 'Co-Trainer');
   const students = users.filter(u => u.role === 'Student');
   
-  const isTrainer = userRole === 'Trainer';
-  const trainerBatches = isTrainer ? classes.filter(c => c.trainer === userName).map(c => c.id) : [];
+  const isTrainer = userRole === 'Trainer' || userRole === 'Co-Trainer';
+  const trainerBatches = isTrainer ? classes.filter(c => c.trainer === userName || c.coTrainers?.includes(userName)).map(c => c.id) : [];
 
   const parseScore = (scoreStr) => parseInt(scoreStr?.replace('%', '') || '0');
 

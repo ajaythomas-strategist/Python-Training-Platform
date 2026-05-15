@@ -7,7 +7,7 @@ import LabSelectionModal from './LabSelectionModal';
 export default function ClassManagement({ userRole, userName }) {
   const [classes, setClasses] = useState(initialClasses);
   const [filters, setFilters] = useState({ Active: true, Upcoming: true, Completed: true });
-  const isAdmin = userRole === 'Admin' || userRole === 'Trainer';
+  const isAdmin = userRole === 'Admin' || userRole === 'Trainer' || userRole === 'Co-Trainer';
 
   const getComputedStatus = (cls) => {
     // Completed is manual
@@ -133,7 +133,7 @@ export default function ClassManagement({ userRole, userName }) {
 
   const filteredClasses = classes.filter(cls => {
     const matchStatus = filters[cls.status];
-    const matchTrainer = userRole === 'Trainer' ? cls.trainer === userName : true;
+    const matchTrainer = (userRole === 'Trainer' || userRole === 'Co-Trainer') ? (cls.trainer === userName || cls.coTrainers?.includes(userName)) : true;
     return matchStatus && matchTrainer;
   });
 

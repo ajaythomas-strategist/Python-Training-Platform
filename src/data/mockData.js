@@ -143,7 +143,7 @@ export const classes = [
   { 
     id: "1 STRUGGLE", 
     trainer: "Dennis Ritchie", 
-    coTrainers: ["Mike Johnson", "John Doe"],
+    coTrainers: ["Mike Johnson", "John Doe", "James Carter"],
     lab: "Cybersecurity Lab",
     sessions: [{ date: "2026-05-15", startTime: "16:00", endTime: "18:00" }],
     status: "Active"
