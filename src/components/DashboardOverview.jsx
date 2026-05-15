@@ -95,7 +95,7 @@ export default function DashboardOverview() {
       <div className="card mb-12 flex-col" style={{ gap: '1.5rem' }}>
         <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
           <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600"><BookOpen size={20} /></div>
-          Today's Batch Attendance
+          Today's Batch
         </h2>
         <div className="table-container">
           <table className="w-full">
