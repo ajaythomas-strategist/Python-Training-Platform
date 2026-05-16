@@ -175,17 +175,10 @@ export default function LabManagement({ userRole }) {
               <div className="flex flex-col gap-4 py-5 border-y border-gray-100" style={{ fontSize: '0.875rem' }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-gray-600">
-                    <Shield size={18} className="text-gray-400" />
-                    <span className="font-medium">System Admin</span>
+                    <Monitor size={18} className="text-gray-400" />
+                    <span className="font-medium">Department</span>
                   </div>
-                  <span className="font-semibold text-gray-800">{lab.assignedAdmin}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <Users size={18} className="text-gray-400" />
-                    <span className="font-medium">Lab Trainer</span>
-                  </div>
-                  <span className="font-semibold text-gray-800">{lab.assignedTrainer}</span>
+                  <span className="font-semibold text-gray-800">{lab.department}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-gray-600">

@@ -173,45 +173,8 @@ export default function EditLabModal({ isOpen, onClose, onUpdate, lab }) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-              {/* Admin */}
-              <div style={inputGroupStyle}>
-                <label style={labelStyle}>System Administrator</label>
-                <div style={inputWrapperStyle}>
-                  <Users size={20} style={iconStyle} />
-                  <input 
-                    required
-                    type="text" 
-                    placeholder="Admin name"
-                    value={formData.assignedAdmin}
-                    onChange={(e) => setFormData({...formData, assignedAdmin: e.target.value})}
-                    style={inputStyle}
-                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.backgroundColor = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = '#F1F5F9'; e.target.style.backgroundColor = '#F8FAFC'; e.target.style.boxShadow = 'none'; }}
-                  />
-                </div>
-              </div>
-
-              {/* Trainer */}
-              <div style={inputGroupStyle}>
-                <label style={labelStyle}>Primary Lab Trainer</label>
-                <div style={inputWrapperStyle}>
-                  <Users size={20} style={iconStyle} />
-                  <input 
-                    required
-                    type="text" 
-                    placeholder="Trainer name"
-                    value={formData.assignedTrainer}
-                    onChange={(e) => setFormData({...formData, assignedTrainer: e.target.value})}
-                    style={inputStyle}
-                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.backgroundColor = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = '#F1F5F9'; e.target.style.backgroundColor = '#F8FAFC'; e.target.style.boxShadow = 'none'; }}
-                  />
-                </div>
-              </div>
-            </div>
-
           </div>
+
 
           {/* Buttons */}
           <div style={{ display: 'flex', gap: '20px', marginTop: '50px' }}>

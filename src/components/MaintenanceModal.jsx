@@ -163,9 +163,9 @@ export default function MaintenanceModal({ isOpen, onClose, onSetMaintenance, la
           ) : (
             <div className="max-w-2xl mx-auto grid grid-cols-2 gap-6">
               {[
+                { label: 'Lab No.', value: lab.id, icon: Shield },
+                { label: 'Lab Name', value: lab.name, icon: Monitor },
                 { label: 'Department', value: lab.department, icon: Monitor },
-                { label: 'Admin', value: lab.assignedAdmin, icon: Info },
-                { label: 'Lead Trainer', value: lab.assignedTrainer, icon: Info },
                 { label: 'Total Units', value: `${lab.capacity} Workstations`, icon: Monitor },
               ].map((item, i) => (
                 <div key={i} className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
