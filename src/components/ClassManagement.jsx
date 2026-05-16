@@ -65,6 +65,60 @@ export default function ClassManagement({ userRole, userName }) {
   const [showReportFor, setShowReportFor] = useState(null);
   const [activeReportTab, setActiveReportTab] = useState('Attendance');
 
+  const handleDownloadCSV = (batchId, tab, batchStudents, sessionColumns, allActivities) => {
+    let csvContent = "\ufeff"; // BOM for Excel UTF-8 support
+    
+    if (tab === 'Attendance') {
+      const headers = ["Student Name", "Attendance %", ...sessionColumns.map((col, i) => `S${i + 1} (${col.subLabel.replace(/,/g, '')})`)];
+      csvContent += headers.join(",") + "\n";
+      
+      batchStudents.forEach(student => {
+        const row = [
+          `"${student.name}"`,
+          `${student.attendance}%`,
+          ...sessionColumns.map((col, idx) => student.detailedReport?.sessions?.[idx]?.attendance || "-")
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+    } else {
+      const headers = ["Student Name", "Avg Mark", ...allActivities.map(a => `"${a.replace(/"/g, '""')}"`)];
+      csvContent += headers.join(",") + "\n";
+      
+      batchStudents.forEach(student => {
+        const performance = student.detailedReport?.performance || [];
+        let total = 0;
+        allActivities.forEach(act => {
+          const record = performance.find(p => p.activity === act);
+          if (record) {
+            const val = parseInt(record.score.split('/')[0]) || 0;
+            total += val;
+          }
+        });
+        const avg = allActivities.length > 0 ? (total / allActivities.length).toFixed(1) : '0.0';
+        
+        const row = [
+          `"${student.name}"`,
+          `${avg}%`,
+          ...allActivities.map(act => {
+            const record = performance.find(p => p.activity === act);
+            return record ? `"${record.score}"` : "Not Attended";
+          })
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${batchId}_${tab.replace(/\s+/g, '_')}_Report.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleShowReport = (batchId) => {
     setShowReportFor(batchId);
     setActiveReportTab('Attendance');
@@ -755,7 +809,7 @@ export default function ClassManagement({ userRole, userName }) {
 
             <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-gray-100">
               <button className="btn btn-outline" onClick={() => setShowReportFor(null)}>Close Report</button>
-              <button className="btn btn-primary" onClick={() => window.print()}>Print Report</button>
+              <button className="btn btn-primary" onClick={() => handleDownloadCSV(showReportFor, activeReportTab, batchStudents, sessionColumns, allActivities)}>Download CSV</button>
             </div>
           </div>
         </div>
