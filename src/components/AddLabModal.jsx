@@ -6,8 +6,6 @@ export default function AddLabModal({ isOpen, onClose, onAdd }) {
     id: '',
     name: '',
     department: '',
-    assignedAdmin: '',
-    assignedTrainer: '',
     capacity: ''
   });
 
@@ -15,9 +13,9 @@ export default function AddLabModal({ isOpen, onClose, onAdd }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onAdd({ ...formData });
+    onAdd({ ...formData, capacity: parseInt(formData.capacity) });
     onClose();
-    setFormData({ id: '', name: '', department: '', assignedAdmin: '', assignedTrainer: '', capacity: '' });
+    setFormData({ id: '', name: '', department: '', capacity: '' });
   };
 
   const inputGroupStyle = {

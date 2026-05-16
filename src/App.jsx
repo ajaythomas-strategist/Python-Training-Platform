@@ -10,6 +10,7 @@ import Leaderboard from './components/Leaderboard';
 import Materials from './components/Materials';
 import AttendanceTab from './components/AttendanceTab';
 import Login from './components/Login';
+import Guidelines from './components/Guidelines';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,6 +37,7 @@ function App() {
       case 'reports': return <UserReports userRole={userRole} userName={userName} />;
       case 'leaderboard': return <Leaderboard userRole={userRole} userName={userName} />;
       case 'attendance': return <AttendanceTab userRole={userRole} userName={userName} />;
+      case 'guidelines': return <Guidelines userRole={userRole} userName={userName} />;
       default: return <DashboardOverview userRole={userRole} userName={userName} />;
     }
   };

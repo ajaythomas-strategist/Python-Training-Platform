@@ -5,8 +5,6 @@ export default function EditLabModal({ isOpen, onClose, onUpdate, lab }) {
   const [formData, setFormData] = useState({
     name: '',
     department: '',
-    assignedAdmin: '',
-    assignedTrainer: '',
     capacity: ''
   });
 
@@ -15,8 +13,6 @@ export default function EditLabModal({ isOpen, onClose, onUpdate, lab }) {
       setFormData({
         name: lab.name || '',
         department: lab.department || '',
-        assignedAdmin: lab.assignedAdmin || '',
-        assignedTrainer: lab.assignedTrainer || '',
         capacity: lab.capacity || ''
       });
     }

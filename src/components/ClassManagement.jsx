@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Users, Calendar, MapPin, Edit2, X, ArrowRightLeft, Eye, Info } from 'lucide-react';
+import { 
+  Users, BookOpen, Clock, MapPin, Edit2, ChevronRight, Eye, 
+  Trash2, Search, Filter, CheckCircle2, MoreVertical, CheckSquare, X,
+  Calendar, ArrowRightLeft, Plus, Info
+} from 'lucide-react';
 import { classes as initialClasses, users } from '../data/mockData';
 import StaffSelectionModal from './StaffSelectionModal';
 import LabSelectionModal from './LabSelectionModal';
@@ -10,29 +14,38 @@ export default function ClassManagement({ userRole, userName }) {
   const [filters, setFilters] = useState({ Active: true, Upcoming: true, Completed: true });
   const isAdmin = userRole === 'Admin' || userRole === 'Trainer' || userRole === 'Co-Trainer';
 
+  const handleToggleTask = (classId, role, taskId) => {
+    const updatedClasses = classes.map(cls => {
+      if (cls.id === classId) {
+        const updatedTasks = { ...cls.tasks };
+        updatedTasks[role] = updatedTasks[role].map(task => 
+          task.id === taskId ? { ...task, completed: !task.completed } : task
+        );
+        return { ...cls, tasks: updatedTasks };
+      }
+      return cls;
+    });
+    setClasses(updatedClasses);
+  };
+
   const getComputedStatus = (cls) => {
-    // Completed is manual
     if (cls.status === 'Completed') return 'Completed';
 
     const today = new Date().toISOString().split('T')[0];
     
-    // 1. Session Not Selected -> Upcoming
     if (!cls.sessions || cls.sessions.length === 0) return 'Upcoming';
 
-    // 2. Batch from Tomorrow onwards -> Upcoming
     const hasTodaySession = cls.sessions.some(s => s.date === today);
     const earliestSession = cls.sessions.reduce((min, s) => s.date < min ? s.date : min, cls.sessions[0].date);
 
-    // 3. Status Active automatically based on date (today)
     if (hasTodaySession) return 'Active';
     
     if (earliestSession > today) return 'Upcoming';
 
-    // If past sessions exist but not today, and not marked Completed, we keep original status or default to Active
     return cls.status;
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     let changed = false;
     const newClasses = classes.map(cls => {
       const autoStatus = getComputedStatus(cls);
@@ -48,13 +61,14 @@ export default function ClassManagement({ userRole, userName }) {
     }
   }, [classes]);
 
-  // Modal State
-  const [activeModal, setActiveModal] = useState(null); // 'Trainer', 'Co-Trainer', 'Lab', 'Transfer-Trainer', 'Transfer-CoTrainer'
+  const [activeModal, setActiveModal] = useState(null);
+  const [selectedClassId, setSelectedClassId] = useState(null);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [selectedClassForTasks, setSelectedClassForTasks] = useState(null);
   const [activeClassId, setActiveClassId] = useState(null);
   const [activeSessionIdx, setActiveSessionIdx] = useState(null);
   const [transferInfo, setTransferInfo] = useState(null);
   
-  // Date Picker State
   const [showDatePickerFor, setShowDatePickerFor] = useState(null);
   const [editingSessionIdx, setEditingSessionIdx] = useState(null);
   const [newDate, setNewDate] = useState('');
@@ -556,7 +570,32 @@ export default function ClassManagement({ userRole, userName }) {
                 </div>
               </div>
 
-              <div className="flex justify-end mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                {/* Task Status */}
+                {(() => {
+                  const roleKey = userRole === 'SuperAdmin' ? 'Admin' : (userRole === 'Admin' ? 'Admin' : (userRole === 'Trainer' ? 'Trainer' : 'Co-Trainer'));
+                  const tasks = cls.tasks?.[roleKey] || [];
+                  const completed = tasks.filter(t => t.completed).length;
+                  const total = tasks.length;
+                  
+                  return (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedClassForTasks(cls);
+                        setIsTaskModalOpen(true);
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 transition-all group"
+                    >
+                      <CheckSquare size={16} className="group-hover:scale-110 transition-transform" />
+                      <div className="flex flex-col items-start leading-tight">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Task</span>
+                        <span className="text-xs font-black">{completed}/{total}</span>
+                      </div>
+                    </button>
+                  );
+                })()}
+
                 <button 
                   onClick={(e) => { e.stopPropagation(); handleShowReport(cls.id); }}
                   className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95 group"
@@ -815,6 +854,84 @@ export default function ClassManagement({ userRole, userName }) {
         </div>
       );
     })(), document.body)}
+    {isTaskModalOpen && selectedClassForTasks && createPortal((() => {
+      const roleKey = userRole === 'SuperAdmin' ? 'Admin' : (userRole === 'Admin' ? 'Admin' : (userRole === 'Trainer' ? 'Trainer' : 'Co-Trainer'));
+      const tasks = selectedClassForTasks.tasks?.[roleKey] || [];
+
+      return (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10001,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
+        }}>
+          <div className="card animate-fade-in" style={{ 
+            width: '100%', maxWidth: '500px', backgroundColor: 'white', padding: '32px', 
+            borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            position: 'relative', overflow: 'hidden'
+          }}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl">
+                  <CheckSquare size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900">Class Checklist</h3>
+                  <p className="text-sm text-gray-500 font-bold">{selectedClassForTasks.id}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsTaskModalOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Tasks List */}
+            <div className="space-y-3 mb-8">
+              {tasks.length === 0 ? (
+                <p className="text-center text-gray-400 italic py-8">No tasks assigned for your role.</p>
+              ) : (
+                tasks.map(task => (
+                  <div 
+                    key={task.id} 
+                    onClick={() => handleToggleTask(selectedClassForTasks.id, roleKey, task.id)}
+                    className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                      task.completed 
+                        ? 'bg-emerald-50 border-emerald-100' 
+                        : 'bg-white border-gray-50 hover:border-emerald-100'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
+                      task.completed ? 'bg-emerald-500 text-white' : 'border-2 border-gray-200 bg-gray-50'
+                    }`}>
+                      {task.completed && <CheckCircle2 size={14} />}
+                    </div>
+                    <span className={`text-sm font-bold transition-all ${
+                      task.completed ? 'text-emerald-700 line-through opacity-60' : 'text-gray-700'
+                    }`}>
+                      {task.text}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex gap-3 pt-6 border-t border-gray-100">
+              <button 
+                onClick={() => setIsTaskModalOpen(false)}
+                className="w-full py-4 bg-gray-900 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 active:scale-95"
+              >
+                Close Checklist
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    })(), document.body)}
     </>
   );
 }
+

@@ -130,7 +130,24 @@ export const classes = [
       { date: "2026-05-15", startTime: "13:00", endTime: "15:00", transferredFrom: "Prof. Alan Turing", transferredCoTrainerFrom: "John Doe" },
       { date: "2026-05-16", startTime: "10:00", endTime: "12:00" }
     ],
-    status: "Active"
+    status: "Active",
+    tasks: {
+      Admin: [
+        { id: 1, text: "Ensure lab systems are updated before class", completed: true },
+        { id: 2, text: "Check attendance logs daily", completed: false },
+        { id: 3, text: "Coordinate with trainers for software requirements", completed: false }
+      ],
+      Trainer: [
+        { id: 4, text: "Deliver lesson plan according to schedule", completed: true },
+        { id: 5, text: "Assign and review daily tasks", completed: false },
+        { id: 6, text: "Provide feedback to students", completed: false }
+      ],
+      'Co-Trainer': [
+        { id: 7, text: "Assist students during practical sessions", completed: false },
+        { id: 8, text: "Monitor student progress", completed: false },
+        { id: 9, text: "Handle technical queries", completed: false }
+      ]
+    }
   },
   { 
     id: "1 PERFECT", 
@@ -138,7 +155,12 @@ export const classes = [
     coTrainers: ["Jane Smith"],
     lab: "AI Research Lab",
     sessions: [{ date: "2026-05-15", startTime: "08:00", endTime: "10:00" }],
-    status: "Active"
+    status: "Active",
+    tasks: {
+      Admin: [{ id: 1, text: "Check attendance", completed: true }],
+      Trainer: [{ id: 2, text: "Review labs", completed: true }],
+      'Co-Trainer': [{ id: 3, text: "Support students", completed: true }]
+    }
   },
   { 
     id: "1 STRUGGLE", 
@@ -146,7 +168,12 @@ export const classes = [
     coTrainers: ["Mike Johnson", "John Doe", "James Carter"],
     lab: "Cybersecurity Lab",
     sessions: [{ date: "2026-05-15", startTime: "16:00", endTime: "18:00" }],
-    status: "Active"
+    status: "Active",
+    tasks: {
+      Admin: [{ id: 1, text: "Verify logs", completed: false }],
+      Trainer: [{ id: 2, text: "Cover all topics", completed: false }],
+      'Co-Trainer': [{ id: 3, text: "Help with setups", completed: false }]
+    }
   },
   { 
     id: "1 BSC CS", 
@@ -157,7 +184,12 @@ export const classes = [
       { date: "2026-05-14", startTime: "14:00", endTime: "16:00", transferredFrom: "Dr. Sarah Lee" },
       { date: "2026-05-16", startTime: "13:00", endTime: "15:00", transferredCoTrainerFrom: "Jane Smith" }
     ],
-    status: "Active"
+    status: "Active",
+    tasks: {
+      Admin: [{ id: 1, text: "Setup lab", completed: true }],
+      Trainer: [{ id: 2, text: "Lecture", completed: true }],
+      'Co-Trainer': [{ id: 3, text: "VIVA", completed: false }]
+    }
   },
   { 
     id: "1 BBA", 
