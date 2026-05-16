@@ -57,8 +57,9 @@ export default function ClassManagement({ userRole, userName }) {
   const [showDatePickerFor, setShowDatePickerFor] = useState(null);
   const [editingSessionIdx, setEditingSessionIdx] = useState(null);
   const [newDate, setNewDate] = useState('');
-  const [newStartTime, setNewStartTime] = useState('');
-  const [newEndTime, setNewEndTime] = useState('');
+  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [customStartTime, setCustomStartTime] = useState('');
+  const [customEndTime, setCustomEndTime] = useState('');
 
   const updateClass = (classId, field, value) => {
     setClasses(classes.map(c => c.id === classId ? { ...c, [field]: value } : c));
@@ -90,33 +91,61 @@ export default function ClassManagement({ userRole, userName }) {
   const currentClassObj = classes.find(c => c.id === activeClassId);
 
   const handleAddSession = (classId) => {
-    if (!newDate || !newStartTime || !newEndTime) return;
+    if (!newDate || selectedSlots.length === 0) return;
+    
+    // Validate custom time if selected
+    if (selectedSlots.includes('custom') && (!customStartTime || !customEndTime)) return;
+
     const targetClass = classes.find(c => c.id === classId);
     if (targetClass) {
-      let updatedSessions;
+      let updatedSessions = [...targetClass.sessions];
       if (editingSessionIdx !== null) {
         // Update existing
-        updatedSessions = [...targetClass.sessions];
-        updatedSessions[editingSessionIdx] = { date: newDate, startTime: newStartTime, endTime: newEndTime };
+        const slotType = selectedSlots[0];
+        let slot;
+        if (slotType === 'morning') slot = { startTime: '09:00', endTime: '12:00' };
+        else if (slotType === 'afternoon') slot = { startTime: '13:00', endTime: '16:00' };
+        else if (slotType === 'custom') slot = { startTime: customStartTime, endTime: customEndTime };
+        
+        if (slot && slot.startTime && slot.endTime) {
+          updatedSessions[editingSessionIdx] = { ...updatedSessions[editingSessionIdx], date: newDate, ...slot };
+        }
       } else {
         // Add new
-        updatedSessions = [...targetClass.sessions, { date: newDate, startTime: newStartTime, endTime: newEndTime }];
+        selectedSlots.forEach(slotType => {
+          let slot;
+          if (slotType === 'morning') slot = { startTime: '09:00', endTime: '12:00' };
+          else if (slotType === 'afternoon') slot = { startTime: '13:00', endTime: '16:00' };
+          else if (slotType === 'custom') slot = { startTime: customStartTime, endTime: customEndTime };
+          
+          if (slot && slot.startTime && slot.endTime) {
+            updatedSessions.push({ date: newDate, ...slot });
+          }
+        });
       }
       updateClass(classId, 'sessions', updatedSessions);
     }
     setShowDatePickerFor(null);
     setEditingSessionIdx(null);
     setNewDate('');
-    setNewStartTime('');
-    setNewEndTime('');
+    setSelectedSlots([]);
+    setCustomStartTime('');
+    setCustomEndTime('');
   };
 
   const handleEditSession = (classId, session, idx) => {
     setShowDatePickerFor(classId);
     setEditingSessionIdx(idx);
     setNewDate(session.date);
-    setNewStartTime(session.startTime);
-    setNewEndTime(session.endTime);
+    if (session.startTime === '09:00' && session.endTime === '12:00') {
+      setSelectedSlots(['morning']);
+    } else if (session.startTime === '13:00' && session.endTime === '16:00') {
+      setSelectedSlots(['afternoon']);
+    } else {
+      setSelectedSlots(['custom']);
+      setCustomStartTime(session.startTime);
+      setCustomEndTime(session.endTime);
+    }
   };
 
   const handleTransferSession = (classId, idx) => {
@@ -272,38 +301,114 @@ export default function ClassManagement({ userRole, userName }) {
               {!isAdmin && (
                 <div className="mt-1">
                   {showDatePickerFor === cls.id ? (
-                    <div className="flex flex-col gap-2 p-2 border rounded" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
+                    <div className="flex flex-col gap-2 p-3 border rounded-xl" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
                       <input 
                         type="date" 
                         value={newDate} 
                         onChange={(e) => setNewDate(e.target.value)}
-                        style={{ width: '100%', padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
+                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '0.875rem' }}
                       />
-                      <div className="flex gap-2">
-                        <input 
-                          type="time" 
-                          value={newStartTime} 
-                          onChange={(e) => setNewStartTime(e.target.value)}
-                          style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
-                          placeholder="Start"
-                        />
-                        <input 
-                          type="time" 
-                          value={newEndTime} 
-                          onChange={(e) => setNewEndTime(e.target.value)}
-                          style={{ flex: 1, padding: '4px 8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '0.75rem' }}
-                          placeholder="End"
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2 mt-1">
-                        <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); }} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>Cancel</button>
-                        <button onClick={() => handleAddSession(cls.id)} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>
-                          {editingSessionIdx !== null ? 'Update' : 'Add'}
+                      
+                      {newDate && (
+                        <div className="flex flex-col gap-2 mt-2">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Select Session Timings</p>
+                          <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedSlots.includes('morning') ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                            <input 
+                              type={editingSessionIdx !== null ? "radio" : "checkbox"}
+                              name="sessionSlot"
+                              checked={selectedSlots.includes('morning')}
+                              onChange={(e) => {
+                                if (editingSessionIdx !== null) {
+                                  setSelectedSlots(['morning']);
+                                } else {
+                                  setSelectedSlots(prev => e.target.checked ? [...prev, 'morning'] : prev.filter(s => s !== 'morning'));
+                                }
+                              }}
+                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            />
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-gray-800">Morning Session</span>
+                              <span className="text-xs text-gray-500">09:00 AM - 12:00 PM</span>
+                            </div>
+                          </label>
+
+                          <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedSlots.includes('afternoon') ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                            <input 
+                              type={editingSessionIdx !== null ? "radio" : "checkbox"}
+                              name="sessionSlot"
+                              checked={selectedSlots.includes('afternoon')}
+                              onChange={(e) => {
+                                if (editingSessionIdx !== null) {
+                                  setSelectedSlots(['afternoon']);
+                                } else {
+                                  setSelectedSlots(prev => e.target.checked ? [...prev, 'afternoon'] : prev.filter(s => s !== 'afternoon'));
+                                }
+                              }}
+                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            />
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-gray-800">Afternoon Session</span>
+                              <span className="text-xs text-gray-500">01:00 PM - 04:00 PM</span>
+                            </div>
+                          </label>
+
+                          <label className={`flex flex-col gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${selectedSlots.includes('custom') ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                            <div className="flex items-center gap-3">
+                              <input 
+                                type={editingSessionIdx !== null ? "radio" : "checkbox"}
+                                name="sessionSlot"
+                                checked={selectedSlots.includes('custom')}
+                                onChange={(e) => {
+                                  if (editingSessionIdx !== null) {
+                                    setSelectedSlots(['custom']);
+                                  } else {
+                                    setSelectedSlots(prev => e.target.checked ? [...prev, 'custom'] : prev.filter(s => s !== 'custom'));
+                                  }
+                                }}
+                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                              />
+                              <div className="flex flex-col">
+                                <span className="text-sm font-bold text-gray-800">Custom Timing</span>
+                                <span className="text-xs text-gray-500">Set manual start and end times</span>
+                              </div>
+                            </div>
+                            
+                            {selectedSlots.includes('custom') && (
+                              <div className="flex gap-2 mt-2 pl-7">
+                                <input 
+                                  type="time" 
+                                  value={customStartTime} 
+                                  onChange={(e) => setCustomStartTime(e.target.value)}
+                                  className="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-blue-500 bg-white"
+                                  placeholder="Start"
+                                />
+                                <input 
+                                  type="time" 
+                                  value={customEndTime} 
+                                  onChange={(e) => setCustomEndTime(e.target.value)}
+                                  className="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-blue-500 bg-white"
+                                  placeholder="End"
+                                />
+                              </div>
+                            )}
+                          </label>
+                        </div>
+                      )}
+
+                      <div className="flex justify-end gap-2 mt-3">
+                        <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); setNewDate(''); setSelectedSlots([]); setCustomStartTime(''); setCustomEndTime(''); }} className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '0.875rem' }}>Cancel</button>
+                        <button 
+                          onClick={() => handleAddSession(cls.id)} 
+                          className="btn btn-primary" 
+                          style={{ padding: '6px 12px', fontSize: '0.875rem', opacity: (!newDate || selectedSlots.length === 0) ? 0.5 : 1 }}
+                          disabled={!newDate || selectedSlots.length === 0}
+                        >
+                          {editingSessionIdx !== null ? 'Update Session' : 'Add Session(s)'}
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', color: '#6B7280' }}>
+                    <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '10px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', color: '#6B7280', fontWeight: 500, transition: 'all 0.2s ease' }} onMouseOver={(e) => e.target.style.backgroundColor = '#F9FAFB'} onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
                       + Add Session
                     </button>
                   )}
