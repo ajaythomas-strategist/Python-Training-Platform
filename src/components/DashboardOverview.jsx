@@ -236,23 +236,30 @@ export default function DashboardOverview({ userRole, userName }) {
                   <BarChart2 size={18} className="text-gray-500" />
                   Batch Status Overview
                 </h2>
-                <span className="text-sm text-gray-600 font-bold">Total: {totalBatches}</span>
+                <span className="text-sm text-gray-500">Total: {totalBatches}</span>
               </div>
               
-              <div style={{ width: '100%', height: 300 }} className="relative flex justify-center items-center">
+              <div style={{ width: '100%', height: 320 }} className="relative flex justify-center items-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Tooltip wrapperStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '13px', color: '#4b5563', paddingTop: '10px' }} />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      align="center"
+                      iconType="circle" 
+                      wrapperStyle={{ fontSize: '12px', color: '#6b7280', paddingTop: '20px' }} 
+                    />
                     <Pie
                       data={batchData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={80}
-                      outerRadius={115}
-                      paddingAngle={2}
+                      innerRadius={85}
+                      outerRadius={120}
+                      paddingAngle={0}
                       dataKey="value"
                       stroke="none"
+                      startAngle={90}
+                      endAngle={-270}
                       isAnimationActive
                     >
                       {batchData.map((entry, index) => (
@@ -263,10 +270,10 @@ export default function DashboardOverview({ userRole, userName }) {
                           const { cx, cy } = viewBox;
                           return (
                             <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                              <tspan x={cx} dy="-0.5em" style={{ fontSize: '32px', fontWeight: '900', fill: '#1f2937' }}>
+                              <tspan x={cx} dy="-0.1em" style={{ fontSize: '48px', fontWeight: '800', fill: '#1f2937' }}>
                                 {batchCompletionPercent}%
                               </tspan>
-                              <tspan x={cx} dy="1.5em" style={{ fontSize: '12px', fontWeight: '800', fill: '#6b7280', letterSpacing: '1px' }}>
+                              <tspan x={cx} dy="1.6em" style={{ fontSize: '11px', fontWeight: '700', fill: '#6b7280', letterSpacing: '1px' }}>
                                 COMPLETED
                               </tspan>
                             </text>
@@ -286,23 +293,30 @@ export default function DashboardOverview({ userRole, userName }) {
                   <Users size={18} className="text-gray-500" />
                   Student Status Overview
                 </h2>
-                <span className="text-sm text-gray-600 font-bold">Total: {totalStudents}</span>
+                <span className="text-sm text-gray-500">Total: {totalStudents}</span>
               </div>
               
-              <div style={{ width: '100%', height: 300 }} className="relative flex justify-center items-center">
+              <div style={{ width: '100%', height: 320 }} className="relative flex justify-center items-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Tooltip wrapperStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '13px', color: '#4b5563', paddingTop: '10px' }} />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      align="center"
+                      iconType="circle" 
+                      wrapperStyle={{ fontSize: '12px', color: '#6b7280', paddingTop: '20px' }} 
+                    />
                     <Pie
                       data={studentData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={80}
-                      outerRadius={115}
-                      paddingAngle={2}
+                      innerRadius={85}
+                      outerRadius={120}
+                      paddingAngle={0}
                       dataKey="value"
                       stroke="none"
+                      startAngle={90}
+                      endAngle={-270}
                       isAnimationActive
                     >
                       {studentData.map((entry, index) => (
@@ -313,10 +327,10 @@ export default function DashboardOverview({ userRole, userName }) {
                           const { cx, cy } = viewBox;
                           return (
                             <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                              <tspan x={cx} dy="-0.5em" style={{ fontSize: '32px', fontWeight: '900', fill: '#1f2937' }}>
+                              <tspan x={cx} dy="-0.1em" style={{ fontSize: '48px', fontWeight: '800', fill: '#1f2937' }}>
                                 {studentCompletionPercent}%
                               </tspan>
-                              <tspan x={cx} dy="1.5em" style={{ fontSize: '12px', fontWeight: '800', fill: '#6b7280', letterSpacing: '1px' }}>
+                              <tspan x={cx} dy="1.6em" style={{ fontSize: '11px', fontWeight: '700', fill: '#6b7280', letterSpacing: '1px' }}>
                                 COMPLETED
                               </tspan>
                             </text>
