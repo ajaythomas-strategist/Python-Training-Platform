@@ -23,6 +23,14 @@ export default function AttendanceTab({ userRole, userName }) {
   const isStudent = userRole === 'Student';
   const isTrainer = userRole === 'Trainer' || userRole === 'Co-Trainer';
 
+  // Filter classes based on user role and name
+  const visibleClasses = classes.filter(batch => {
+    if (userRole === 'SuperAdmin' || userRole === 'Admin') return true;
+    if (userRole === 'Trainer') return batch.trainer === userName;
+    if (userRole === 'Co-Trainer') return batch.coTrainers && batch.coTrainers.includes(userName);
+    return false;
+  });
+
   // Helper for progress bar color
   const getTimerColor = (time) => {
     if (time > 20) return '#10B981'; // Green
@@ -69,7 +77,8 @@ export default function AttendanceTab({ userRole, userName }) {
   // Mock: Simulate students joining randomly in Trainer View
   useEffect(() => {
     if (sessionStatus === 'active' && isTrainer && activeBatch) {
-      const batchStudents = users.filter(u => u.role === 'Student').slice(0, 8);
+      // Find students belonging to THIS batch in mockData
+      const batchStudents = users.filter(u => u.role === 'Student' && u.batch === activeBatch.id).slice(0, 8);
       const interval = setInterval(() => {
         if (presentStudents.length < batchStudents.length) {
           const nextStudent = batchStudents[presentStudents.length];
@@ -218,7 +227,7 @@ export default function AttendanceTab({ userRole, userName }) {
 
       {sessionStatus === 'idle' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '32px' }}>
-          {classes.map(batch => (
+          {visibleClasses.map(batch => (
             <div key={batch.id} style={{
               backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9',
               boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: '24px'

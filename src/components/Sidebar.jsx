@@ -10,7 +10,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, userRole, u
     { id: 'classes', label: 'Class', icon: <BookOpen size={20} />, roles: ['SuperAdmin', 'Admin', 'Trainer', 'Co-Trainer'] },
     { id: 'material', label: 'Material', icon: <BookOpen size={20} />, roles: ['SuperAdmin', 'Trainer', 'Co-Trainer', 'Student'] },
     { id: 'labs', label: 'Lab Management', icon: <FlaskConical size={20} />, roles: ['SuperAdmin', 'Admin'] },
-    { id: 'guidelines', label: 'Guidelines', icon: <ShieldAlert size={20} />, roles: ['SuperAdmin', 'Admin', 'Trainer', 'Co-Trainer'] },
+    { id: 'guidelines', label: 'Guidelines', icon: <ShieldAlert size={20} />, roles: ['SuperAdmin', 'Admin'] },
     { id: 'reviews', label: 'Reviews & Ratings', icon: <Star size={20} />, roles: ['SuperAdmin', 'Admin'] },
     { id: 'attendance', label: 'Attendance', icon: <Users size={20} />, roles: ['Trainer', 'Co-Trainer', 'Student'] },
   ];
