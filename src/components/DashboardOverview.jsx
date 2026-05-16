@@ -228,9 +228,14 @@ export default function DashboardOverview({ userRole, userName }) {
         ];
 
         return (
-          <div className="flex flex-row mb-8 mt-2" style={{ gap: '0.5cm' }}>
+          <div className="dashboard-grid mb-8 mt-2" style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', 
+            gap: '1.5rem',
+            marginBottom: '0.5cm' 
+          }}>
             {/* Batch Status Overview */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col p-6 flex-1">
+            <div className="card flex flex-col" style={{ gridColumn: 'span 2' }}>
               <div className="w-full flex justify-between items-center mb-2">
                 <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
                   <BarChart2 size={18} className="text-gray-500" />
@@ -265,20 +270,10 @@ export default function DashboardOverview({ userRole, userName }) {
                       {batchData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
-                      <Label
-                        content={({ viewBox }) => {
-                          const { cx, cy } = viewBox;
-                          return (
-                            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                              <tspan x={cx} dy="-0.1em" style={{ fontSize: '48px', fontWeight: '800', fill: '#1f2937' }}>
-                                {batchCompletionPercent}%
-                              </tspan>
-                              <tspan x={cx} dy="1.6em" style={{ fontSize: '11px', fontWeight: '700', fill: '#6b7280', letterSpacing: '1px' }}>
-                                COMPLETED
-                              </tspan>
-                            </text>
-                          );
-                        }}
+                      <Label 
+                        value={`${batchCompletionPercent}%`} 
+                        position="center" 
+                        style={{ fontSize: '44px', fontWeight: '800', fill: '#1f2937' }} 
                       />
                     </Pie>
                   </PieChart>
@@ -287,7 +282,7 @@ export default function DashboardOverview({ userRole, userName }) {
             </div>
 
             {/* Student Status Overview */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col p-6 flex-1">
+            <div className="card flex flex-col" style={{ gridColumn: 'span 2' }}>
               <div className="w-full flex justify-between items-center mb-2">
                 <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
                   <Users size={18} className="text-gray-500" />
@@ -322,20 +317,10 @@ export default function DashboardOverview({ userRole, userName }) {
                       {studentData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
-                      <Label
-                        content={({ viewBox }) => {
-                          const { cx, cy } = viewBox;
-                          return (
-                            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                              <tspan x={cx} dy="-0.1em" style={{ fontSize: '48px', fontWeight: '800', fill: '#1f2937' }}>
-                                {studentCompletionPercent}%
-                              </tspan>
-                              <tspan x={cx} dy="1.6em" style={{ fontSize: '11px', fontWeight: '700', fill: '#6b7280', letterSpacing: '1px' }}>
-                                COMPLETED
-                              </tspan>
-                            </text>
-                          );
-                        }}
+                      <Label 
+                        value={`${studentCompletionPercent}%`} 
+                        position="center" 
+                        style={{ fontSize: '44px', fontWeight: '800', fill: '#1f2937' }} 
                       />
                     </Pie>
                   </PieChart>
