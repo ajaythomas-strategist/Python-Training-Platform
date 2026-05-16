@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { X, Wrench, Calendar, AlertTriangle, Monitor, Info } from 'lucide-react';
+import { X, Calendar, AlertTriangle, Save, Clock } from 'lucide-react';
 
 export default function MaintenanceModal({ isOpen, onClose, onSetMaintenance, lab }) {
-  const [activeTab, setActiveTab] = useState('Settings');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [reason, setReason] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       const today = new Date().toISOString().split('T')[0];
       setStartDate(lab?.maintenance?.startDate || today);
       setEndDate(lab?.maintenance?.endDate || today);
-      setReason(lab?.maintenance?.reason || '');
-      setActiveTab('Settings');
     }
   }, [isOpen, lab]);
 
@@ -22,8 +17,8 @@ export default function MaintenanceModal({ isOpen, onClose, onSetMaintenance, la
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!startDate || !endDate || !reason.trim()) {
-      alert("Please fill in all fields.");
+    if (!startDate || !endDate) {
+      alert("Please select both dates.");
       return;
     }
     
@@ -32,7 +27,7 @@ export default function MaintenanceModal({ isOpen, onClose, onSetMaintenance, la
       return;
     }
 
-    onSetMaintenance(lab.id, { startDate, endDate, reason });
+    onSetMaintenance(lab.id, { startDate, endDate, reason: 'Maintenance' });
     onClose();
   };
 
@@ -41,153 +36,192 @@ export default function MaintenanceModal({ isOpen, onClose, onSetMaintenance, la
     onClose();
   };
 
-  return createPortal(
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6" style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden animate-scale-in border border-gray-100">
-        
-        {/* Header */}
-        <div className="p-6 border-b border-gray-100 flex justify-between items-start">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm">
-              <Monitor size={28} />
+  const inputGroupStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    width: '100%'
+  };
+
+  const labelStyle = {
+    fontSize: '0.75rem',
+    fontWeight: '800',
+    color: '#94A3B8',
+    letterSpacing: '0.05em',
+    textTransform: 'uppercase',
+    marginLeft: '4px'
+  };
+
+  const inputWrapperStyle = {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center'
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '16px 16px 16px 52px',
+    backgroundColor: '#F8FAFC',
+    border: '2px solid #F1F5F9',
+    borderRadius: '16px',
+    outline: 'none',
+    fontSize: '1rem',
+    fontWeight: '500',
+    color: '#1E293B',
+    transition: 'all 0.2s ease',
+    fontFamily: 'inherit'
+  };
+
+  const iconStyle = {
+    position: 'absolute',
+    left: '18px',
+    color: '#64748B',
+    pointerEvents: 'none'
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(15, 23, 42, 0.6)', zIndex: 1000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      backdropFilter: 'blur(12px)',
+      padding: '20px'
+    }}>
+      <div className="animate-fade-in" style={{ 
+        width: '100%', maxWidth: '600px', backgroundColor: 'white', borderRadius: '32px', overflow: 'hidden',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+        border: '1px solid rgba(255, 255, 255, 0.2)'
+      }}>
+        {/* Header Section - Green Theme */}
+        <div style={{ 
+          padding: '40px 40px 30px 40px', 
+          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+          position: 'relative'
+        }}>
+          <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+            <button onClick={onClose} style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+              border: 'none', padding: '8px', borderRadius: '12px', color: 'white', cursor: 'pointer' 
+            }}>
+              <X size={20} />
+            </button>
+          </div>
+          <div className="flex items-center gap-5">
+            <div style={{ 
+              padding: '16px', backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+              color: 'white', borderRadius: '20px', backdropFilter: 'blur(10px)'
+            }}>
+              <Clock size={28} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 leading-tight">{lab.name}</h2>
-              <p className="text-gray-500 font-medium flex items-center gap-2 mt-1">
-                <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
-                {lab.department} • {lab.capacity} Workstations
-              </p>
+              <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 900, color: 'white', letterSpacing: '-0.02em' }}>Set Lab Offline</h2>
+              <p style={{ margin: '4px 0 0 0', fontSize: '1rem', color: 'rgba(255, 255, 255, 0.8)', fontWeight: 500 }}>{lab.name} • Maintenance Schedule</p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
-          >
-            <X size={24} />
-          </button>
         </div>
 
-        {/* Tabs */}
-        <div className="px-6 mt-4 flex items-center gap-8 border-b border-gray-100">
-          <button 
-            onClick={() => setActiveTab('Settings')}
-            className={`pb-4 text-sm font-bold transition-all relative ${activeTab === 'Settings' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
-          >
-            Maintenance Settings
-            {activeTab === 'Settings' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full animate-fade-in" />}
-          </button>
-          <button 
-            onClick={() => setActiveTab('Details')}
-            className={`pb-4 text-sm font-bold transition-all relative ${activeTab === 'Details' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
-          >
-            Lab Specifications
-            {activeTab === 'Details' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full animate-fade-in" />}
-          </button>
-        </div>
+        <form onSubmit={handleSubmit} style={{ padding: '40px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            
+            <div style={{ 
+              backgroundColor: '#FEF3C7', border: '1px solid #FDE68A', 
+              padding: '16px', borderRadius: '20px', display: 'flex', gap: '12px' 
+            }}>
+              <AlertTriangle size={20} style={{ color: '#D97706', flexShrink: 0, marginTop: '2px' }} />
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#92400E', fontWeight: 500, lineHeight: '1.5' }}>
+                Marking this lab offline will prevent any classes from being scheduled during the selected dates.
+              </p>
+            </div>
 
-        {/* Content */}
-        <div className="p-8 flex-1 overflow-y-auto min-h-[400px]">
-          {activeTab === 'Settings' ? (
-            <div className="max-w-2xl mx-auto space-y-8">
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-                  <AlertTriangle size={20} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-amber-900">Manage Maintenance Window</p>
-                  <p className="text-sm text-amber-700 mt-1 leading-relaxed">
-                    Set a date range to mark this lab as offline. This will alert staff that the facility is currently unavailable.
-                  </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              {/* From Date */}
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}>From Date</label>
+                <div style={inputWrapperStyle}>
+                  <Calendar size={20} style={iconStyle} />
+                  <input 
+                    required
+                    type="date" 
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    style={inputStyle}
+                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.backgroundColor = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = '#F1F5F9'; e.target.style.backgroundColor = '#F8FAFC'; e.target.style.boxShadow = 'none'; }}
+                  />
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Start Date</label>
-                    <div className="relative group">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                      <input 
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-indigo-500 outline-none transition-all font-medium text-gray-700"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">End Date</label>
-                    <div className="relative group">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                      <input 
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        min={startDate}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-indigo-500 outline-none transition-all font-medium text-gray-700"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Maintenance Reason</label>
-                  <textarea 
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    placeholder="Describe the maintenance work..."
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl focus:bg-white focus:border-indigo-500 outline-none transition-all font-medium text-gray-700 min-h-[120px] resize-none"
+              {/* To Date */}
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}>To Date</label>
+                <div style={inputWrapperStyle}>
+                  <Calendar size={20} style={iconStyle} />
+                  <input 
+                    required
+                    type="date" 
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    min={startDate}
+                    style={inputStyle}
+                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.backgroundColor = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = '#F1F5F9'; e.target.style.backgroundColor = '#F8FAFC'; e.target.style.boxShadow = 'none'; }}
                   />
                 </div>
-
-                <div className="flex gap-4 pt-4">
-                  <button 
-                    type="submit" 
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
-                  >
-                    <Wrench size={18} />
-                    Update Maintenance Status
-                  </button>
-                  {lab.maintenance && (
-                    <button 
-                      type="button" 
-                      onClick={handleClear}
-                      className="px-6 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              </form>
+              </div>
             </div>
-          ) : (
-            <div className="max-w-2xl mx-auto grid grid-cols-2 gap-6">
-              {[
-                { label: 'Lab No.', value: lab.id, icon: Shield },
-                { label: 'Lab Name', value: lab.name, icon: Monitor },
-                { label: 'Department', value: lab.department, icon: Monitor },
-                { label: 'Total Units', value: `${lab.capacity} Workstations`, icon: Monitor },
-              ].map((item, i) => (
-                <div key={i} className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{item.label}</p>
-                  <p className="text-base font-bold text-gray-800">{item.value}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
-          <button 
-            onClick={onClose}
-            className="px-8 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all shadow-sm"
-          >
-            Close Management
-          </button>
-        </div>
+          </div>
+
+          {/* Buttons */}
+          <div style={{ display: 'flex', gap: '20px', marginTop: '50px' }}>
+            {lab.maintenance ? (
+              <button 
+                type="button" 
+                onClick={handleClear}
+                style={{ 
+                  flex: 1, padding: '18px', borderRadius: '18px', border: 'none', 
+                  backgroundColor: '#FEE2E2', color: '#EF4444', fontWeight: '800', cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#FECACA'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#FEE2E2'}
+              >
+                Bring Online
+              </button>
+            ) : (
+              <button 
+                type="button" 
+                onClick={onClose}
+                style={{ 
+                  flex: 1, padding: '18px', borderRadius: '18px', border: '2px solid #E2E8F0', 
+                  backgroundColor: 'white', color: '#64748B', fontWeight: '800', cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#F8FAFC'}
+                onMouseOut={(e) => e.target.style.backgroundColor = 'white'}
+              >
+                Cancel
+              </button>
+            )}
+            <button 
+              type="submit" 
+              style={{ 
+                flex: 1.5, padding: '18px', borderRadius: '18px', border: 'none', 
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', 
+                color: 'white', fontWeight: '900', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                boxShadow: '0 10px 20px -5px rgba(16, 185, 129, 0.5)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+              onMouseOut={(e) => e.target.style.transform = 'none'}
+            >
+              <Save size={20} />
+              Set Schedule
+            </button>
+          </div>
+        </form>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 }
