@@ -578,6 +578,16 @@ export default function ClassManagement({ userRole, userName }) {
     {showReportFor && createPortal((() => {
       const batchStudents = users.filter(u => u.role === 'Student' && u.batch?.trim() === showReportFor?.trim());
       
+      // Tab 1: Attendance dynamic columns
+      const maxSessions = Math.max(...batchStudents.map(s => s.detailedReport?.sessions?.length || 0), 0);
+      const currentClass = classes.find(c => c.id === showReportFor);
+      const sessionColumns = Array.from({ length: maxSessions }, (_, i) => {
+        const classSession = currentClass?.sessions?.[i];
+        const date = classSession?.date || batchStudents.find(s => s.detailedReport?.sessions?.[i])?.detailedReport?.sessions?.[i]?.date || '';
+        const time = classSession ? `${classSession.startTime}-${classSession.endTime}` : '';
+        return { index: i, subLabel: date + (time ? ` ${time}` : '') };
+      });
+
       // Tab 2: Activity dynamic columns
       const allActivities = Array.from(new Set(
         batchStudents.flatMap(s => s.detailedReport?.performance?.map(p => p.activity) || [])
@@ -637,19 +647,23 @@ export default function ClassManagement({ userRole, userName }) {
             </div>
 
             {activeReportTab === 'Attendance' ? (
-              <div className="table-container mb-4">
-                <table style={{ border: '1px solid #E5E7EB', width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+              <div className="table-container mb-4" style={{ overflowX: 'auto' }}>
+                <table style={{ border: '1px solid #E5E7EB', width: '100%', textAlign: 'left', borderCollapse: 'collapse', minWidth: '800px' }}>
                   <thead style={{ backgroundColor: '#F9FAFB' }}>
                     <tr>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem' }}>Student Name</th>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem' }}>Attendance %</th>
-                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem' }}>Session Wise Attendance</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem', minWidth: '200px', sticky: 'left', backgroundColor: '#F9FAFB', zIndex: 1 }}>Student Name</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem', minWidth: '100px' }}>Attendance %</th>
+                      {sessionColumns.map((col, idx) => (
+                        <th key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem', minWidth: '120px', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                          S{idx + 1}<br/><span style={{ fontSize: '0.7rem', fontWeight: 400 }}>({col.subLabel})</span>
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {batchStudents.map(student => (
                       <tr key={student.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
-                        <td style={{ padding: '12px 16px' }}>
+                        <td style={{ padding: '12px 16px', sticky: 'left', backgroundColor: 'white', zIndex: 1 }}>
                           <div className="flex items-center gap-3">
                             <img src={student.photo} alt={student.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                             <span style={{ fontWeight: 500, color: '#1F2937' }}>{student.name}</span>
@@ -660,15 +674,24 @@ export default function ClassManagement({ userRole, userName }) {
                             {student.attendance}%
                           </span>
                         </td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <div className="flex flex-wrap gap-2">
-                            {student.detailedReport?.sessions?.map((s, idx) => (
-                              <span key={idx} className={`badge ${s.attendance === 'Present' ? 'badge-green' : 'badge-danger'}`} style={{ fontSize: '0.75rem', padding: '4px 8px' }}>
-                                S{idx + 1} ({s.date}): {s.attendance}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
+                        {sessionColumns.map((col, idx) => {
+                          const sessionStatus = student.detailedReport?.sessions?.[idx]?.attendance;
+                          return (
+                            <td key={idx} style={{ padding: '12px 16px', textAlign: 'center' }}>
+                              {sessionStatus ? (
+                                <span style={{ 
+                                  fontWeight: 700, 
+                                  fontSize: '0.75rem',
+                                  color: sessionStatus === 'Present' ? '#10B981' : '#EF4444'
+                                }}>
+                                  {sessionStatus === 'Present' ? 'Present' : 'Absent'}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>-</span>
+                              )}
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))}
                   </tbody>
