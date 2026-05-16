@@ -58,8 +58,7 @@ export default function ClassManagement({ userRole, userName }) {
   const [editingSessionIdx, setEditingSessionIdx] = useState(null);
   const [newDate, setNewDate] = useState('');
   const [selectedSlots, setSelectedSlots] = useState(['morning', 'afternoon']);
-  const [customStartTime, setCustomStartTime] = useState('');
-  const [customEndTime, setCustomEndTime] = useState('');
+  const [customSlots, setCustomSlots] = useState([{ startTime: '', endTime: '' }]);
 
   const updateClass = (classId, field, value) => {
     setClasses(classes.map(c => c.id === classId ? { ...c, [field]: value } : c));
@@ -93,19 +92,22 @@ export default function ClassManagement({ userRole, userName }) {
   const handleAddSession = (classId) => {
     if (!newDate || selectedSlots.length === 0) return;
     
-    // Validate custom time if selected
-    if (selectedSlots.includes('custom') && (!customStartTime || !customEndTime)) return;
+    // Validate custom slots if selected
+    if (selectedSlots.includes('custom')) {
+      const invalid = customSlots.some(s => !s.startTime || !s.endTime);
+      if (invalid) return;
+    }
 
     const targetClass = classes.find(c => c.id === classId);
     if (targetClass) {
       let updatedSessions = [...targetClass.sessions];
       if (editingSessionIdx !== null) {
-        // Update existing
+        // Update existing - only takes the FIRST slot if editing
         const slotType = selectedSlots[0];
         let slot;
         if (slotType === 'morning') slot = { startTime: '09:00', endTime: '12:00' };
         else if (slotType === 'afternoon') slot = { startTime: '13:00', endTime: '16:00' };
-        else if (slotType === 'custom') slot = { startTime: customStartTime, endTime: customEndTime };
+        else if (slotType === 'custom') slot = { startTime: customSlots[0].startTime, endTime: customSlots[0].endTime };
         
         if (slot && slot.startTime && slot.endTime) {
           updatedSessions[editingSessionIdx] = { ...updatedSessions[editingSessionIdx], date: newDate, ...slot };
@@ -113,13 +115,14 @@ export default function ClassManagement({ userRole, userName }) {
       } else {
         // Add new
         selectedSlots.forEach(slotType => {
-          let slot;
-          if (slotType === 'morning') slot = { startTime: '09:00', endTime: '12:00' };
-          else if (slotType === 'afternoon') slot = { startTime: '13:00', endTime: '16:00' };
-          else if (slotType === 'custom') slot = { startTime: customStartTime, endTime: customEndTime };
-          
-          if (slot && slot.startTime && slot.endTime) {
-            updatedSessions.push({ date: newDate, ...slot });
+          if (slotType === 'morning') updatedSessions.push({ date: newDate, startTime: '09:00', endTime: '12:00' });
+          else if (slotType === 'afternoon') updatedSessions.push({ date: newDate, startTime: '13:00', endTime: '16:00' });
+          else if (slotType === 'custom') {
+            customSlots.forEach(cs => {
+              if (cs.startTime && cs.endTime) {
+                updatedSessions.push({ date: newDate, startTime: cs.startTime, endTime: cs.endTime });
+              }
+            });
           }
         });
       }
@@ -129,8 +132,7 @@ export default function ClassManagement({ userRole, userName }) {
     setEditingSessionIdx(null);
     setNewDate('');
     setSelectedSlots(['morning', 'afternoon']);
-    setCustomStartTime('');
-    setCustomEndTime('');
+    setCustomSlots([{ startTime: '', endTime: '' }]);
   };
 
   const handleEditSession = (classId, session, idx) => {
@@ -143,8 +145,7 @@ export default function ClassManagement({ userRole, userName }) {
       setSelectedSlots(['afternoon']);
     } else {
       setSelectedSlots(['custom']);
-      setCustomStartTime(session.startTime);
-      setCustomEndTime(session.endTime);
+      setCustomSlots([{ startTime: session.startTime, endTime: session.endTime }]);
     }
   };
 
@@ -360,24 +361,54 @@ export default function ClassManagement({ userRole, userName }) {
                           >
                             <div className="flex items-center justify-between">
                               <span style={{ fontWeight: 500, color: '#1F2937' }}>Custom Time</span>
-                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedSlots.includes('custom') ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
-                                {selectedSlots.includes('custom') && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              <div className="flex items-center gap-3">
+                                {selectedSlots.includes('custom') && editingSessionIdx === null && (
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setCustomSlots([...customSlots, { startTime: '', endTime: '' }]); }}
+                                    className="p-1 hover:bg-blue-200 rounded text-blue-600 transition-colors"
+                                  >
+                                    <Plus size={14} />
+                                  </button>
+                                )}
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedSlots.includes('custom') ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
+                                  {selectedSlots.includes('custom') && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
                               </div>
                             </div>
                             {selectedSlots.includes('custom') && (
-                              <div className="flex gap-2 mt-1" onClick={(e) => e.stopPropagation()}>
-                                <input 
-                                  type="time" 
-                                  value={customStartTime} 
-                                  onChange={(e) => setCustomStartTime(e.target.value)}
-                                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded text-sm outline-none focus:border-blue-500 bg-white font-medium text-gray-700"
-                                />
-                                <input 
-                                  type="time" 
-                                  value={customEndTime} 
-                                  onChange={(e) => setCustomEndTime(e.target.value)}
-                                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded text-sm outline-none focus:border-blue-500 bg-white font-medium text-gray-700"
-                                />
+                              <div className="flex flex-col gap-3 mt-1" onClick={(e) => e.stopPropagation()}>
+                                {customSlots.map((cs, cIdx) => (
+                                  <div key={cIdx} className="flex items-center gap-2">
+                                    <input 
+                                      type="time" 
+                                      value={cs.startTime} 
+                                      onChange={(e) => {
+                                        const newCS = [...customSlots];
+                                        newCS[cIdx].startTime = e.target.value;
+                                        setCustomSlots(newCS);
+                                      }}
+                                      className="flex-1 px-3 py-1.5 border border-gray-200 rounded text-sm outline-none focus:border-blue-500 bg-white font-medium text-gray-700"
+                                    />
+                                    <input 
+                                      type="time" 
+                                      value={cs.endTime} 
+                                      onChange={(e) => {
+                                        const newCS = [...customSlots];
+                                        newCS[cIdx].endTime = e.target.value;
+                                        setCustomSlots(newCS);
+                                      }}
+                                      className="flex-1 px-3 py-1.5 border border-gray-200 rounded text-sm outline-none focus:border-blue-500 bg-white font-medium text-gray-700"
+                                    />
+                                    {customSlots.length > 1 && (
+                                      <button 
+                                        onClick={() => setCustomSlots(customSlots.filter((_, i) => i !== cIdx))}
+                                        className="text-gray-400 hover:text-red-500 transition-colors"
+                                      >
+                                        <X size={14} />
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
                               </div>
                             )}
                           </div>
@@ -385,7 +416,7 @@ export default function ClassManagement({ userRole, userName }) {
                       )}
 
                       <div className="flex justify-end gap-2 mt-3">
-                        <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); setNewDate(''); setSelectedSlots(['morning', 'afternoon']); setCustomStartTime(''); setCustomEndTime(''); }} className="btn btn-outline" style={{ padding: '8px 16px', fontSize: '0.875rem', borderRadius: '8px' }}>Cancel</button>
+                        <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); setNewDate(''); setSelectedSlots(['morning', 'afternoon']); setCustomSlots([{ startTime: '', endTime: '' }]); }} className="btn btn-outline" style={{ padding: '8px 16px', fontSize: '0.875rem', borderRadius: '8px' }}>Cancel</button>
                         <button 
                           onClick={() => handleAddSession(cls.id)} 
                           className="btn btn-primary" 
