@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, Users, Calendar, MapPin, Edit2, X, ArrowRightLeft, Eye, Info } from 'lucide-react';
-import { classes as initialClasses } from '../data/mockData';
+import { classes as initialClasses, users } from '../data/mockData';
 import StaffSelectionModal from './StaffSelectionModal';
 import LabSelectionModal from './LabSelectionModal';
 
@@ -59,6 +60,15 @@ export default function ClassManagement({ userRole, userName }) {
   const [newDate, setNewDate] = useState('');
   const [selectedSlots, setSelectedSlots] = useState(['morning', 'afternoon']);
   const [customSlots, setCustomSlots] = useState([{ startTime: '', endTime: '' }]);
+
+  // Report State
+  const [showReportFor, setShowReportFor] = useState(null);
+  const [activeReportTab, setActiveReportTab] = useState('Attendance');
+
+  const handleShowReport = (batchId) => {
+    setShowReportFor(batchId);
+    setActiveReportTab('Attendance');
+  };
 
   const updateClass = (classId, field, value) => {
     setClasses(classes.map(c => c.id === classId ? { ...c, [field]: value } : c));
@@ -170,6 +180,7 @@ export default function ClassManagement({ userRole, userName }) {
   });
 
   return (
+    <>
     <div className="p-6 animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Class Management</h2>
@@ -491,65 +502,242 @@ export default function ClassManagement({ userRole, userName }) {
                 </div>
               </div>
 
+              <div className="flex justify-end mt-4 pt-4 border-t border-gray-100">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleShowReport(cls.id); }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95 group"
+                >
+                  <Eye size={18} className="group-hover:scale-110 transition-transform" />
+                  Show Report
+                </button>
+              </div>
+
             </div>
           </div>
         ))}
       </div>
 
-      <StaffSelectionModal 
-        isOpen={activeModal === 'Trainer' || activeModal === 'Co-Trainer' || activeModal === 'Transfer-Tabs'}
-        onClose={() => setActiveModal(null)}
-        role={activeModal}
-        onSelect={handleModalSelect}
-        currentClass={currentClassObj}
-        allClasses={classes}
-      />
+    </div>
 
-      <LabSelectionModal 
-        isOpen={activeModal === 'Lab'}
-        onClose={() => setActiveModal(null)}
-        onSelect={handleModalSelect}
-        currentClass={currentClassObj}
-        allClasses={classes}
-      />
+    <StaffSelectionModal 
+      isOpen={activeModal === 'Trainer' || activeModal === 'Co-Trainer' || activeModal === 'Transfer-Tabs'}
+      onClose={() => setActiveModal(null)}
+      role={activeModal}
+      onSelect={handleModalSelect}
+      currentClass={currentClassObj}
+      allClasses={classes}
+    />
 
-      {/* Transfer Information Modal */}
-      {transferInfo && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-          <div className="card animate-fade-in" style={{ width: '400px', padding: '24px', borderRadius: '20px', border: 'none', textAlign: 'center' }}>
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-amber-50 rounded-full text-amber-600">
-                <Info size={32} />
-              </div>
+    <LabSelectionModal 
+      isOpen={activeModal === 'Lab'}
+      onClose={() => setActiveModal(null)}
+      onSelect={handleModalSelect}
+      currentClass={currentClassObj}
+      allClasses={classes}
+    />
+
+    {/* Transfer Information Modal */}
+    {transferInfo && (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+        <div className="card animate-fade-in" style={{ width: '400px', padding: '24px', borderRadius: '20px', border: 'none', textAlign: 'center' }}>
+          <div className="flex justify-center mb-4">
+            <div className="p-3 bg-amber-50 rounded-full text-amber-600">
+              <Info size={32} />
             </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Session Transfer Info</h2>
-            <p className="text-gray-500 text-sm mb-6">Details regarding the {transferInfo.type} replacement for this session.</p>
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Session Transfer Info</h2>
+          <p className="text-gray-500 text-sm mb-6">Details regarding the {transferInfo.type} replacement for this session.</p>
+          
+          <div className="space-y-4 mb-8">
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-left">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transferred From</p>
+              <p className="font-bold text-red-500">{transferInfo.from}</p>
+            </div>
             
-            <div className="space-y-4 mb-8">
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-left">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transferred From</p>
-                <p className="font-bold text-red-500">{transferInfo.from}</p>
+            <div className="flex justify-center">
+              <div className="w-px h-6 bg-gray-200"></div>
+            </div>
+            
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-left">
+              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Assigned To (Current)</p>
+              <p className="font-bold text-blue-700">{transferInfo.to}</p>
+            </div>
+          </div>
+
+          <button 
+            className="btn btn-primary w-full py-3 justify-center shadow-lg shadow-blue-200" 
+            onClick={() => setTransferInfo(null)}
+          >
+            Close Details
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* Batch Report Modal */}
+    {showReportFor && createPortal((() => {
+      const batchStudents = users.filter(u => u.role === 'Student' && u.batch?.trim() === showReportFor?.trim());
+      
+      // Tab 2: Activity dynamic columns
+      const allActivities = Array.from(new Set(
+        batchStudents.flatMap(s => s.detailedReport?.performance?.map(p => p.activity) || [])
+      ));
+
+      return (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
+        }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '1000px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', backgroundColor: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+            <button 
+              onClick={() => setShowReportFor(null)}
+              style={{ position: 'absolute', right: '20px', top: '20px', background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex items-center gap-4 mb-6" style={{ borderBottom: '1px solid #E5E7EB', paddingBottom: '1rem' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={32} color="#4F46E5" />
               </div>
-              
-              <div className="flex justify-center">
-                <div className="w-px h-6 bg-gray-200"></div>
-              </div>
-              
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-left">
-                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Assigned To (Current)</p>
-                <p className="font-bold text-blue-700">{transferInfo.to}</p>
+              <div>
+                <h2 style={{ marginBottom: 0, fontSize: '1.5rem', fontWeight: 700, color: '#1F2937' }}>{showReportFor}</h2>
+                <span style={{ color: '#6B7280', fontSize: '0.875rem' }}>{batchStudents.length} Students in Batch</span>
               </div>
             </div>
 
-            <button 
-              className="btn btn-primary w-full py-3 justify-center shadow-lg shadow-blue-200" 
-              onClick={() => setTransferInfo(null)}
-            >
-              Close Details
-            </button>
+            <div className="flex gap-6 border-b border-gray-200 mb-6">
+              <div 
+                onClick={() => setActiveReportTab('Attendance')}
+                style={{ 
+                  padding: '8px 4px', 
+                  cursor: 'pointer', 
+                  fontWeight: 600, 
+                  borderBottom: activeReportTab === 'Attendance' ? '2px solid var(--color-primary)' : '2px solid transparent', 
+                  color: activeReportTab === 'Attendance' ? 'var(--color-primary)' : '#6B7280',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Dates & Sessions Attendance
+              </div>
+              <div 
+                onClick={() => setActiveReportTab('Activity Report')}
+                style={{ 
+                  padding: '8px 4px', 
+                  cursor: 'pointer', 
+                  fontWeight: 600, 
+                  borderBottom: activeReportTab === 'Activity Report' ? '2px solid var(--color-primary)' : '2px solid transparent', 
+                  color: activeReportTab === 'Activity Report' ? 'var(--color-primary)' : '#6B7280',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Class Performance Detailed Report
+              </div>
+            </div>
+
+            {activeReportTab === 'Attendance' ? (
+              <div className="table-container mb-4">
+                <table style={{ border: '1px solid #E5E7EB', width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+                  <thead style={{ backgroundColor: '#F9FAFB' }}>
+                    <tr>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem' }}>Student Name</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem' }}>Attendance %</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem' }}>Session Wise Attendance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {batchStudents.map(student => (
+                      <tr key={student.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td style={{ padding: '12px 16px' }}>
+                          <div className="flex items-center gap-3">
+                            <img src={student.photo} alt={student.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                            <span style={{ fontWeight: 500, color: '#1F2937' }}>{student.name}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <span style={{ fontWeight: 600, color: student.attendance >= 80 ? 'var(--color-success)' : 'var(--color-danger)' }}>
+                            {student.attendance}%
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <div className="flex flex-wrap gap-2">
+                            {student.detailedReport?.sessions?.map((s, idx) => (
+                              <span key={idx} className={`badge ${s.attendance === 'Present' ? 'badge-green' : 'badge-danger'}`} style={{ fontSize: '0.75rem', padding: '4px 8px' }}>
+                                S{idx + 1} ({s.date}): {s.attendance}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="table-container mb-4">
+                <table style={{ border: '1px solid #E5E7EB', width: '100%', textAlign: 'left', borderCollapse: 'collapse', overflowX: 'auto', display: 'block' }}>
+                  <thead style={{ backgroundColor: '#F9FAFB' }}>
+                    <tr>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem', minWidth: '200px' }}>Activity Name</th>
+                      <th style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem', minWidth: '100px' }}>Avg Mark</th>
+                      {allActivities.map(act => (
+                        <th key={act} style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#6B7280', fontWeight: 600, fontSize: '0.875rem', minWidth: '150px' }}>{act}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {batchStudents.map(student => {
+                      const performance = student.detailedReport?.performance || [];
+                      let total = 0;
+                      allActivities.forEach(act => {
+                        const record = performance.find(p => p.activity === act);
+                        if (record) {
+                          const val = parseInt(record.score.split('/')[0]) || 0;
+                          total += val;
+                        }
+                      });
+                      const avg = allActivities.length > 0 ? (total / allActivities.length).toFixed(1) : '0.0';
+
+                      return (
+                        <tr key={student.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                          <td style={{ padding: '12px 16px' }}>
+                            <div className="flex items-center gap-3">
+                              <img src={student.photo} alt={student.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                              <span style={{ fontWeight: 500, color: '#1F2937' }}>{student.name}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{avg}%</span>
+                          </td>
+                          {allActivities.map(act => {
+                            const record = performance.find(p => p.activity === act);
+                            return (
+                              <td key={act} style={{ padding: '12px 16px' }}>
+                                {record ? (
+                                  <span style={{ fontWeight: 500, color: '#374151' }}>{record.score}</span>
+                                ) : (
+                                  <span style={{ color: '#EF4444', fontSize: '0.875rem', fontWeight: 500 }}>Not Attended</span>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <button className="btn btn-outline" onClick={() => setShowReportFor(null)}>Close Report</button>
+              <button className="btn btn-primary" onClick={() => window.print()}>Print Report</button>
+            </div>
           </div>
         </div>
-      )}
-    </div>
+      );
+    })(), document.body)}
+    </>
   );
 }
