@@ -1,212 +1,430 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, UserCheck, UserMinus, Save, Shield, Lock, Fingerprint } from 'lucide-react';
-import { users } from '../data/mockData';
+import { createPortal } from 'react-dom';
+import { 
+  Check, X, UserCheck, UserMinus, Save, Shield, Lock, 
+  Fingerprint, Monitor, Users, Play, Pause, RefreshCw, 
+  ChevronRight, AlertCircle, Clock
+} from 'lucide-react';
+import { users, classes } from '../data/mockData';
 
 export default function AttendanceTab({ userRole, userName }) {
-  const [sessionStatus, setSessionStatus] = useState('active'); // 'active' or 'verification'
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [code, setCode] = useState('7 7 7 3');
-  const [isPaused, setIsPaused] = useState(false);
-  const [presentStudents, setPresentStudents] = useState([
-    { id: 5, name: "Emily Davis" }
-  ]);
-
-  // Student specific state
-  const [studentCode, setStudentCode] = useState('');
+  // Common State
+  const [activeBatch, setActiveBatch] = useState(null);
+  const [sessionStatus, setSessionStatus] = useState('idle'); // 'idle', 'active', 'summary'
+  const [sessionCode, setSessionCode] = useState('');
+  const [presentStudents, setPresentStudents] = useState([]);
+  
+  // Student State
+  const [studentOtp, setStudentOtp] = useState(['', '', '', '']);
   const [isMarked, setIsMarked] = useState(false);
+  const [studentError, setStudentError] = useState('');
+  const [timeLeft, setTimeLeft] = useState(30);
 
   const isStudent = userRole === 'Student';
-  const batchRoster = users.filter(u => u.role === 'Student').slice(0, 15);
+  const isTrainer = userRole === 'Trainer' || userRole === 'Co-Trainer';
 
-  // Real-time Timer Logic (Trainer Only)
+  // Helper for progress bar color
+  const getTimerColor = (time) => {
+    if (time > 20) return '#10B981'; // Green
+    if (time > 10) return '#F59E0B'; // Orange
+    return '#EF4444'; // Red
+  };
+
+  // Trainer: Generate new code
+  const generateCode = () => {
+    const newCode = Math.floor(1000 + Math.random() * 9000).toString();
+    setSessionCode(newCode);
+  };
+
+  // Timer Logic: Decrement every second, regenerate code at 0
   useEffect(() => {
-    let interval;
-    if (!isStudent && sessionStatus === 'active' && !isPaused && timeLeft > 0) {
-      interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    } else if (!isStudent && timeLeft === 0 && !isPaused && sessionStatus === 'active') {
-      const newCode = Math.floor(1000 + Math.random() * 9000).toString().split('').join(' ');
-      setCode(newCode);
+    let timer;
+    if (sessionStatus === 'active') {
+      timer = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            generateCode(); // Regenerate code when timer expires
+            return 30;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
       setTimeLeft(30);
     }
-    return () => clearInterval(interval);
-  }, [timeLeft, isPaused, sessionStatus, isStudent]);
+    return () => clearInterval(timer);
+  }, [sessionStatus]);
 
+  const startSession = (batch) => {
+    setActiveBatch(batch);
+    generateCode();
+    setPresentStudents([]);
+    setSessionStatus('active');
+  };
+
+  const endSession = () => {
+    setSessionStatus('summary');
+  };
+
+  // Mock: Simulate students joining randomly in Trainer View
+  useEffect(() => {
+    if (sessionStatus === 'active' && isTrainer && activeBatch) {
+      const batchStudents = users.filter(u => u.role === 'Student').slice(0, 8);
+      const interval = setInterval(() => {
+        if (presentStudents.length < batchStudents.length) {
+          const nextStudent = batchStudents[presentStudents.length];
+          if (nextStudent && Math.random() > 0.7) {
+            setPresentStudents(prev => [...prev, nextStudent]);
+          }
+        }
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [sessionStatus, activeBatch, isTrainer, presentStudents.length]);
+
+  // Student OTP Input Handler
+  const handleOtpChange = (index, value) => {
+    if (value.length > 1) return;
+    const newOtp = [...studentOtp];
+    newOtp[index] = value;
+    setStudentOtp(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 3) {
+      const nextInput = document.getElementById(`otp-${index + 1}`);
+      nextInput?.focus();
+    }
+  };
+
+  const handleVerify = () => {
+    const enteredCode = studentOtp.join('');
+    // For demo: any 4-digit code works if it matches a generated one (or just 7777 for demo)
+    if (enteredCode.length === 4) {
+      setIsMarked(true);
+      setStudentError('');
+    } else {
+      setStudentError('Invalid Code. Please check the projector.');
+    }
+  };
+
+  // --- STUDENT VIEW ---
   if (isStudent) {
     return (
-      <div className="h-screen w-full bg-slate-950 text-slate-200 overflow-hidden flex flex-col items-center justify-center p-12 animate-in fade-in duration-500">
-        <div className="w-full max-w-md bg-slate-900/50 backdrop-blur-2xl border border-slate-800 p-12 rounded-[3rem] shadow-2xl flex flex-col items-center gap-8">
-          <div className="w-20 h-20 rounded-3xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 mb-4">
-            <Fingerprint size={40} className="text-indigo-400" />
-          </div>
-          
-          <div className="text-center">
-            <h1 className="text-3xl font-black text-white tracking-tight mb-2">Live Attendance</h1>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Enter the session code displayed on screen</p>
+      <div style={{
+        height: 'calc(100vh - 80px)', width: '100%', 
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+        padding: '20px'
+      }}>
+        <div style={{
+          width: '100%', maxWidth: '440px', backgroundColor: '#111827',
+          padding: '48px', borderRadius: '40px', border: '1px solid #374151',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'
+        }}>
+          <div style={{
+            width: '80px', height: '80px', borderRadius: '24px', 
+            backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '32px'
+          }}>
+            <Fingerprint size={40} style={{ color: '#10B981' }} />
           </div>
 
+          <h1 style={{ color: 'white', fontSize: '2rem', fontWeight: '900', marginBottom: '8px', letterSpacing: '-0.02em' }}>Live Attendance</h1>
+          <p style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '40px' }}>
+            Enter the 4-digit code shown on the screen
+          </p>
+
           {isMarked ? (
-            <div className="w-full py-12 bg-emerald-500/10 border border-emerald-500/20 rounded-[2.5rem] flex flex-col items-center gap-4 animate-in zoom-in-95 duration-500">
-              <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                <Check size={32} className="text-white" strokeWidth={4} />
+            <div style={{
+              width: '100%', padding: '40px', backgroundColor: 'rgba(16, 185, 129, 0.05)',
+              borderRadius: '32px', border: '2px solid rgba(16, 185, 129, 0.1)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px',
+              animation: 'scaleIn 0.5s ease-out'
+            }}>
+              <div style={{
+                width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#10B981',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
+              }}>
+                <Check size={32} style={{ color: 'white' }} strokeWidth={4} />
               </div>
-              <div className="text-center">
-                <p className="text-xl font-black text-white">Attendance Verified</p>
-                <p className="text-sm text-emerald-400 font-bold uppercase tracking-widest mt-1">Status: Present</p>
+              <div>
+                <p style={{ color: 'white', fontSize: '1.25rem', fontWeight: '900', margin: 0 }}>Verified Successfully</p>
+                <p style={{ color: '#10B981', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }}>Status: Present</p>
               </div>
             </div>
           ) : (
-            <div className="w-full flex flex-col gap-6">
-              <div className="flex gap-4 justify-center">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="w-16 h-20 bg-black rounded-2xl border border-slate-800 flex items-center justify-center">
-                    <input 
-                      type="text"
-                      maxLength="1"
-                      className="w-full bg-transparent border-none outline-none text-center text-4xl font-black text-indigo-400"
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          setStudentCode(prev => prev + e.target.value);
-                          if (studentCode.length === 3) setIsMarked(true);
-                        }
-                      }}
-                    />
-                  </div>
+            <div style={{ width: '100%' }}>
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '32px' }}>
+                {[0, 1, 2, 3].map(i => (
+                  <input 
+                    key={i}
+                    id={`otp-${i}`}
+                    type="number"
+                    value={studentOtp[i]}
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    style={{
+                      width: '64px', height: '80px', backgroundColor: 'black', border: '2px solid #374151',
+                      borderRadius: '16px', outline: 'none', textAlign: 'center', fontSize: '2rem',
+                      fontWeight: '900', color: '#10B981', transition: 'all 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#10B981'}
+                    onBlur={(e) => e.target.style.borderColor = '#374151'}
+                  />
                 ))}
               </div>
+              
+              {studentError && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#EF4444', fontSize: '0.75rem', fontWeight: '700', marginBottom: '24px', justifyContent: 'center' }}>
+                  <AlertCircle size={14} /> {studentError}
+                </div>
+              )}
+
               <button 
-                className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:from-indigo-500 hover:to-violet-500 transition-all active:scale-95 shadow-xl shadow-indigo-500/20"
-                onClick={() => setIsMarked(true)}
+                onClick={handleVerify}
+                style={{
+                  width: '100%', padding: '20px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                  borderRadius: '20px', color: 'white', border: 'none', fontWeight: '900', fontSize: '0.875rem',
+                  textTransform: 'uppercase', letterSpacing: '0.2em', cursor: 'pointer',
+                  boxShadow: '0 10px 20px -5px rgba(16, 185, 129, 0.4)', transition: 'all 0.2s'
+                }}
               >
-                Mark Attendance
+                Verify & Submit
               </button>
             </div>
           )}
 
-          <div className="flex items-center gap-2 text-slate-600">
-            <Lock size={12} />
-            <span className="text-[10px] font-black uppercase tracking-widest">End-to-End Encrypted Verification</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '40px', opacity: 0.4 }}>
+            <Lock size={12} style={{ color: '#94A3B8' }} />
+            <span style={{ fontSize: '10px', color: '#94A3B8', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Secure Identity Verification</span>
           </div>
         </div>
       </div>
     );
   }
 
-  // Trainer view logic (Existing)
-  const handleStop = () => setSessionStatus('verification');
-  const toggleStatus = (student) => {
-    if (presentStudents.find(ps => ps.id === student.id)) {
-      setPresentStudents(prev => prev.filter(ps => ps.id !== student.id));
-    } else {
-      setPresentStudents(prev => [...prev, student]);
-    }
-  };
-
-  if (sessionStatus === 'verification') {
-    return (
-      <div className="h-screen w-full bg-slate-950 text-slate-200 overflow-hidden flex flex-col p-12 animate-in fade-in duration-500">
-        <div className="flex justify-between items-center mb-12 border-b border-slate-800 pb-8">
-          <div>
-            <h1 className="text-5xl font-black text-white tracking-tighter mb-2">Final Verification</h1>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Review student presence and finalize attendance</p>
-          </div>
-          <div className="flex gap-4">
-            <div className="px-8 py-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
-              <p className="text-xs font-black text-emerald-500 uppercase tracking-widest mb-1">Present</p>
-              <p className="text-3xl font-black text-white">{presentStudents.length}</p>
-            </div>
-            <div className="px-8 py-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
-              <p className="text-xs font-black text-red-500 uppercase tracking-widest mb-1">Absent</p>
-              <p className="text-3xl font-black text-white">{batchRoster.length - presentStudents.length}</p>
-            </div>
-          </div>
+  // --- TRAINER VIEW ---
+  return (
+    <div className="p-8" style={{ backgroundColor: '#F9FAFB', minHeight: '100vh' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
+        <div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#111827', margin: 0, letterSpacing: '-0.02em' }}>Attendance Management</h1>
+          <p style={{ color: '#6B7280', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.75rem', marginTop: '8px' }}>
+            Real-time batch presence tracking
+          </p>
         </div>
+      </div>
 
-        <div className="flex-1 overflow-y-auto grid grid-cols-4 gap-6 pr-4 custom-scrollbar pb-12">
-          {batchRoster.map(student => {
-            const isPresent = presentStudents.find(ps => ps.id === student.id);
-            return (
-              <div key={student.id} onClick={() => toggleStatus(student)} className={`p-6 rounded-[2rem] border transition-all cursor-pointer flex flex-col gap-4 group ${isPresent ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10' : 'bg-slate-900/50 border-slate-800 hover:bg-slate-800'}`}>
-                <div className="flex justify-between items-start">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all ${isPresent ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-slate-800 text-slate-600 border-slate-700'}`}>
-                    {isPresent ? <UserCheck size={24} /> : <UserMinus size={24} />}
-                  </div>
-                  <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${isPresent ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>{isPresent ? 'Present' : 'Absent'}</span>
+      {sessionStatus === 'idle' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '32px' }}>
+          {classes.map(batch => (
+            <div key={batch.id} style={{
+              backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9',
+              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: '24px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10B981' }}>
+                  <Users size={24} />
                 </div>
                 <div>
-                  <p className="text-lg font-black text-white group-hover:text-emerald-400 transition-colors">{student.name}</p>
-                  <p className="text-xs text-slate-500 font-bold uppercase tracking-tighter">ID: #{1000 + student.id}</p>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#111827' }}>{batch.name}</h3>
+                  <p style={{ margin: 0, color: '#6B7280', fontSize: '0.75rem', fontWeight: '700' }}>{batch.id} • {batch.students} Students</p>
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        <div className="pt-8 border-t border-slate-800 flex justify-end gap-6">
-          <button onClick={() => setSessionStatus('active')} className="px-10 py-5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-sm uppercase tracking-widest rounded-2xl transition-all active:scale-95">Back to Live</button>
-          <button onClick={() => window.location.reload()} className="px-12 py-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm uppercase tracking-[0.2em] rounded-2xl transition-all shadow-2xl shadow-emerald-500/20 active:scale-95 flex items-center gap-3">
-            <Save size={20} /> Finalize Attendance
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-screen w-full bg-slate-950 text-slate-200 overflow-hidden flex animate-in fade-in duration-500">
-      <div className="w-1/5 h-full border-r border-slate-800 p-8 flex flex-col gap-10 bg-slate-900/50">
-        <h2 className="text-xs font-black text-slate-500 tracking-[0.4em] uppercase">Session Intel</h2>
-        <div className="flex flex-col gap-10 mt-4">
-          <div className="space-y-2">
-            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">Batch Code</p>
-            <p className="text-2xl font-black text-white tracking-tighter">1 BBA</p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">Active Subject</p>
-            <p className="text-2xl font-black text-white tracking-tighter">Neural Architectures</p>
-          </div>
-        </div>
-        <div className="mt-auto p-6 rounded-3xl bg-slate-800/30 border border-slate-800 flex items-center gap-4 group hover:bg-slate-800/50 transition-all cursor-help">
-          <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_15px_#10b981]"></div>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Biometric Link Active</span>
-        </div>
-      </div>
-
-      <div className="w-3/5 h-full flex flex-col items-center justify-center relative bg-black">
-        <div className="absolute top-0 left-0 w-full h-2 bg-slate-900 overflow-hidden">
-          <div className="h-full bg-emerald-500 transition-all duration-1000 ease-linear shadow-[0_0_30px_#10b981]" style={{ width: `${(timeLeft / 30) * 100}%` }}></div>
-        </div>
-        <div className="flex flex-col items-center w-full px-12">
-          <h1 className="text-[22rem] font-black tracking-[0.1em] text-white leading-none select-none filter drop-shadow-[0_0_80px_rgba(255,255,255,0.15)] animate-pulse">{code}</h1>
-          <p className="text-slate-400 mt-16 text-3xl font-black uppercase tracking-[0.5em] opacity-40">System refreshing in <span className="text-emerald-500">{timeLeft}s</span></p>
-        </div>
-        <div className="absolute bottom-12 flex gap-10 bg-slate-800/60 backdrop-blur-3xl px-12 py-5 rounded-[2.5rem] border border-slate-700 shadow-2xl items-center hover:bg-slate-800/80 transition-all group">
-          <button onClick={() => setIsPaused(!isPaused)} className="text-slate-300 hover:text-emerald-400 transition-all text-sm font-black uppercase tracking-widest flex items-center gap-3 active:scale-95">{isPaused ? '▶ Resume Session' : '⏸ Pause Stream'}</button>
-          <div className="h-8 w-px bg-slate-700 group-hover:bg-slate-600 transition-colors"></div>
-          <button onClick={handleStop} className="text-red-500 hover:text-red-400 transition-all font-black text-sm uppercase tracking-widest active:scale-95">🛑 Stop Attendance</button>
-        </div>
-      </div>
-
-      <div className="w-1/5 h-full border-l border-slate-800 p-8 bg-slate-900/50 flex flex-col">
-        <div className="mb-10">
-          <h2 className="text-xs font-black text-slate-500 tracking-[0.4em] uppercase mb-3">Students Present</h2>
-          <p className="text-lg text-emerald-400 font-black tracking-tighter">{presentStudents.length} Students Present</p>
-        </div>
-        <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 custom-scrollbar">
-          {presentStudents.map((student) => (
-            <div key={student.id} className="flex items-center gap-4 p-4 bg-slate-800/40 rounded-2xl border border-slate-700/50 animate-in fade-in slide-in-from-right-4 duration-300 group hover:bg-slate-800 transition-all">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all"><Check size={16} strokeWidth={4} /></div>
-              <span className="text-slate-200 font-black text-sm tracking-tight">{student.name}</span>
+              <button 
+                onClick={() => startSession(batch)}
+                style={{
+                  width: '100%', padding: '16px', backgroundColor: '#111827', color: 'white', border: 'none',
+                  borderRadius: '16px', fontWeight: '900', fontSize: '0.75rem', textTransform: 'uppercase',
+                  letterSpacing: '0.1em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
+                }}
+              >
+                <Play size={16} fill="white" /> Start Taking Attendance
+              </button>
             </div>
           ))}
         </div>
-        <div className="mt-8 flex flex-col gap-6">
-          <button className="w-full py-5 bg-white text-slate-950 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all active:scale-95 shadow-xl shadow-white/5">Mark Attendance</button>
-          <div className="pt-6 border-t border-slate-800">
-            <div className="flex items-center justify-between text-[10px] text-slate-500 font-black uppercase tracking-widest mb-3"><span>Roster Efficiency</span><span className="text-emerald-500">{Math.round((presentStudents.length / batchRoster.length) * 100)}%</span></div>
-            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden shadow-inner"><div className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-1000 ease-out shadow-[0_0_15px_#10b981]" style={{ width: `${(presentStudents.length / batchRoster.length) * 100}%` }}></div></div>
+      )}
+
+      {sessionStatus === 'active' && activeBatch && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+          {/* Big Projector View */}
+          <div style={{
+            background: 'linear-gradient(135deg, #111827 0%, #1F2937 100%)',
+            borderRadius: '40px', padding: '60px', textAlign: 'center', color: 'white',
+            boxShadow: '0 30px 60px -12px rgba(0,0,0,0.3)', position: 'relative', overflow: 'hidden'
+          }}>
+            {/* Countdown Progress Bar (Right to Left) */}
+            <div style={{ 
+              position: 'absolute', top: 0, left: 0, right: 0, height: '12px', 
+              backgroundColor: 'rgba(255,255,255,0.05)' 
+            }}>
+              <div style={{ 
+                height: '100%', 
+                width: `${(timeLeft / 30) * 100}%`, 
+                backgroundColor: getTimerColor(timeLeft),
+                transition: 'width 1s linear',
+                position: 'absolute',
+                left: 0, // Anchor to left so the right edge shrinks towards the left
+                boxShadow: `0 0 20px ${getTimerColor(timeLeft)}80`
+              }} />
+            </div>
+
+            <div style={{ position: 'absolute', top: '40px', right: '48px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ margin: 0, fontSize: '3.5rem', fontWeight: '900', color: getTimerColor(timeLeft), lineHeight: 0.9, letterSpacing: '-0.05em' }}>
+                  {timeLeft}<span style={{ fontSize: '1.5rem', opacity: 0.5 }}>s</span>
+                </p>
+                <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '800', opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px' }}>
+                  Refresh In
+                </p>
+              </div>
+              <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: getTimerColor(timeLeft), animation: 'pulse 1.5s infinite', boxShadow: `0 0 20px ${getTimerColor(timeLeft)}` }} />
+            </div>
+
+            <p style={{ fontSize: '0.875rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.3em', color: 'rgba(255,255,255,0.4)', marginBottom: '32px' }}>
+              Batch: {activeBatch.name} • Access Code
+            </p>
+
+            <div style={{ 
+              display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '40px'
+            }}>
+              {sessionCode.split('').map((char, i) => (
+                <div key={i} style={{
+                  width: '100px', height: '140px', backgroundColor: 'rgba(255,255,255,0.05)',
+                  border: '2px solid rgba(255,255,255,0.1)', borderRadius: '24px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '5rem', fontWeight: '900', color: '#10B981',
+                  boxShadow: '0 0 40px rgba(16, 185, 129, 0.1)'
+                }}>
+                  {char}
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', color: 'rgba(255,255,255,0.5)' }}>
+              <Clock size={16} />
+              <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>Students are joining... Please keep this screen projected.</span>
+            </div>
+          </div>
+
+          {/* Joining Feed */}
+          <div style={{ 
+            backgroundColor: 'white', borderRadius: '32px', padding: '40px', 
+            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', border: '1px solid #F1F5F9'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ padding: '8px', backgroundColor: '#F0FDF4', borderRadius: '12px', color: '#10B981' }}>
+                  <UserCheck size={20} />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900' }}>Live Joining Feed</h3>
+                <span style={{ backgroundColor: '#F1F5F9', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', color: '#475569' }}>
+                  {presentStudents.length} Students Present
+                </span>
+              </div>
+              <button 
+                onClick={endSession}
+                style={{
+                  padding: '12px 24px', backgroundColor: '#EF4444', color: 'white', border: 'none',
+                  borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', textTransform: 'uppercase',
+                  cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                Close & Review
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+              {presentStudents.map(student => (
+                <div key={student.id} style={{
+                  padding: '12px 20px', backgroundColor: '#F8FAFC', borderRadius: '20px', border: '1px solid #F1F5F9',
+                  display: 'flex', alignItems: 'center', gap: '12px', animation: 'scaleIn 0.4s ease-out'
+                }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#10B981', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.75rem' }}>
+                    {student.name.charAt(0)}
+                  </div>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '800', color: '#1E293B' }}>{student.name}</span>
+                  <Check size={16} style={{ color: '#10B981' }} />
+                </div>
+              ))}
+              {presentStudents.length === 0 && (
+                <div style={{ width: '100%', padding: '40px', textAlign: 'center', border: '2px dashed #F1F5F9', borderRadius: '24px' }}>
+                  <p style={{ color: '#94A3B8', fontWeight: '700', margin: 0 }}>Waiting for first student to enter the code...</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {sessionStatus === 'summary' && activeBatch && (
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '40px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.08)', border: '1px solid #F1F5F9' }}>
+            <div style={{ padding: '40px', background: '#111827', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '900' }}>Attendance Summary</h2>
+                <p style={{ margin: 0, opacity: 0.6, fontSize: '0.875rem', fontWeight: '700' }}>{activeBatch.name} • {new Date().toLocaleDateString()}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '24px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', color: '#10B981' }}>{presentStudents.length}</p>
+                  <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.5 }}>Present</p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  {/* Mock: Assume total 15 for summary */}
+                  <p style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', color: '#EF4444' }}>{Math.max(0, 15 - presentStudents.length)}</p>
+                  <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.5 }}>Absent</p>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ padding: '40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+              {/* Present Column */}
+              <div>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1rem', fontWeight: '900', color: '#10B981', marginBottom: '24px' }}>
+                  <UserCheck size={20} /> Present Students
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {presentStudents.map(student => (
+                    <div key={student.id} style={{ padding: '16px 20px', backgroundColor: '#F0FDF4', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '800', color: '#065F46' }}>{student.name}</span>
+                      <button onClick={() => setPresentStudents(prev => prev.filter(s => s.id !== student.id))} style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer' }}>
+                        <X size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Absent Column (Mocking remaining students) */}
+              <div>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1rem', fontWeight: '900', color: '#EF4444', marginBottom: '24px' }}>
+                  <UserMinus size={20} /> Absent Students
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {users.filter(u => u.role === 'Student').slice(0, 15)
+                    .filter(u => !presentStudents.find(ps => ps.id === u.id))
+                    .map(student => (
+                    <div key={student.id} style={{ padding: '16px 20px', backgroundColor: '#FEF2F2', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '800', color: '#991B1B' }}>{student.name}</span>
+                      <button onClick={() => setPresentStudents(prev => [...prev, student])} style={{ background: '#EF4444', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '0.65rem', fontWeight: '800', cursor: 'pointer' }}>
+                        Mark Present
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ padding: '32px 40px', backgroundColor: '#F9FAFB', display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
+              <button onClick={() => setSessionStatus('idle')} style={{ padding: '16px 32px', backgroundColor: 'white', border: '1px solid #E2E8F0', borderRadius: '16px', fontWeight: '800', cursor: 'pointer' }}>Discard</button>
+              <button onClick={() => setSessionStatus('idle')} style={{ padding: '16px 40px', backgroundColor: '#10B981', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.2)' }}>Save & Finalize</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
