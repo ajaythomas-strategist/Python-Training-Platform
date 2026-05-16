@@ -222,6 +222,8 @@ export default function DashboardOverview({ userRole, userName }) {
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Students</th>
                       <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">{isTrainer ? 'Trainers' : 'Co Trainers'}</th>
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
+                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
+                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Actions</th>
                     </>
                   )}
                 </tr>
@@ -264,6 +266,24 @@ export default function DashboardOverview({ userRole, userName }) {
                           </div>
                         </td>
                         <td className="py-4 text-center font-bold text-emerald-600">{batch.attendancePct}%</td>
+                        <td className="py-4 text-center">
+                          <div className="flex items-center justify-center gap-3">
+                            <span className="text-red-500 font-bold">{batch.absentCount}</span>
+                            <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 border border-gray-100 shadow-sm" onClick={() => setSelectedBatchForAbsents(batch)}>
+                              <Eye size={14} />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="py-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <button className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Comments" onClick={() => setSelectedBatchForComments(batch)}>
+                              <MessageSquare size={16} />
+                            </button>
+                            <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Activity Reports" onClick={() => setSelectedBatchForActivity(batch)}>
+                              <ClipboardList size={16} />
+                            </button>
+                          </div>
+                        </td>
                       </>
                     )}
                   </tr>
