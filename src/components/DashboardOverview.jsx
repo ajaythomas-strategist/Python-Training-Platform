@@ -438,7 +438,20 @@ export default function DashboardOverview({ userRole, userName }) {
                       <>
                         <td className="py-4 text-gray-500 font-medium">{batch.sessionTime}</td>
                         <td className="py-4 text-gray-600 font-bold">{batch.lab}</td>
-                        <td className="py-4 text-gray-800 font-bold">{batch.trainerData.name}</td>
+                        <td className="py-4 text-gray-800 font-bold">
+                          <div className="flex items-center gap-2">
+                            {batch.trainerData.name}
+                            {batch.transferredFrom && (
+                              <button 
+                                className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                title="Transferred Session"
+                                onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
+                              >
+                                <Eye size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-4 text-center">
                           <span className={`badge ${studentData.detailedReport?.sessions?.find(s => s.date === batch.actualDate)?.attendance === 'Present' ? 'badge-green' : 'bg-red-50 text-red-600'}`}>
                             {studentData.detailedReport?.sessions?.find(s => s.date === batch.actualDate)?.attendance || 'Upcoming'}
@@ -559,7 +572,20 @@ export default function DashboardOverview({ userRole, userName }) {
                       <td className="py-4 text-gray-600 font-bold">#{idx + 1}</td>
                       <td className="py-4 text-gray-500 font-medium">{sess.date} | 09:00 - 11:00</td>
                       <td className="py-4 text-gray-600 font-bold">Advanced Computing Lab</td>
-                      <td className="py-4 text-gray-800 font-bold">Dr. Sarah Lee</td>
+                      <td className="py-4 text-gray-800 font-bold">
+                        <div className="flex items-center gap-2">
+                          {sess.trainer || 'Dr. Sarah Lee'}
+                          {sess.transferredFrom && (
+                            <button 
+                              className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                              title="Transferred Session"
+                              onClick={() => setTransferInfo({ type: 'Trainer', from: sess.transferredFrom, to: sess.trainer || 'Dr. Sarah Lee' })}
+                            >
+                              <Eye size={12} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-4 text-center">
                         <span className={`badge ${sess.attendance === 'Present' ? 'badge-green' : 'bg-red-50 text-red-600'}`}>
                           {sess.attendance}

@@ -16,7 +16,7 @@ export const users = [
     id: 1, name: "Alice Johnson", email: "alice.j@college.edu", phone: "+1 555-1101", batch: "1 BCA A", role: "Student", gender: "Female", highSchool: "Springfield High", photo: "https://i.pravatar.cc/150?u=1", attendance: 92, score: "88%", comments: "Excellent participation.",
     detailedReport: {
       sessions: [
-        { date: "2026-05-10", sessionName: "Intro to Python", attendance: "Present" },
+        { date: "2026-05-10", sessionName: "Intro to Python", attendance: "Present", transferredFrom: "Michael Chang" },
         { date: "2026-05-12", sessionName: "Data Structures", attendance: "Absent" },
         { date: "2026-05-14", sessionName: "Algorithms 101", attendance: "Present" }
       ],
@@ -154,8 +154,8 @@ export const classes = [
     coTrainers: ["Emily White"],
     lab: "Room 101",
     sessions: [
-      { date: "2026-05-14", startTime: "14:00", endTime: "16:00" },
-      { date: "2026-05-16", startTime: "13:00", endTime: "15:00" }
+      { date: "2026-05-14", startTime: "14:00", endTime: "16:00", transferredFrom: "Dr. Sarah Lee" },
+      { date: "2026-05-16", startTime: "13:00", endTime: "15:00", transferredCoTrainerFrom: "Jane Smith" }
     ],
     status: "Active"
   },
@@ -164,7 +164,7 @@ export const classes = [
     trainer: "Dr. Sarah Lee", 
     coTrainers: ["Jane Smith"],
     lab: "Advanced Computing Lab",
-    sessions: [{ date: "2026-05-16", startTime: "08:00", endTime: "10:00" }],
+    sessions: [{ date: "2026-05-16", startTime: "08:00", endTime: "10:00", transferredFrom: "Prof. Alan Turing" }],
     status: "Upcoming"
   },
   { 
