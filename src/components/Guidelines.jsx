@@ -46,76 +46,163 @@ export default function Guidelines({ userRole }) {
   };
 
   const roleConfig = [
-    { name: 'Admin', icon: <Shield size={24} />, color: 'blue' },
-    { name: 'Trainer', icon: <UserCheck size={24} />, color: 'emerald' },
-    { name: 'Co-Trainer', icon: <Users size={24} />, color: 'indigo' }
+    { name: 'Admin', icon: <Shield size={24} />, color: '#4F46E5', bgColor: '#EEF2FF', accent: '#818CF8' },
+    { name: 'Trainer', icon: <UserCheck size={24} />, color: '#10B981', bgColor: '#ECFDF5', accent: '#34D399' },
+    { name: 'Co-Trainer', icon: <Users size={24} />, color: '#6366F1', bgColor: '#F5F3FF', accent: '#818CF8' }
   ];
 
   return (
-    <div className="p-6 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Platform Guidelines</h1>
-        <p className="text-gray-500 mt-2 font-medium">Standard operating procedures and tasks for platform roles.</p>
+    <div className="p-8 animate-fade-in" style={{ backgroundColor: '#F9FAFB', minHeight: '100vh' }}>
+      {/* Page Header */}
+      <div className="mb-12">
+        <h1 className="text-4xl font-black text-gray-900 tracking-tight m-0">Platform Guidelines</h1>
+        <p className="text-gray-500 mt-2 font-bold uppercase tracking-widest text-xs">Standard Operating Procedures & Quality Standards</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+        gap: '32px' 
+      }}>
         {roleConfig.map((role) => (
-          <div key={role.name} className="card overflow-hidden shadow-xl border border-gray-100 flex flex-col h-full bg-white rounded-3xl">
-            {/* Header */}
-            <div className={`p-6 bg-${role.color}-600 text-white`}>
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md">
+          <div key={role.name} style={{ 
+            backgroundColor: 'white', 
+            borderRadius: '32px', 
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            border: '1px solid #F1F5F9',
+            transition: 'transform 0.3s ease'
+          }} className="hover:transform hover:scale-[1.02]">
+            
+            {/* Header Section */}
+            <div style={{ 
+              padding: '40px 32px', 
+              background: `linear-gradient(135deg, ${role.color} 0%, ${role.accent} 100%)`,
+              color: 'white',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ 
+                  padding: '16px', 
+                  backgroundColor: 'rgba(255,255,255,0.2)', 
+                  borderRadius: '20px', 
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  display: 'flex'
+                }}>
                   {role.icon}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">{role.name}</h3>
-                  <p className="text-sm opacity-80 font-medium">Role Guidelines</p>
+                  <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', letterSpacing: '-0.02em' }}>{role.name}</h3>
+                  <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '800', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }}>SOP Management</p>
                 </div>
               </div>
             </div>
 
-            {/* List */}
-            <div className="p-6 flex-1 space-y-4">
-              {guidelines[role.name].map((task) => (
-                <div key={task.id} className="flex items-start justify-between group p-3 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={18} className={`mt-0.5 text-${role.color}-500`} />
-                    <span className="text-sm font-semibold text-gray-700 leading-relaxed">{task.text}</span>
+            {/* List Content */}
+            <div style={{ padding: '32px', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {guidelines[role.name].map((task) => (
+                  <div key={task.id} style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '16px', 
+                    padding: '16px', 
+                    backgroundColor: '#F8FAFC', 
+                    borderRadius: '20px',
+                    border: '1px solid #F1F5F9',
+                    position: 'relative'
+                  }} className="group transition-all hover:bg-white hover:border-indigo-100 hover:shadow-lg hover:shadow-indigo-50">
+                    <div style={{ 
+                      width: '24px', 
+                      height: '24px', 
+                      borderRadius: '50%', 
+                      backgroundColor: role.color, 
+                      color: 'white', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <CheckCircle2 size={14} strokeWidth={3} />
+                    </div>
+                    <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#334155', flex: 1, lineHeight: '1.5' }}>
+                      {task.text}
+                    </span>
+                    {isSuperAdmin && (
+                      <button 
+                        onClick={() => handleRemoveTask(role.name, task.id)}
+                        style={{ 
+                          backgroundColor: 'transparent', 
+                          border: 'none', 
+                          color: '#CBD5E1', 
+                          cursor: 'pointer',
+                          padding: '4px',
+                          display: 'flex',
+                          transition: 'color 0.2s ease'
+                        }}
+                        className="hover:text-red-500"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
-                  {isSuperAdmin && (
-                    <button 
-                      onClick={() => handleRemoveTask(role.name, task.id)}
-                      className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {guidelines[role.name].length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-gray-400 text-sm italic">No guidelines defined.</p>
-                </div>
-              )}
+                ))}
+                
+                {guidelines[role.name].length === 0 && (
+                  <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                    <Users size={40} style={{ color: '#E2E8F0', marginBottom: '12px' }} />
+                    <p style={{ margin: 0, color: '#94A3B8', fontWeight: '600', fontSize: '0.875rem' }}>No active guidelines for this role</p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Add Task - Only SuperAdmin */}
+            {/* Admin Controls */}
             {isSuperAdmin && (
-              <div className="p-6 bg-gray-50 border-t border-gray-100 mt-auto">
-                <div className="relative">
+              <div style={{ padding: '32px', backgroundColor: '#F9FAFB', borderTop: '1px solid #F1F5F9' }}>
+                <div style={{ position: 'relative' }}>
                   <input 
                     type="text"
-                    placeholder={`Add task for ${role.name}...`}
+                    placeholder={`New SOP for ${role.name}...`}
                     value={newTask.role === role.name ? newTask.text : ''}
                     onChange={(e) => setNewTask({ role: role.name, text: e.target.value })}
-                    className="w-full pl-4 pr-12 py-3 bg-white border border-gray-200 rounded-2xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium shadow-sm"
+                    style={{ 
+                      width: '100%', 
+                      padding: '16px 56px 16px 20px', 
+                      backgroundColor: 'white', 
+                      border: '2px solid #E2E8F0', 
+                      borderRadius: '20px', 
+                      fontSize: '0.875rem', 
+                      fontWeight: '700',
+                      outline: 'none',
+                      transition: 'border-color 0.2s ease'
+                    }}
                     onKeyPress={(e) => e.key === 'Enter' && handleAddTask(role.name)}
+                    className="focus:border-indigo-500"
                   />
                   <button 
                     onClick={() => handleAddTask(role.name)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 shadow-md shadow-emerald-200 transition-all"
+                    style={{ 
+                      position: 'absolute', 
+                      right: '10px', 
+                      top: '10px', 
+                      width: '40px', 
+                      height: '40px', 
+                      backgroundColor: role.color, 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '14px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      cursor: 'pointer',
+                      boxShadow: `0 4px 12px ${role.color}40`
+                    }}
                   >
-                    <Plus size={18} />
+                    <Plus size={20} strokeWidth={3} />
                   </button>
                 </div>
               </div>

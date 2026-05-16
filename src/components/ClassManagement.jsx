@@ -857,74 +857,123 @@ export default function ClassManagement({ userRole, userName }) {
     {isTaskModalOpen && selectedClassForTasks && createPortal((() => {
       const roleKey = userRole === 'SuperAdmin' ? 'Admin' : (userRole === 'Admin' ? 'Admin' : (userRole === 'Trainer' ? 'Trainer' : 'Co-Trainer'));
       const tasks = selectedClassForTasks.tasks?.[roleKey] || [];
+      const completedCount = tasks.filter(t => t.completed).length;
+      const progress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
       return (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10001,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
+          backgroundColor: 'rgba(15, 23, 42, 0.6)', zIndex: 10001,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+          backdropFilter: 'blur(10px)',
+          animation: 'fadeIn 0.3s ease-out'
         }}>
-          <div className="card animate-fade-in" style={{ 
-            width: '100%', maxWidth: '500px', backgroundColor: 'white', padding: '32px', 
-            borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            position: 'relative', overflow: 'hidden'
+          <div style={{ 
+            width: '100%', maxWidth: '500px', backgroundColor: 'white', 
+            borderRadius: '32px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+            position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column'
           }}>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl">
-                  <CheckSquare size={24} />
+            {/* Premium Header Section */}
+            <div style={{ 
+              padding: '32px', 
+              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+              color: 'white'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ padding: '12px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '16px', display: 'flex' }}>
+                    <CheckSquare size={24} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', letterSpacing: '-0.02em' }}>Operational Tasks</h3>
+                    <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: '700', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {selectedClassForTasks.id}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-black text-gray-900">Class Checklist</h3>
-                  <p className="text-sm text-gray-500 font-bold">{selectedClassForTasks.id}</p>
+                <button 
+                  onClick={() => setIsTaskModalOpen(false)}
+                  style={{ backgroundColor: 'rgba(0,0,0,0.1)', border: 'none', padding: '10px', borderRadius: '12px', color: 'white', cursor: 'pointer', display: 'flex' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Progress Indicator */}
+              <div style={{ marginTop: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '0.65rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.7)' }}>Completion Rate</span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '900' }}>{Math.round(progress)}%</span>
+                </div>
+                <div style={{ height: '8px', width: '100%', backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ 
+                    height: '100%', width: `${progress}%`, backgroundColor: 'white', 
+                    boxShadow: '0 0 15px rgba(255,255,255,0.4)', transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' 
+                  }} />
                 </div>
               </div>
-              <button 
-                onClick={() => setIsTaskModalOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-gray-600"
-              >
-                <X size={20} />
-              </button>
             </div>
 
-            {/* Tasks List */}
-            <div className="space-y-3 mb-8">
-              {tasks.length === 0 ? (
-                <p className="text-center text-gray-400 italic py-8">No tasks assigned for your role.</p>
-              ) : (
-                tasks.map(task => (
-                  <div 
-                    key={task.id} 
-                    onClick={() => handleToggleTask(selectedClassForTasks.id, roleKey, task.id)}
-                    className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                      task.completed 
-                        ? 'bg-emerald-50 border-emerald-100' 
-                        : 'bg-white border-gray-50 hover:border-emerald-100'
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
-                      task.completed ? 'bg-emerald-500 text-white' : 'border-2 border-gray-200 bg-gray-50'
-                    }`}>
-                      {task.completed && <CheckCircle2 size={14} />}
-                    </div>
-                    <span className={`text-sm font-bold transition-all ${
-                      task.completed ? 'text-emerald-700 line-through opacity-60' : 'text-gray-700'
-                    }`}>
-                      {task.text}
-                    </span>
+            {/* Scrollable Tasks Body */}
+            <div style={{ padding: '32px', maxHeight: '55vh', overflowY: 'auto', backgroundColor: '#FFFFFF' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {tasks.length === 0 ? (
+                  <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                    <Info size={40} style={{ color: '#E5E7EB', marginBottom: '12px' }} />
+                    <p style={{ margin: 0, color: '#9CA3AF', fontWeight: '600', fontStyle: 'italic' }}>No tasks assigned for your role.</p>
                   </div>
-                ))
-              )}
+                ) : (
+                  tasks.map((task, idx) => (
+                    <div 
+                      key={task.id} 
+                      onClick={() => handleToggleTask(selectedClassForTasks.id, roleKey, task.id)}
+                      style={{ 
+                        display: 'flex', alignItems: 'center', gap: '16px', padding: '18px', 
+                        borderRadius: '20px', border: '2px solid', cursor: 'pointer', transition: 'all 0.2s ease',
+                        borderColor: task.completed ? '#ECFDF5' : '#F8FAFC',
+                        backgroundColor: task.completed ? '#F0FDF4' : '#F8FAFC'
+                      }}
+                    >
+                      <div style={{ 
+                        width: '28px', height: '28px', borderRadius: '10px', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: task.completed ? '#10B981' : '#E2E8F0',
+                        color: 'white', transition: 'all 0.3s'
+                      }}>
+                        {task.completed ? <CheckCircle2 size={16} /> : <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white' }} />}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ 
+                          fontSize: '0.925rem', fontWeight: '700', color: task.completed ? '#065F46' : '#374151',
+                          textDecoration: task.completed ? 'line-through' : 'none',
+                          opacity: task.completed ? 0.6 : 1
+                        }}>
+                          {task.text}
+                        </span>
+                        {task.completed && (
+                          <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>
+                            Action Completed
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
             {/* Footer */}
-            <div className="flex gap-3 pt-6 border-t border-gray-100">
+            <div style={{ padding: '32px', backgroundColor: '#F9FAFB', borderTop: '1px solid #F1F5F9' }}>
               <button 
                 onClick={() => setIsTaskModalOpen(false)}
-                className="w-full py-4 bg-gray-900 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 active:scale-95"
+                style={{ 
+                  width: '100%', padding: '18px', backgroundColor: '#111827', color: 'white', 
+                  border: 'none', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '900', 
+                  textTransform: 'uppercase', letterSpacing: '0.2em', cursor: 'pointer',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                }}
               >
-                Close Checklist
+                Close Operational Panel
               </button>
             </div>
           </div>
