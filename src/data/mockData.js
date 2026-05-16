@@ -127,7 +127,7 @@ export const classes = [
     coTrainers: ["James Carter"],
     lab: "Advanced Computing Lab",
     sessions: [
-      { date: "2026-05-15", startTime: "13:00", endTime: "15:00", transferredFrom: "Prof. Alan Turing" },
+      { date: "2026-05-15", startTime: "13:00", endTime: "15:00", transferredFrom: "Prof. Alan Turing", transferredCoTrainerFrom: "John Doe" },
       { date: "2026-05-16", startTime: "10:00", endTime: "12:00" }
     ],
     status: "Active"

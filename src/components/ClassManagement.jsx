@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Users, Calendar, MapPin, Edit2, X, ArrowRightLeft } from 'lucide-react';
+import { Plus, Users, Calendar, MapPin, Edit2, X, ArrowRightLeft, Eye, Info } from 'lucide-react';
 import { classes as initialClasses } from '../data/mockData';
 import StaffSelectionModal from './StaffSelectionModal';
 import LabSelectionModal from './LabSelectionModal';
@@ -51,6 +51,7 @@ export default function ClassManagement({ userRole, userName }) {
   const [activeModal, setActiveModal] = useState(null); // 'Trainer', 'Co-Trainer', 'Lab', 'Transfer'
   const [activeClassId, setActiveClassId] = useState(null);
   const [activeSessionIdx, setActiveSessionIdx] = useState(null);
+  const [transferInfo, setTransferInfo] = useState(null);
   
   // Date Picker State
   const [showDatePickerFor, setShowDatePickerFor] = useState(null);
@@ -214,9 +215,23 @@ export default function ClassManagement({ userRole, userName }) {
                     }}
                   >
                     <div className="flex justify-between items-center">
-                      <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>
-                        {session.date} • {session.startTime} - {session.endTime}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>
+                          {session.date} • {session.startTime} - {session.endTime}
+                        </span>
+                        {(session.transferredFrom || session.transferredCoTrainerFrom) && (
+                          <button 
+                            className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                            onClick={() => setTransferInfo({
+                              type: session.transferredFrom ? 'Trainer' : 'Co-Trainer',
+                              from: session.transferredFrom || session.transferredCoTrainerFrom,
+                              to: session.transferredTo || 'Current assigned staff'
+                            })}
+                          >
+                            <Eye size={12} />
+                          </button>
+                        )}
+                      </div>
                       {!isAdmin && (
                         <div className="flex items-center gap-4">
                           <button 
@@ -364,6 +379,44 @@ export default function ClassManagement({ userRole, userName }) {
         currentClass={currentClassObj}
         allClasses={classes}
       />
+
+      {/* Transfer Information Modal */}
+      {transferInfo && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+          <div className="card animate-fade-in" style={{ width: '400px', padding: '24px', borderRadius: '20px', border: 'none', textAlign: 'center' }}>
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-amber-50 rounded-full text-amber-600">
+                <Info size={32} />
+              </div>
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Session Transfer Info</h2>
+            <p className="text-gray-500 text-sm mb-6">Details regarding the {transferInfo.type} replacement for this session.</p>
+            
+            <div className="space-y-4 mb-8">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-left">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transferred From</p>
+                <p className="font-bold text-red-500">{transferInfo.from}</p>
+              </div>
+              
+              <div className="flex justify-center">
+                <div className="w-px h-6 bg-gray-200"></div>
+              </div>
+              
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-left">
+                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Assigned To (Current)</p>
+                <p className="font-bold text-blue-700">{transferInfo.to}</p>
+              </div>
+            </div>
+
+            <button 
+              className="btn btn-primary w-full py-3 justify-center shadow-lg shadow-blue-200" 
+              onClick={() => setTransferInfo(null)}
+            >
+              Close Details
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

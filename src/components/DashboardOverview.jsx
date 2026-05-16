@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageSquare, ClipboardList, Shield, ClipboardCheck, Trophy } from 'lucide-react';
+import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageSquare, ClipboardList, Shield, ClipboardCheck, Trophy, BarChart2 } from 'lucide-react';
+import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Cell, Label } from 'recharts';
 import { users, classes } from '../data/mockData';
 
 export default function DashboardOverview({ userRole, userName }) {
@@ -7,6 +8,7 @@ export default function DashboardOverview({ userRole, userName }) {
   const [selectedBatchForComments, setSelectedBatchForComments] = useState(null);
   const [selectedBatchForActivity, setSelectedBatchForActivity] = useState(null);
   const [selectedBatchForEvaluation, setSelectedBatchForEvaluation] = useState(null);
+  const [transferInfo, setTransferInfo] = useState(null);
   const [evaluationRating, setEvaluationRating] = useState(0);
   const [evaluationFeedback, setEvaluationFeedback] = useState('');
   const [upcomingRange, setUpcomingRange] = useState({ from: "", to: "" });
@@ -14,12 +16,12 @@ export default function DashboardOverview({ userRole, userName }) {
 
   const isTrainer = userRole === 'Trainer' || userRole === 'Co-Trainer';
   const isStudent = userRole === 'Student';
-  
+
   const studentData = isStudent ? users.find(u => u.name === userName && u.role === 'Student') : null;
   const students = users.filter(u => u.role === 'Student');
-  const myClasses = isTrainer 
-    ? classes.filter(c => c.trainer === userName || c.coTrainers?.includes(userName)) 
-    : isStudent 
+  const myClasses = isTrainer
+    ? classes.filter(c => c.trainer === userName || c.coTrainers?.includes(userName))
+    : isStudent
       ? classes.filter(c => c.id === studentData?.batch)
       : classes;
 
@@ -47,12 +49,12 @@ export default function DashboardOverview({ userRole, userName }) {
 
   const getSessionsByRange = (range, defaultType) => {
     let dates = [];
-    
+
     if (range.from && range.to) {
       const start = new Date(range.from);
       const end = new Date(range.to);
       const current = new Date(start);
-      
+
       while (current <= end) {
         dates.push(current.toISOString().split('T')[0]);
         current.setDate(current.getDate() + 1);
@@ -92,7 +94,7 @@ export default function DashboardOverview({ userRole, userName }) {
       const presentCount = attendanceRecords.filter(r => r.sessionStatus === 'Present').length;
       const absentStudents = attendanceRecords.filter(r => r.sessionStatus === 'Absent');
       const attendancePct = batchStudents.length > 0 ? ((presentCount / batchStudents.length) * 100).toFixed(0) : 0;
-      
+
       const trainer = users.find(u => u.name === cls.trainer);
       const coTrainerList = users.filter(u => cls.coTrainers?.includes(u.name));
       const sessionNo = cls.sessions.indexOf(session) + 1;
@@ -108,6 +110,7 @@ export default function DashboardOverview({ userRole, userName }) {
         absentStudents,
         sessionTime: `${session.startTime} - ${session.endTime}`,
         transferredFrom: session.transferredFrom,
+        transferredCoTrainerFrom: session.transferredCoTrainerFrom,
         comments: {
           trainer: trainer?.feedback || [],
           coTrainer: coTrainerList.flatMap(ct => ct.feedback || [])
@@ -127,12 +130,12 @@ export default function DashboardOverview({ userRole, userName }) {
         <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
         <p className="text-sm text-gray-500">Live tracking for <strong>{today}</strong></p>
       </div>
-      
+
       {/* Stat Cards */}
-      <div className="dashboard-grid mb-12" style={{ 
+      <div className="dashboard-grid mb-12" style={{
         display: 'grid',
-        gridTemplateColumns: isTrainer || isStudent ? 'repeat(4, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', 
-        gap: '1.5rem' 
+        gridTemplateColumns: isTrainer || isStudent ? 'repeat(4, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))',
+        gap: '1.5rem'
       }}>
         {isTrainer ? (
           <>
@@ -194,9 +197,144 @@ export default function DashboardOverview({ userRole, userName }) {
         )}
       </div>
 
+      {/* Advanced Analytics Section - Funnel Charts (Admin Only) */}
+      {!isStudent && (() => {
+        // Calculations for Batch Funnel
+        const activeBatchesCount = classes.filter(c => c.status === 'Active').length;
+        const remainingBatchesCount = classes.filter(c => c.status === 'Upcoming').length;
+        const completedBatchesCount = completedBatches.length;
+
+        const totalBatches = activeBatchesCount + remainingBatchesCount + completedBatchesCount;
+        const batchCompletionPercent = totalBatches > 0 ? Math.round((completedBatchesCount / totalBatches) * 100) : 0;
+
+        const batchData = [
+          { name: 'Active Batches', value: activeBatchesCount, fill: '#3b82f6' },
+          { name: 'Completed Batches', value: completedBatchesCount, fill: '#10b981' },
+          { name: 'Remaining Batches', value: remainingBatchesCount, fill: '#f59e0b' }
+        ];
+
+        // Calculations for Student Funnel
+        const totalStudents = users.filter(u => u.role === 'Student').length;
+        const completedStudentsCount = completedBatches.reduce((acc, b) => acc + (b.studentCount || 0), 0) || Math.floor(totalStudents * 0.15);
+        const attendingStudentsCount = todayBatches.reduce((acc, b) => acc + (b.studentCount || 0), 0) || Math.floor(totalStudents * 0.45);
+        const remainingStudentsCount = Math.max(0, totalStudents - completedStudentsCount - attendingStudentsCount);
+
+        const studentCompletionPercent = totalStudents > 0 ? Math.round((completedStudentsCount / totalStudents) * 100) : 0;
+
+        const studentData = [
+          { name: 'Attending Students', value: attendingStudentsCount, fill: '#3b82f6' },
+          { name: 'Completed Students', value: completedStudentsCount, fill: '#10b981' },
+          { name: 'Remaining Students', value: remainingStudentsCount, fill: '#f59e0b' }
+        ];
+
+        return (
+          <div className="flex flex-row mb-8 mt-2" style={{ gap: '0.5cm' }}>
+            {/* Batch Status Overview */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col p-6 flex-1">
+              <div className="w-full flex justify-between items-center mb-2">
+                <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
+                  <BarChart2 size={18} className="text-gray-500" />
+                  Batch Status Overview
+                </h2>
+                <span className="text-sm text-gray-600 font-bold">Total: {totalBatches}</span>
+              </div>
+              
+              <div style={{ width: '100%', height: 300 }} className="relative flex justify-center items-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip wrapperStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '13px', color: '#4b5563', paddingTop: '10px' }} />
+                    <Pie
+                      data={batchData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={80}
+                      outerRadius={115}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                      isAnimationActive
+                    >
+                      {batchData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                      <Label
+                        content={({ viewBox }) => {
+                          const { cx, cy } = viewBox;
+                          return (
+                            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                              <tspan x={cx} dy="-0.5em" style={{ fontSize: '32px', fontWeight: '900', fill: '#1f2937' }}>
+                                {batchCompletionPercent}%
+                              </tspan>
+                              <tspan x={cx} dy="1.5em" style={{ fontSize: '12px', fontWeight: '800', fill: '#6b7280', letterSpacing: '1px' }}>
+                                COMPLETED
+                              </tspan>
+                            </text>
+                          );
+                        }}
+                      />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Student Status Overview */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col p-6 flex-1">
+              <div className="w-full flex justify-between items-center mb-2">
+                <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
+                  <Users size={18} className="text-gray-500" />
+                  Student Status Overview
+                </h2>
+                <span className="text-sm text-gray-600 font-bold">Total: {totalStudents}</span>
+              </div>
+              
+              <div style={{ width: '100%', height: 300 }} className="relative flex justify-center items-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip wrapperStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '13px', color: '#4b5563', paddingTop: '10px' }} />
+                    <Pie
+                      data={studentData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={80}
+                      outerRadius={115}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                      isAnimationActive
+                    >
+                      {studentData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                      <Label
+                        content={({ viewBox }) => {
+                          const { cx, cy } = viewBox;
+                          return (
+                            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                              <tspan x={cx} dy="-0.5em" style={{ fontSize: '32px', fontWeight: '900', fill: '#1f2937' }}>
+                                {studentCompletionPercent}%
+                              </tspan>
+                              <tspan x={cx} dy="1.5em" style={{ fontSize: '12px', fontWeight: '800', fill: '#6b7280', letterSpacing: '1px' }}>
+                                COMPLETED
+                              </tspan>
+                            </text>
+                          );
+                        }}
+                      />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Tables Section */}
       <div className="flex flex-col" style={{ gap: '20px' }}>
-        
+
         {/* Active Session Table (Common for all but layout slightly different) */}
         <div className="card flex-col" style={{ gap: '1.5rem' }}>
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -242,12 +380,38 @@ export default function DashboardOverview({ userRole, userName }) {
                         <td className="py-4 text-center font-bold text-gray-600">#{batch.sessionNo}</td>
                         <td className="py-4 text-gray-500 font-medium">{batch.sessionTime}</td>
                         <td className="py-4 text-gray-600 font-bold">{batch.lab}</td>
-                        <td className="py-4 text-gray-800 font-bold">{batch.trainerData.name}</td>
+                        <td className="py-4 text-gray-800 font-bold">
+                          <div className="flex items-center gap-2">
+                            {batch.trainerData.name}
+                            {batch.transferredFrom && (
+                              <button 
+                                className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                title="Transferred Session"
+                                onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
+                              >
+                                <Eye size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-4">
                           <div className="flex flex-col gap-1">
-                            {batch.coTrainersData.map((ct, idx) => (
-                              <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
-                            ))}
+                            <div className="flex items-center gap-2">
+                              <div className="flex flex-col">
+                                {batch.coTrainersData.map((ct, idx) => (
+                                  <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
+                                ))}
+                              </div>
+                              {batch.transferredCoTrainerFrom && (
+                                <button 
+                                  className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                  title="Transferred Co-Trainer"
+                                  onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                                >
+                                  <Eye size={12} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
@@ -283,7 +447,7 @@ export default function DashboardOverview({ userRole, userName }) {
                         </td>
                         <td className="py-4 text-center font-bold text-indigo-600">--</td>
                         <td className="py-4 text-center">
-                          <button 
+                          <button
                             className="btn btn-primary py-2 px-4 text-[10px] font-black uppercase tracking-widest"
                             style={{ background: 'linear-gradient(to right, #4F46E5, #7C3AED)' }}
                             onClick={() => setSelectedBatchForEvaluation(batch)}
@@ -326,15 +490,41 @@ export default function DashboardOverview({ userRole, userName }) {
                   <tr key={batch.id} className="border-t border-gray-50 text-sm">
                     <td className="py-4 text-gray-500 font-medium">{batch.sessionTime}</td>
                     <td className="py-4 text-gray-600 font-bold">{batch.lab}</td>
-                    <td className="py-4 text-gray-800 font-bold">{batch.trainerData.name}</td>
+                    <td className="py-4 text-gray-800 font-bold">
+                      <div className="flex items-center gap-2">
+                        {batch.trainerData.name}
+                        {batch.transferredFrom && (
+                          <button 
+                            className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                            title="Transferred Session"
+                            onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
+                          >
+                            <Eye size={12} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
                     {!isStudent && (
                       <>
                         <td className="py-4 text-center font-bold text-gray-800">{batch.id}</td>
                         <td className="py-4">
                           <div className="flex flex-col gap-1">
-                            {batch.coTrainersData.map((ct, idx) => (
-                              <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
-                            ))}
+                            <div className="flex items-center gap-2">
+                              <div className="flex flex-col">
+                                {batch.coTrainersData.map((ct, idx) => (
+                                  <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
+                                ))}
+                              </div>
+                              {batch.transferredCoTrainerFrom && (
+                                <button 
+                                  className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                  title="Transferred Co-Trainer"
+                                  onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                                >
+                                  <Eye size={12} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </td>
                       </>
@@ -433,8 +623,8 @@ export default function DashboardOverview({ userRole, userName }) {
                 <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-1.5 ml-4">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-gray-400 uppercase">From:</span>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       value={completedRange.from}
                       onChange={(e) => setCompletedRange(prev => ({ ...prev, from: e.target.value }))}
                       className="bg-transparent border-none text-sm font-medium text-gray-700 outline-none cursor-pointer"
@@ -443,8 +633,8 @@ export default function DashboardOverview({ userRole, userName }) {
                   <div className="w-px h-4 bg-gray-200"></div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-gray-400 uppercase">To:</span>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       value={completedRange.to}
                       onChange={(e) => setCompletedRange(prev => ({ ...prev, to: e.target.value }))}
                       className="bg-transparent border-none text-sm font-medium text-gray-700 outline-none cursor-pointer"
@@ -489,12 +679,38 @@ export default function DashboardOverview({ userRole, userName }) {
                       <td className="py-4 text-center font-bold text-gray-600">#{batch.sessionNo}</td>
                       <td className="py-4 text-gray-500">{batch.sessionTime}</td>
                       <td className="py-4 text-gray-600 font-medium">{batch.lab}</td>
-                      <td className="py-4 text-gray-800 font-bold">{batch.trainerData.name}</td>
+                      <td className="py-4 text-gray-800 font-bold">
+                        <div className="flex items-center gap-2">
+                          {batch.trainerData.name}
+                          {batch.transferredFrom && (
+                            <button 
+                              className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                              title="Transferred Session"
+                              onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
+                            >
+                              <Eye size={12} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-4">
                         <div className="flex flex-col gap-1">
-                          {batch.coTrainersData.map((ct, idx) => (
-                            <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
-                          ))}
+                          <div className="flex items-center gap-2">
+                            <div className="flex flex-col">
+                              {batch.coTrainersData.map((ct, idx) => (
+                                <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
+                              ))}
+                            </div>
+                            {batch.transferredCoTrainerFrom && (
+                              <button 
+                                className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                title="Transferred Co-Trainer"
+                                onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                              >
+                                <Eye size={12} />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
@@ -578,7 +794,7 @@ export default function DashboardOverview({ userRole, userName }) {
               </div>
               <button onClick={() => setSelectedBatchForComments(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
             </div>
-            
+
             <div className="flex flex-col gap-6" style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {/* Co-Trainer Comments First */}
               <div>
@@ -608,7 +824,7 @@ export default function DashboardOverview({ userRole, userName }) {
                 )}
               </div>
             </div>
-            
+
             <button className="btn btn-primary w-full mt-8 py-4" onClick={() => setSelectedBatchForComments(null)} style={{ justifyContent: 'center' }}>Close</button>
           </div>
         </div>
@@ -618,7 +834,7 @@ export default function DashboardOverview({ userRole, userName }) {
       {selectedBatchForActivity && (() => {
         const batchStudents = users.filter(u => u.batch === selectedBatchForActivity.id && u.role === 'Student');
         const allActivities = Array.from(new Set(batchStudents.flatMap(s => s.detailedReport?.performance?.map(p => p.activity) || [])));
-        
+
         return (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
             <div className="card animate-fade-in" style={{ width: '95%', maxWidth: '1000px', padding: '32px', borderRadius: '24px', border: 'none' }}>
@@ -674,7 +890,7 @@ export default function DashboardOverview({ userRole, userName }) {
                   </tbody>
                 </table>
               </div>
-              
+
               <button className="btn btn-primary w-full mt-8 py-4" onClick={() => setSelectedBatchForActivity(null)} style={{ justifyContent: 'center' }}>Close Reports</button>
             </div>
           </div>
@@ -692,21 +908,21 @@ export default function DashboardOverview({ userRole, userName }) {
               </div>
               <button onClick={() => setSelectedBatchForEvaluation(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
             </div>
-            
+
             <div className="flex flex-col gap-6">
               {/* Rating Section */}
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">Performance Rating</label>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <button 
+                    <button
                       key={star}
                       onClick={() => setEvaluationRating(star)}
                       className="p-1 transition-transform hover:scale-110"
                     >
-                      <Star 
-                        size={32} 
-                        className={star <= evaluationRating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'} 
+                      <Star
+                        size={32}
+                        className={star <= evaluationRating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}
                       />
                     </button>
                   ))}
@@ -716,7 +932,7 @@ export default function DashboardOverview({ userRole, userName }) {
               {/* Feedback Section */}
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">Administrative Feedback</label>
-                <textarea 
+                <textarea
                   rows={4}
                   className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm leading-relaxed"
                   placeholder="Enter detailed feedback about the trainer, student engagement, or facility quality..."
@@ -725,16 +941,16 @@ export default function DashboardOverview({ userRole, userName }) {
                 />
               </div>
             </div>
-            
+
             <div className="flex gap-4 mt-8">
-              <button 
-                className="btn btn-outline flex-1 py-4 justify-center" 
+              <button
+                className="btn btn-outline flex-1 py-4 justify-center"
                 onClick={() => setSelectedBatchForEvaluation(null)}
               >
                 Cancel
               </button>
-              <button 
-                className="btn btn-primary flex-1 py-4 justify-center" 
+              <button
+                className="btn btn-primary flex-1 py-4 justify-center"
                 style={{ background: 'linear-gradient(to right, #10B981, #059669)', border: 'none' }}
                 onClick={() => {
                   console.log(`Evaluation Saved for ${selectedBatchForEvaluation.id}: ${evaluationRating} stars, ${evaluationFeedback}`);
@@ -744,6 +960,43 @@ export default function DashboardOverview({ userRole, userName }) {
                 Submit Review
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Transfer Information Modal */}
+      {transferInfo && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+          <div className="card animate-fade-in" style={{ width: '400px', padding: '24px', borderRadius: '20px', border: 'none', textAlign: 'center' }}>
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-amber-50 rounded-full text-amber-600">
+                <Info size={32} />
+              </div>
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Session Transfer Info</h2>
+            <p className="text-gray-500 text-sm mb-6">Details regarding the {transferInfo.type} replacement for this session.</p>
+            
+            <div className="space-y-4 mb-8">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-left">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transferred From</p>
+                <p className="font-bold text-red-500">{transferInfo.from}</p>
+              </div>
+              
+              <div className="flex justify-center">
+                <div className="w-px h-6 bg-gray-200"></div>
+              </div>
+              
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-left">
+                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Assigned To (Current)</p>
+                <p className="font-bold text-blue-700">{transferInfo.to}</p>
+              </div>
+            </div>
+
+            <button 
+              className="btn btn-primary w-full py-3 justify-center shadow-lg shadow-blue-200" 
+              onClick={() => setTransferInfo(null)}
+            >
+              Close Details
+            </button>
           </div>
         </div>
       )}
