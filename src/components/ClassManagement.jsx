@@ -57,7 +57,7 @@ export default function ClassManagement({ userRole, userName }) {
   const [showDatePickerFor, setShowDatePickerFor] = useState(null);
   const [editingSessionIdx, setEditingSessionIdx] = useState(null);
   const [newDate, setNewDate] = useState('');
-  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [selectedSlots, setSelectedSlots] = useState(['morning', 'afternoon']);
   const [customStartTime, setCustomStartTime] = useState('');
   const [customEndTime, setCustomEndTime] = useState('');
 
@@ -128,7 +128,7 @@ export default function ClassManagement({ userRole, userName }) {
     setShowDatePickerFor(null);
     setEditingSessionIdx(null);
     setNewDate('');
-    setSelectedSlots([]);
+    setSelectedSlots(['morning', 'afternoon']);
     setCustomStartTime('');
     setCustomEndTime('');
   };
@@ -306,104 +306,93 @@ export default function ClassManagement({ userRole, userName }) {
                         type="date" 
                         value={newDate} 
                         onChange={(e) => setNewDate(e.target.value)}
-                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '0.875rem' }}
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid #E5E7EB', borderRadius: '8px', fontSize: '0.875rem', outline: 'none', backgroundColor: 'white' }}
                       />
                       
                       {newDate && (
                         <div className="flex flex-col gap-2 mt-2">
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Select Session Timings</p>
-                          <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedSlots.includes('morning') ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
-                            <input 
-                              type={editingSessionIdx !== null ? "radio" : "checkbox"}
-                              name="sessionSlot"
-                              checked={selectedSlots.includes('morning')}
-                              onChange={(e) => {
-                                if (editingSessionIdx !== null) {
-                                  setSelectedSlots(['morning']);
-                                } else {
-                                  setSelectedSlots(prev => e.target.checked ? [...prev, 'morning'] : prev.filter(s => s !== 'morning'));
-                                }
-                              }}
-                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                            />
-                            <div className="flex flex-col">
-                              <span className="text-sm font-bold text-gray-800">Morning Session</span>
-                              <span className="text-xs text-gray-500">09:00 AM - 12:00 PM</span>
+                          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1 pl-1">Select Session Timings</p>
+                          
+                          <div 
+                            className="flex items-center justify-between" 
+                            style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid', borderColor: selectedSlots.includes('morning') ? '#3B82F6' : '#E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedSlots.includes('morning') ? '#EFF6FF' : 'white' }}
+                            onClick={() => {
+                              if (editingSessionIdx !== null) {
+                                setSelectedSlots(['morning']);
+                              } else {
+                                setSelectedSlots(prev => prev.includes('morning') ? prev.filter(s => s !== 'morning') : [...prev, 'morning']);
+                              }
+                            }}
+                          >
+                            <span style={{ fontWeight: 500, color: '#1F2937' }}>9 AM - 12 PM</span>
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedSlots.includes('morning') ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
+                              {selectedSlots.includes('morning') && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
-                          </label>
+                          </div>
 
-                          <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedSlots.includes('afternoon') ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
-                            <input 
-                              type={editingSessionIdx !== null ? "radio" : "checkbox"}
-                              name="sessionSlot"
-                              checked={selectedSlots.includes('afternoon')}
-                              onChange={(e) => {
-                                if (editingSessionIdx !== null) {
-                                  setSelectedSlots(['afternoon']);
-                                } else {
-                                  setSelectedSlots(prev => e.target.checked ? [...prev, 'afternoon'] : prev.filter(s => s !== 'afternoon'));
-                                }
-                              }}
-                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                            />
-                            <div className="flex flex-col">
-                              <span className="text-sm font-bold text-gray-800">Afternoon Session</span>
-                              <span className="text-xs text-gray-500">01:00 PM - 04:00 PM</span>
+                          <div 
+                            className="flex items-center justify-between" 
+                            style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid', borderColor: selectedSlots.includes('afternoon') ? '#3B82F6' : '#E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedSlots.includes('afternoon') ? '#EFF6FF' : 'white' }}
+                            onClick={() => {
+                              if (editingSessionIdx !== null) {
+                                setSelectedSlots(['afternoon']);
+                              } else {
+                                setSelectedSlots(prev => prev.includes('afternoon') ? prev.filter(s => s !== 'afternoon') : [...prev, 'afternoon']);
+                              }
+                            }}
+                          >
+                            <span style={{ fontWeight: 500, color: '#1F2937' }}>1 PM - 4 PM</span>
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedSlots.includes('afternoon') ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
+                              {selectedSlots.includes('afternoon') && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
-                          </label>
+                          </div>
 
-                          <label className={`flex flex-col gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${selectedSlots.includes('custom') ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
-                            <div className="flex items-center gap-3">
-                              <input 
-                                type={editingSessionIdx !== null ? "radio" : "checkbox"}
-                                name="sessionSlot"
-                                checked={selectedSlots.includes('custom')}
-                                onChange={(e) => {
-                                  if (editingSessionIdx !== null) {
-                                    setSelectedSlots(['custom']);
-                                  } else {
-                                    setSelectedSlots(prev => e.target.checked ? [...prev, 'custom'] : prev.filter(s => s !== 'custom'));
-                                  }
-                                }}
-                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                              />
-                              <div className="flex flex-col">
-                                <span className="text-sm font-bold text-gray-800">Custom Timing</span>
-                                <span className="text-xs text-gray-500">Set manual start and end times</span>
+                          <div 
+                            className="flex flex-col gap-2" 
+                            style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid', borderColor: selectedSlots.includes('custom') ? '#3B82F6' : '#E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedSlots.includes('custom') ? '#EFF6FF' : 'white' }}
+                            onClick={() => {
+                              if (editingSessionIdx !== null) {
+                                setSelectedSlots(['custom']);
+                              } else {
+                                setSelectedSlots(prev => prev.includes('custom') ? prev.filter(s => s !== 'custom') : [...prev, 'custom']);
+                              }
+                            }}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span style={{ fontWeight: 500, color: '#1F2937' }}>Custom Time</span>
+                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedSlots.includes('custom') ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
+                                {selectedSlots.includes('custom') && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                               </div>
                             </div>
-                            
                             {selectedSlots.includes('custom') && (
-                              <div className="flex gap-2 mt-2 pl-7">
+                              <div className="flex gap-2 mt-1" onClick={(e) => e.stopPropagation()}>
                                 <input 
                                   type="time" 
                                   value={customStartTime} 
                                   onChange={(e) => setCustomStartTime(e.target.value)}
-                                  className="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-blue-500 bg-white"
-                                  placeholder="Start"
+                                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded text-sm outline-none focus:border-blue-500 bg-white font-medium text-gray-700"
                                 />
                                 <input 
                                   type="time" 
                                   value={customEndTime} 
                                   onChange={(e) => setCustomEndTime(e.target.value)}
-                                  className="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-blue-500 bg-white"
-                                  placeholder="End"
+                                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded text-sm outline-none focus:border-blue-500 bg-white font-medium text-gray-700"
                                 />
                               </div>
                             )}
-                          </label>
+                          </div>
                         </div>
                       )}
 
                       <div className="flex justify-end gap-2 mt-3">
-                        <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); setNewDate(''); setSelectedSlots([]); setCustomStartTime(''); setCustomEndTime(''); }} className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '0.875rem' }}>Cancel</button>
+                        <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); setNewDate(''); setSelectedSlots(['morning', 'afternoon']); setCustomStartTime(''); setCustomEndTime(''); }} className="btn btn-outline" style={{ padding: '8px 16px', fontSize: '0.875rem', borderRadius: '8px' }}>Cancel</button>
                         <button 
                           onClick={() => handleAddSession(cls.id)} 
                           className="btn btn-primary" 
-                          style={{ padding: '6px 12px', fontSize: '0.875rem', opacity: (!newDate || selectedSlots.length === 0) ? 0.5 : 1 }}
+                          style={{ padding: '8px 16px', fontSize: '0.875rem', borderRadius: '8px', opacity: (!newDate || selectedSlots.length === 0) ? 0.5 : 1 }}
                           disabled={!newDate || selectedSlots.length === 0}
                         >
-                          {editingSessionIdx !== null ? 'Update Session' : 'Add Session(s)'}
+                          {editingSessionIdx !== null ? 'Update Session' : 'Add Sessions'}
                         </button>
                       </div>
                     </div>
