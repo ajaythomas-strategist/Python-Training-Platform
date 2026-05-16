@@ -48,7 +48,7 @@ export default function ClassManagement({ userRole, userName }) {
   }, [classes]);
 
   // Modal State
-  const [activeModal, setActiveModal] = useState(null); // 'Trainer', 'Co-Trainer', 'Lab', 'Transfer'
+  const [activeModal, setActiveModal] = useState(null); // 'Trainer', 'Co-Trainer', 'Lab', 'Transfer-Trainer', 'Transfer-CoTrainer'
   const [activeClassId, setActiveClassId] = useState(null);
   const [activeSessionIdx, setActiveSessionIdx] = useState(null);
   const [transferInfo, setTransferInfo] = useState(null);
@@ -70,14 +70,15 @@ export default function ClassManagement({ userRole, userName }) {
   };
 
   const handleModalSelect = (value) => {
-    if (activeModal === 'Trainer') updateClass(activeClassId, 'trainer', value);
-    if (activeModal === 'Co-Trainer') updateClass(activeClassId, 'coTrainers', value);
-    if (activeModal === 'Lab') updateClass(activeClassId, 'lab', value);
-    if (activeModal === 'Transfer') {
+    if (activeModal === 'Transfer-Tabs') {
       const targetClass = classes.find(c => c.id === activeClassId);
       if (targetClass) {
         const updatedSessions = [...targetClass.sessions];
-        updatedSessions[activeSessionIdx] = { ...updatedSessions[activeSessionIdx], transferredTo: value };
+        if (value.type === 'Trainer') {
+          updatedSessions[activeSessionIdx] = { ...updatedSessions[activeSessionIdx], transferredTo: value.staff };
+        } else {
+          updatedSessions[activeSessionIdx] = { ...updatedSessions[activeSessionIdx], transferredCoTrainerTo: value.staff };
+        }
         updateClass(activeClassId, 'sessions', updatedSessions);
       }
     }
@@ -119,7 +120,7 @@ export default function ClassManagement({ userRole, userName }) {
   };
 
   const handleTransferSession = (classId, idx) => {
-    setActiveModal('Transfer');
+    setActiveModal('Transfer-Tabs');
     setActiveClassId(classId);
     setActiveSessionIdx(idx);
   };
@@ -205,15 +206,15 @@ export default function ClassManagement({ userRole, userName }) {
               
               <div className="flex flex-col gap-2">
                 {cls.sessions.map((session, idx) => (
-                  <div key={idx} 
-                    className="flex flex-col" 
-                    style={{ 
-                      padding: '12px', 
-                      borderRadius: '6px', 
-                      backgroundColor: session.transferredTo ? '#EEF2FF' : '#F9FAFB', 
-                      border: session.transferredTo ? '1px solid #C7D2FE' : '1px solid #E5E7EB',
-                    }}
-                  >
+                    <div key={idx} 
+                      className="flex flex-col" 
+                      style={{ 
+                        padding: '12px', 
+                        borderRadius: '6px', 
+                        backgroundColor: (session.transferredTo || session.transferredCoTrainerTo) ? '#EEF2FF' : '#F9FAFB', 
+                        border: (session.transferredTo || session.transferredCoTrainerTo) ? '1px solid #C7D2FE' : '1px solid #E5E7EB',
+                      }}
+                    >
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>
@@ -237,7 +238,7 @@ export default function ClassManagement({ userRole, userName }) {
                           <button 
                             onClick={() => handleTransferSession(cls.id, idx)} 
                             title="Transfer Session"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: session.transferredTo ? '#4F46E5' : '#6366F1' }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: (session.transferredTo || session.transferredCoTrainerTo) ? '#4F46E5' : '#6366F1' }}
                           >
                             <ArrowRightLeft size={16} />
                           </button>
@@ -253,7 +254,14 @@ export default function ClassManagement({ userRole, userName }) {
                     {session.transferredTo && session.transferredTo !== 'Unassigned' && (
                       <div className="mt-1 flex items-center">
                         <span style={{ fontSize: '0.7rem', color: '#4F46E5', fontWeight: 600 }}>
-                          Transferred to: {session.transferredTo}
+                          Trainer Transferred to: {session.transferredTo}
+                        </span>
+                      </div>
+                    )}
+                    {session.transferredCoTrainerTo && session.transferredCoTrainerTo !== 'Unassigned' && (
+                      <div className="mt-1 flex items-center">
+                        <span style={{ fontSize: '0.7rem', color: '#4F46E5', fontWeight: 600 }}>
+                          Co-Trainer Transferred to: {session.transferredCoTrainerTo}
                         </span>
                       </div>
                     )}
@@ -364,9 +372,9 @@ export default function ClassManagement({ userRole, userName }) {
       </div>
 
       <StaffSelectionModal 
-        isOpen={activeModal === 'Trainer' || activeModal === 'Co-Trainer' || activeModal === 'Transfer'}
+        isOpen={activeModal === 'Trainer' || activeModal === 'Co-Trainer' || activeModal === 'Transfer-Tabs'}
         onClose={() => setActiveModal(null)}
-        role={activeModal === 'Transfer' ? 'Trainer' : activeModal}
+        role={activeModal}
         onSelect={handleModalSelect}
         currentClass={currentClassObj}
         allClasses={classes}

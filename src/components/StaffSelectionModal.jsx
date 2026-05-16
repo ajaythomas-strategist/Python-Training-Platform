@@ -4,6 +4,7 @@ import { users } from '../data/mockData';
 
 export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, currentClass, allClasses }) {
   const [selectedCoTrainers, setSelectedCoTrainers] = useState([]);
+  const [activeTab, setActiveTab] = useState('Trainer'); // Used only when role is 'Transfer-Tabs'
 
   useEffect(() => {
     if (isOpen && currentClass && role === 'Co-Trainer') {
@@ -13,7 +14,8 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
 
   if (!isOpen) return null;
 
-  const staffList = users.filter(u => u.role === role);
+  const currentRole = role === 'Transfer-Tabs' ? activeTab : role;
+  const staffList = users.filter(u => u.role === currentRole);
   
   const checkConflict = (staffName) => {
     if (!currentClass || !currentClass.sessions || currentClass.sessions.length === 0) return false;
@@ -47,7 +49,23 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
   };
 
   const handleApplyCoTrainers = () => {
-    onSelect(selectedCoTrainers);
+    if (role === 'Transfer-Tabs') {
+      onSelect({ type: 'Co-Trainer', staff: selectedCoTrainers.join(', ') });
+    } else {
+      onSelect(selectedCoTrainers);
+    }
+  };
+
+  const handleSelectStaff = (staffName) => {
+    if (currentRole === 'Trainer') {
+      if (role === 'Transfer-Tabs') {
+        onSelect({ type: 'Trainer', staff: staffName });
+      } else {
+        onSelect(staffName);
+      }
+    } else {
+      toggleCoTrainer(staffName);
+    }
   };
 
   return (
@@ -64,12 +82,38 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
           <X size={20} />
         </button>
 
-        <h2 style={{ marginBottom: '1rem' }}>Select {role}s</h2>
+        <h2 style={{ marginBottom: role === 'Transfer-Tabs' ? '0.5rem' : '1rem' }}>
+          {role === 'Transfer-Tabs' ? 'Transfer Session' : `Select ${currentRole}s`}
+        </h2>
+        
+        {role === 'Transfer-Tabs' && (
+          <div className="flex border-b border-gray-200 mb-4">
+            <button 
+              className={`py-2 px-4 font-semibold text-sm ${activeTab === 'Trainer' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveTab('Trainer')}
+            >
+              Transfer Trainer
+            </button>
+            <button 
+              className={`py-2 px-4 font-semibold text-sm ${activeTab === 'Co-Trainer' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveTab('Co-Trainer')}
+            >
+              Transfer Co-Trainer
+            </button>
+          </div>
+        )}
         
         <div className="flex flex-col gap-3" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
-          {role === 'Trainer' && (
+          {(currentRole === 'Trainer' || role === 'Transfer-Tabs') && (
             <div 
-              onClick={() => { onSelect('Unassigned'); onClose(); }}
+              onClick={() => { 
+                if (role === 'Transfer-Tabs') {
+                  onSelect({ type: activeTab, staff: 'Unassigned' });
+                } else {
+                  onSelect('Unassigned'); 
+                }
+                onClose(); 
+              }}
               style={{ padding: '1rem', border: '1px dashed #D1D5DB', borderRadius: '8px', cursor: 'pointer', textAlign: 'center', color: '#6B7280', fontWeight: 500 }}
             >
               Clear / Unassign
@@ -78,29 +122,23 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
           
           {staffList.map(staff => {
             const hasConflict = checkConflict(staff.name);
-            const isSelected = role === 'Co-Trainer' && selectedCoTrainers.includes(staff.name);
+            const isSelected = currentRole === 'Co-Trainer' && selectedCoTrainers.includes(staff.name);
             
             return (
               <div 
                 key={staff.id} 
-                onClick={() => {
-                  if (role === 'Trainer') {
-                    onSelect(staff.name);
-                  } else {
-                    toggleCoTrainer(staff.name);
-                  }
-                }}
+                onClick={() => handleSelectStaff(staff.name)}
                 className="flex items-center justify-between"
                 style={{ 
                   padding: '1rem', 
                   border: `1px solid ${isSelected ? 'var(--color-primary)' : '#E5E7EB'}`, 
                   borderRadius: '8px', cursor: 'pointer', 
                   backgroundColor: isSelected ? '#EFF6FF' : (hasConflict ? '#FEF2F2' : '#F9FAFB'),
-                  opacity: hasConflict && role === 'Trainer' ? 0.6 : 1
+                  opacity: hasConflict && currentRole === 'Trainer' ? 0.6 : 1
                 }}
               >
                 <div className="flex items-center gap-4">
-                  {role === 'Co-Trainer' && (
+                  {currentRole === 'Co-Trainer' && (
                     <input 
                       type="checkbox" 
                       checked={isSelected} 
@@ -143,7 +181,7 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
           })}
         </div>
 
-        {role === 'Co-Trainer' && (
+        {currentRole === 'Co-Trainer' && (
           <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #E5E7EB', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
             <button className="btn btn-outline" onClick={onClose}>Cancel</button>
             <button className="btn btn-primary" onClick={handleApplyCoTrainers}>Apply Selection ({selectedCoTrainers.length})</button>

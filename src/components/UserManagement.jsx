@@ -9,15 +9,25 @@ export default function UserManagement() {
   const [usersList, setUsersList] = useState(initialUsers);
   const [activeRole, setActiveRole] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBatch, setSelectedBatch] = useState('All');
+  const [selectedDept, setSelectedDept] = useState('All');
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const roles = ['All', 'Admin', 'Student', 'Trainer', 'Co-Trainer'];
+  
+  // Get unique batches and departments
+  const allBatches = Array.from(new Set(usersList.filter(u => u.batch).map(u => u.batch))).sort();
+  const allDepts = Array.from(new Set(usersList.filter(u => u.department).map(u => u.department))).sort();
 
   const filteredUsers = usersList.filter(user => 
     (activeRole === 'All' || user.role === activeRole) &&
+    (selectedBatch === 'All' || user.batch === selectedBatch) &&
+    (selectedDept === 'All' || user.department === selectedDept) &&
     (user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+     (user.phone && user.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
      (user.department && user.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
      (user.batch && user.batch.toLowerCase().includes(searchTerm.toLowerCase())))
   );
@@ -29,49 +39,92 @@ export default function UserManagement() {
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h1>User Management</h1>
+        <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
         <div className="flex gap-4">
-          <button className="btn btn-outline" onClick={() => setIsBulkUploadOpen(true)}>
+          <button className="btn btn-outline py-2 px-4 flex items-center gap-2" onClick={() => setIsBulkUploadOpen(true)}>
             <Upload size={18} />
             Bulk Upload
           </button>
-          <button className="btn btn-primary" onClick={() => setIsAddUserOpen(true)}>
+          <button className="btn btn-primary py-2 px-4 flex items-center gap-2" onClick={() => setIsAddUserOpen(true)}>
             <Plus size={18} />
             Add User
           </button>
         </div>
       </div>
 
-      <div className="card">
-        <div className="flex justify-between items-center mb-6">
-          <div className="tabs">
-            {roles.map(role => (
-              <div 
-                key={role} 
-                className={`tab ${activeRole === role ? 'active' : ''}`}
-                onClick={() => setActiveRole(role)}
-              >
-                {role}{role !== 'All' ? 's' : ''}
-              </div>
-            ))}
+      <div className="card shadow-sm border border-gray-100 overflow-hidden">
+        <div className="flex items-center justify-between px-6 border-b border-gray-100 bg-white min-h-[64px]">
+          {/* Tabs - Left Aligned */}
+          <div className="flex items-center">
+            <div className="tabs flex gap-8">
+              {roles.map(role => (
+                <div 
+                  key={role} 
+                  className={`tab pt-5 pb-4 px-1 transition-all text-sm font-bold cursor-pointer relative whitespace-nowrap ${activeRole === role ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                  onClick={() => {
+                    setActiveRole(role);
+                    setSelectedBatch('All');
+                    setSelectedDept('All');
+                  }}
+                >
+                  {role}{role !== 'All' ? 's' : ''}
+                  {activeRole === role && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
           
-          <div style={{ position: 'relative', width: '300px' }}>
-            <Search size={18} style={{ position: 'absolute', left: '10px', top: '10px', color: '#6B7280' }} />
-            <input 
-              type="text" 
-              placeholder="Search users..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 12px 8px 36px',
-                borderRadius: '6px',
-                border: '1px solid #E5E7EB',
-                outline: 'none',
-                fontFamily: 'inherit'
-              }}
-            />
+          {/* Filters & Search - Right Aligned */}
+          <div className="flex items-center gap-3 py-3">
+            {/* Batch Filter - Only for Students */}
+            {activeRole === 'Student' && (
+              <select 
+                value={selectedBatch}
+                onChange={(e) => setSelectedBatch(e.target.value)}
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 h-[42px] text-[11px] font-bold text-gray-500 uppercase tracking-wider outline-none focus:ring-2 focus:ring-blue-500/20 transition-all min-w-[160px] cursor-pointer"
+              >
+                <option value="All">All Batches</option>
+                {allBatches.map(batch => (
+                  <option key={batch} value={batch}>{batch}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Department Filter - For Admins, Trainers, Co-Trainers */}
+            {(activeRole === 'Admin' || activeRole === 'Trainer' || activeRole === 'Co-Trainer') && (
+              <select 
+                value={selectedDept}
+                onChange={(e) => setSelectedDept(e.target.value)}
+                className="bg-gray-50 border border-gray-200 rounded-xl px-4 h-[42px] text-[11px] font-bold text-gray-500 uppercase tracking-wider outline-none focus:ring-2 focus:ring-blue-500/20 transition-all min-w-[160px] cursor-pointer"
+              >
+                <option value="All">All Departments</option>
+                {allDepts.map(dept => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Search Input - Always shown */}
+            <div className="relative w-64 h-[42px]">
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input 
+                type="text" 
+                placeholder={`Search ${activeRole === 'All' ? 'users' : activeRole.toLowerCase() + 's'}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-full pl-11 pr-10 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all shadow-none"
+              />
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
