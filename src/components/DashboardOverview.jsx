@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageSquare, ClipboardList, Shield, ClipboardCheck, Trophy, BarChart2 } from 'lucide-react';
+import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageSquare, ClipboardList, Shield, ClipboardCheck, Trophy, BarChart2, GraduationCap, Briefcase, Calendar } from 'lucide-react';
 import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Cell, Label } from 'recharts';
 import { users, classes } from '../data/mockData';
 
@@ -17,12 +17,12 @@ export default function DashboardOverview({ userRole, userName }) {
   const isTrainer = userRole === 'Trainer' || userRole === 'Co-Trainer';
   const isStudent = userRole === 'Student';
 
-  const studentData = isStudent ? users.find(u => u.name === userName && u.role === 'Student') : null;
+  const studentDataObj = isStudent ? users.find(u => u.name === userName && u.role === 'Student') : null;
   const students = users.filter(u => u.role === 'Student');
   const myClasses = isTrainer
     ? classes.filter(c => c.trainer === userName || c.coTrainers?.includes(userName))
     : isStudent
-      ? classes.filter(c => c.id === studentData?.batch)
+      ? classes.filter(c => c.id === studentDataObj?.batch)
       : classes;
 
   const trainerKPIs = isTrainer ? {
@@ -35,9 +35,9 @@ export default function DashboardOverview({ userRole, userName }) {
   } : null;
 
   const studentKPIs = isStudent ? {
-    attendance: studentData.attendance,
-    score: studentData.score,
-    activitiesCompleted: studentData.detailedReport?.performance?.length || 0,
+    attendance: studentDataObj.attendance,
+    score: studentDataObj.score,
+    activitiesCompleted: studentDataObj.detailedReport?.performance?.length || 0,
     progress: 75 // Mock progress
   } : null;
 
@@ -177,21 +177,21 @@ export default function DashboardOverview({ userRole, userName }) {
           </>
         ) : (
           <>
-            <div className="card stat-card">
-              <div className="stat-icon blue"><Users size={24} /></div>
-              <div className="stat-content"><h3>Total Trainers</h3><p>{users.filter(u => u.role === 'Trainer').length}</p></div>
+            <div className="card stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div className="stat-icon blue" style={{ width: '48px', height: '48px', backgroundColor: '#EEF2FF', color: '#6366F1', borderRadius: '12px' }}><Users size={24} /></div>
+              <div className="stat-content"><h3>Total Students</h3><p style={{ fontSize: '1.5rem', fontWeight: 800 }}>{students.length}</p></div>
             </div>
-            <div className="card stat-card">
-              <div className="stat-icon purple"><UserCheck size={24} /></div>
-              <div className="stat-content"><h3>Co Trainers</h3><p>{users.filter(u => u.role === 'Co-Trainer').length}</p></div>
+            <div className="card stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div className="stat-icon purple" style={{ width: '48px', height: '48px', backgroundColor: '#F5F3FF', color: '#8B5CF6', borderRadius: '12px' }}><GraduationCap size={24} /></div>
+              <div className="stat-content"><h3>Total Trainings</h3><p style={{ fontSize: '1.5rem', fontWeight: 800 }}>{classes.length}</p></div>
             </div>
-            <div className="card stat-card">
-              <div className="stat-icon cyan"><BookOpen size={24} /></div>
-              <div className="stat-content"><h3>No. of Batches</h3><p>{classes.length}</p></div>
+            <div className="card stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div className="stat-icon cyan" style={{ width: '48px', height: '48px', backgroundColor: '#ECFEFF', color: '#06B6D4', borderRadius: '12px' }}><Calendar size={24} /></div>
+              <div className="stat-content"><h3>Placement Activities</h3><p style={{ fontSize: '1.5rem', fontWeight: 800 }}>1</p></div>
             </div>
-            <div className="card stat-card">
-              <div className="stat-icon orange"><Users size={24} /></div>
-              <div className="stat-content"><h3>Total Students</h3><p>{users.filter(u => u.role === 'Student').length}</p></div>
+            <div className="card stat-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div className="stat-icon green" style={{ width: '48px', height: '48px', backgroundColor: '#ECFDF5', color: '#10B981', borderRadius: '12px' }}><Briefcase size={24} /></div>
+              <div className="stat-content"><h3>Total Recruitments</h3><p style={{ fontSize: '1.5rem', fontWeight: 800 }}>1</p></div>
             </div>
           </>
         )}
@@ -199,99 +199,40 @@ export default function DashboardOverview({ userRole, userName }) {
 
       {/* Advanced Analytics Section - Funnel Charts (Admin Only) */}
       {!isStudent && (() => {
-        // Calculations for Batch Funnel
-        const activeBatchesCount = classes.filter(c => c.status === 'Active').length;
-        const remainingBatchesCount = classes.filter(c => c.status === 'Upcoming').length;
-        const completedBatchesCount = completedBatches.length;
+        // Calculations for Placement Status
+        const placedCount = 0;
+        const inProcessCount = 0;
+        const unplacedCount = totalStudents;
 
-        const totalBatches = activeBatchesCount + remainingBatchesCount + completedBatchesCount;
-        const batchCompletionPercent = totalBatches > 0 ? Math.round((completedBatchesCount / totalBatches) * 100) : 0;
-
-        const batchData = [
-          { name: 'Active Batches', value: activeBatchesCount, fill: '#3b82f6' },
-          { name: 'Completed Batches', value: completedBatchesCount, fill: '#10b981' },
-          { name: 'Remaining Batches', value: remainingBatchesCount, fill: '#f59e0b' }
+        const placementData = [
+          { name: 'Placed Students', value: placedCount, fill: '#3b82f6' },
+          { name: 'In Process', value: inProcessCount, fill: '#10b981' },
+          { name: 'Unplaced', value: unplacedCount, fill: '#f59e0b' }
         ];
 
-        // Calculations for Student Funnel
-        const totalStudents = users.filter(u => u.role === 'Student').length;
-        const completedStudentsCount = completedBatches.reduce((acc, b) => acc + (b.studentCount || 0), 0) || Math.floor(totalStudents * 0.15);
-        const attendingStudentsCount = todayBatches.reduce((acc, b) => acc + (b.studentCount || 0), 0) || Math.floor(totalStudents * 0.45);
-        const remainingStudentsCount = Math.max(0, totalStudents - completedStudentsCount - attendingStudentsCount);
+        const placementPercent = 0;
 
-        const studentCompletionPercent = totalStudents > 0 ? Math.round((completedStudentsCount / totalStudents) * 100) : 0;
+        // Calculations for Training Status
+        const attendingCount = todayBatches.reduce((acc, b) => acc + (b.studentCount || 0), 0);
+        const completedTrainingCount = completedBatches.reduce((acc, b) => acc + (b.studentCount || 0), 0);
+        const notAttendingCount = Math.max(0, totalStudents - attendingCount - completedTrainingCount);
 
-        const studentData = [
-          { name: 'Attending Students', value: attendingStudentsCount, fill: '#3b82f6' },
-          { name: 'Completed Students', value: completedStudentsCount, fill: '#10b981' },
-          { name: 'Remaining Students', value: remainingStudentsCount, fill: '#f59e0b' }
+        const trainingData = [
+          { name: 'Attending Trainings', value: attendingCount, fill: '#3b82f6' },
+          { name: 'Completed Trainings', value: completedTrainingCount, fill: '#10b981' },
+          { name: 'Not Attending', value: notAttendingCount, fill: '#f59e0b' }
         ];
+
+        const trainingPercent = totalStudents > 0 ? Math.round((completedTrainingCount / totalStudents) * 100) : 0;
 
         return (
           <div className="flex flex-row mb-8 mt-2" style={{ gap: '0.5cm' }}>
-            {/* Batch Status Overview */}
+            {/* Placement Status Overview */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col p-6 flex-1">
               <div className="w-full flex justify-between items-center mb-2">
                 <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
                   <BarChart2 size={18} className="text-gray-500" />
-                  Batch Status Overview
-                </h2>
-                <span className="text-sm text-gray-500">Total: {totalBatches}</span>
-              </div>
-              
-              <div style={{ width: '100%', height: 320 }} className="relative flex justify-center items-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Tooltip wrapperStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      align="center"
-                      iconType="circle" 
-                      wrapperStyle={{ fontSize: '12px', color: '#6b7280', paddingTop: '20px' }} 
-                    />
-                    <Pie
-                      data={batchData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={85}
-                      outerRadius={120}
-                      paddingAngle={0}
-                      dataKey="value"
-                      stroke="none"
-                      startAngle={90}
-                      endAngle={-270}
-                      isAnimationActive
-                    >
-                      {batchData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                      <Label
-                        content={({ viewBox }) => {
-                          const { cx, cy } = viewBox;
-                          return (
-                            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                              <tspan x={cx} dy="-0.1em" style={{ fontSize: '48px', fontWeight: '800', fill: '#1f2937' }}>
-                                {batchCompletionPercent}%
-                              </tspan>
-                              <tspan x={cx} dy="1.6em" style={{ fontSize: '11px', fontWeight: '700', fill: '#6b7280', letterSpacing: '1px' }}>
-                                COMPLETED
-                              </tspan>
-                            </text>
-                          );
-                        }}
-                      />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Student Status Overview */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col p-6 flex-1">
-              <div className="w-full flex justify-between items-center mb-2">
-                <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
-                  <Users size={18} className="text-gray-500" />
-                  Student Status Overview
+                  Placement Status Overview
                 </h2>
                 <span className="text-sm text-gray-500">Total: {totalStudents}</span>
               </div>
@@ -307,19 +248,20 @@ export default function DashboardOverview({ userRole, userName }) {
                       wrapperStyle={{ fontSize: '12px', color: '#6b7280', paddingTop: '20px' }} 
                     />
                     <Pie
-                      data={studentData}
+                      data={placementData}
                       cx="50%"
                       cy="50%"
                       innerRadius={85}
                       outerRadius={120}
-                      paddingAngle={0}
+                      paddingAngle={5}
+                      cornerRadius={10}
                       dataKey="value"
                       stroke="none"
                       startAngle={90}
                       endAngle={-270}
                       isAnimationActive
                     >
-                      {studentData.map((entry, index) => (
+                      {placementData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                       <Label
@@ -328,7 +270,65 @@ export default function DashboardOverview({ userRole, userName }) {
                           return (
                             <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
                               <tspan x={cx} dy="-0.1em" style={{ fontSize: '48px', fontWeight: '800', fill: '#1f2937' }}>
-                                {studentCompletionPercent}%
+                                {placementPercent}%
+                              </tspan>
+                              <tspan x={cx} dy="1.6em" style={{ fontSize: '11px', fontWeight: '700', fill: '#6b7280', letterSpacing: '1px' }}>
+                                COMPLETED
+                              </tspan>
+                            </text>
+                          );
+                        }}
+                      />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Training Status Overview */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col p-6 flex-1">
+              <div className="w-full flex justify-between items-center mb-2">
+                <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
+                  <Users size={18} className="text-gray-500" />
+                  Training Status Overview
+                </h2>
+                <span className="text-sm text-gray-500">Total: {totalStudents}</span>
+              </div>
+              
+              <div style={{ width: '100%', height: 320 }} className="relative flex justify-center items-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip wrapperStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      align="center"
+                      iconType="circle" 
+                      wrapperStyle={{ fontSize: '12px', color: '#6b7280', paddingTop: '20px' }} 
+                    />
+                    <Pie
+                      data={trainingData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={85}
+                      outerRadius={120}
+                      paddingAngle={5}
+                      cornerRadius={10}
+                      dataKey="value"
+                      stroke="none"
+                      startAngle={90}
+                      endAngle={-270}
+                      isAnimationActive
+                    >
+                      {trainingData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                      <Label
+                        content={({ viewBox }) => {
+                          const { cx, cy } = viewBox;
+                          return (
+                            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                              <tspan x={cx} dy="-0.1em" style={{ fontSize: '48px', fontWeight: '800', fill: '#1f2937' }}>
+                                {trainingPercent}%
                               </tspan>
                               <tspan x={cx} dy="1.6em" style={{ fontSize: '11px', fontWeight: '700', fill: '#6b7280', letterSpacing: '1px' }}>
                                 COMPLETED
