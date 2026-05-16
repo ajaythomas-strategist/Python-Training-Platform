@@ -11,6 +11,7 @@ import Materials from './components/Materials';
 import AttendanceTab from './components/AttendanceTab';
 import Login from './components/Login';
 import Guidelines from './components/Guidelines';
+import MarkRating from './components/MarkRating';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -38,6 +39,7 @@ function App() {
       case 'leaderboard': return <Leaderboard userRole={userRole} userName={userName} />;
       case 'attendance': return <AttendanceTab userRole={userRole} userName={userName} />;
       case 'guidelines': return <Guidelines userRole={userRole} userName={userName} />;
+      case 'mark-rating': return <MarkRating userRole={userRole} userName={userName} />;
       default: return <DashboardOverview userRole={userRole} userName={userName} />;
     }
   };
