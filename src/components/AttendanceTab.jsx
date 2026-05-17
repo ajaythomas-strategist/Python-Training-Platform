@@ -60,6 +60,17 @@ const liveFeedStyles = `
     }
   }
 
+  @keyframes signalEmit {
+    0% {
+      transform: scale(0.35);
+      opacity: 0.95;
+    }
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+
   @keyframes pulseRadar {
     0%, 100% {
       opacity: 1;
@@ -172,7 +183,32 @@ export default function AttendanceTab({ userRole, userName }) {
   const startSession = (batch) => {
     setActiveBatch(batch);
     generateCode();
-    setPresentStudents([]);
+    
+    // Sample with 20 premium dummy names as requested by the user
+    const sampleDummyStudents = [
+      { id: 'd1', name: 'Alexander Wright' },
+      { id: 'd2', name: 'Sophia Chen' },
+      { id: 'd3', name: 'Marcus Sterling' },
+      { id: 'd4', name: 'Emily Rodriguez' },
+      { id: 'd5', name: 'Vikram Mehta' },
+      { id: 'd6', name: 'Elena Rostova' },
+      { id: 'd7', name: 'Liam Gallagher' },
+      { id: 'd8', name: 'Zahra Al-Farsi' },
+      { id: 'd9', name: 'Lucas Novak' },
+      { id: 'd10', name: 'Chloe Dubois' },
+      { id: 'd11', name: 'Julian Vance' },
+      { id: 'd12', name: 'Aria Takahashi' },
+      { id: 'd13', name: 'Mateo Silva' },
+      { id: 'd14', name: 'Sarah Jenkins' },
+      { id: 'd15', name: 'Dante Moretti' },
+      { id: 'd16', name: 'Naomi Campbell' },
+      { id: 'd17', name: 'Leo Fitzpatrick' },
+      { id: 'd18', name: 'Sophia Kowalski' },
+      { id: 'd19', name: 'Zane Thompson' },
+      { id: 'd20', name: 'Isabella Vance' }
+    ];
+    
+    setPresentStudents(sampleDummyStudents);
     setSessionStatus('active');
   };
 
@@ -183,23 +219,26 @@ export default function AttendanceTab({ userRole, userName }) {
   // Mock: Simulate students joining randomly in Trainer View
   useEffect(() => {
     if (sessionStatus === 'active' && isTrainer && activeBatch) {
-      // Find students belonging to THIS batch in mockData (up to 15 students for robust live scanning demo)
-      const batchStudents = users.filter(u => u.role === 'Student' && u.batch === activeBatch.id).slice(0, 15);
+      // Find eligible students in mockData that belong to this batch
+      const batchStudents = users.filter(u => u.role === 'Student' && u.batch === activeBatch.id);
       
       const interval = setInterval(() => {
         // If there's currently a student actively showing/scanning in the radar, wait for them to finish
         if (radarStudent) return;
 
-        if (presentStudents.length < batchStudents.length) {
-          const nextStudent = batchStudents[presentStudents.length];
-          if (nextStudent && Math.random() > 0.6) {
-            // 1. Show the student inside the radar scan first
+        // Get a student that isn't already present (excluding current pre-populated lists)
+        const unjoinedStudents = batchStudents.filter(u => !presentStudents.some(p => p.name === u.name));
+        
+        if (unjoinedStudents.length > 0) {
+          const nextStudent = unjoinedStudents[0];
+          if (nextStudent && Math.random() > 0.5) {
+            // 1. Show the student inside the radar scan first (directly below code!)
             setRadarStudent(nextStudent);
             
             // 2. After 2 seconds, complete the verification scan and transition them to the Left Panel list
             setTimeout(() => {
               setPresentStudents(prev => {
-                if (prev.some(s => s.id === nextStudent.id)) return prev;
+                if (prev.some(s => s.name === nextStudent.name)) return prev;
                 return [...prev, nextStudent];
               });
               setRadarStudent(null);
@@ -461,7 +500,7 @@ export default function AttendanceTab({ userRole, userName }) {
           }}>
             {/* LEFT COLUMN: Transparent Verified Names List ("Plain" - No Card Backgrounds) */}
             <div style={{
-              width: '40%',
+              width: '45%',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'flex-start',
@@ -472,8 +511,8 @@ export default function AttendanceTab({ userRole, userName }) {
                 RECENTLY VERIFIED ({presentStudents.length})
               </p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                {presentStudents.slice(-10).reverse().map((student) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {presentStudents.slice(-20).reverse().map((student) => (
                   <div 
                     key={student.id} 
                     style={{
@@ -483,17 +522,21 @@ export default function AttendanceTab({ userRole, userName }) {
                     }}
                   >
                     <span style={{ 
-                      width: '10px', height: '10px', borderRadius: '50%', 
+                      width: '12px', height: '12px', borderRadius: '50%', 
                       backgroundColor: '#10B981', display: 'inline-block',
                       boxShadow: '0 0 10px #10B981', animation: 'liveDot 1s infinite',
-                      marginRight: '20px'
+                      marginRight: '24px',
+                      flexShrink: 0
                     }} />
                     <span style={{ 
-                      fontSize: '1.9rem', 
+                      fontSize: '2.2rem', 
                       fontWeight: '800', 
                       color: 'white',
                       letterSpacing: '-0.02em',
-                      textShadow: '0 2px 10px rgba(255,255,255,0.05)'
+                      textShadow: '0 2px 10px rgba(255,255,255,0.05)',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
                     }}>
                       {student.name}
                     </span>
@@ -518,7 +561,7 @@ export default function AttendanceTab({ userRole, userName }) {
 
             {/* RIGHT COLUMN: Cinematic Orbital Radar Scan & Access Code Core */}
             <div style={{
-              width: '60%',
+              width: '55%',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -543,16 +586,43 @@ export default function AttendanceTab({ userRole, userName }) {
                 <div style={{ position: 'absolute', width: '80%', height: '80%', borderRadius: '50%', border: '1px solid rgba(16, 185, 129, 0.08)' }} />
                 <div style={{ position: 'absolute', width: '55%', height: '55%', borderRadius: '50%', border: '1px dashed rgba(16, 185, 129, 0.05)' }} />
 
-                {/* Rotating Conic Sweeper Needle */}
+                {/* Staggered Circular Emitting Waves (Large Concentric Round Signals Emitters) */}
                 <div style={{
                   position: 'absolute',
-                  top: 0, left: 0, right: 0, bottom: 0,
-                  borderRadius: '50%',
-                  background: 'conic-gradient(from 0deg, transparent 40%, rgba(16, 185, 129, 0.18) 100%)',
-                  animation: 'radarSweep 5s infinite linear',
+                  width: '100%',
+                  height: '100%',
+                  top: 0, left: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   pointerEvents: 'none',
-                  zIndex: 2
-                }} />
+                  zIndex: 1
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    width: '390px',
+                    height: '390px',
+                    borderRadius: '50%',
+                    border: '4px solid rgba(16, 185, 129, 0.4)',
+                    animation: 'signalEmit 4s infinite linear'
+                  }} />
+                  <div style={{
+                    position: 'absolute',
+                    width: '390px',
+                    height: '390px',
+                    borderRadius: '50%',
+                    border: '3px solid rgba(16, 185, 129, 0.25)',
+                    animation: 'signalEmit 4s infinite linear 1.3s'
+                  }} />
+                  <div style={{
+                    position: 'absolute',
+                    width: '390px',
+                    height: '390px',
+                    borderRadius: '50%',
+                    border: '2px solid rgba(16, 185, 129, 0.15)',
+                    animation: 'signalEmit 4s infinite linear 2.6s'
+                  }} />
+                </div>
 
                 {/* Dynamic Holographic Scanner Screen Content */}
                 <div style={{
@@ -564,83 +634,74 @@ export default function AttendanceTab({ userRole, userName }) {
                   width: '100%',
                   padding: '24px'
                 }}>
-                  {radarStudent ? (
-                    /* SCAN MATCH: Show verified student inside radar */
-                    <div style={{
-                      animation: 'slideInSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '12px'
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.35em' }}>
+                      SECURITY KEY
+                    </span>
+                    
+                    {/* Access Code display with glowing holographic letters - always visible! */}
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '16px',
+                      margin: '12px 0 8px 0'
                     }}>
-                      <div style={{
-                        width: '76px', height: '76px', borderRadius: '50%',
-                        backgroundColor: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 0 30px rgba(16, 185, 129, 0.5)', animation: 'pulseRadar 1.5s infinite'
-                      }}>
-                        <Fingerprint size={40} style={{ color: 'white' }} />
-                      </div>
-                      
-                      <div style={{ marginTop: '8px' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.3em' }}>
-                          MATCH DETECTED
+                      {sessionCode.split('').map((char, i) => (
+                        <span 
+                          key={i} 
+                          style={{
+                            fontSize: '6.25rem', 
+                            fontWeight: '900', 
+                            color: '#10B981',
+                            fontFamily: 'monospace',
+                            letterSpacing: '0.02em',
+                            textShadow: '0 0 35px rgba(16, 185, 129, 0.5)'
+                          }}
+                        >
+                          {char}
                         </span>
-                        <h3 style={{
-                          margin: '4px 0 0 0',
-                          fontSize: '2.25rem',
-                          fontWeight: '900',
-                          color: 'white',
-                          letterSpacing: '-0.02em',
-                          textShadow: '0 0 15px rgba(255,255,255,0.4)'
-                        }}>
-                          {radarStudent.name}
-                        </h3>
-                        <p style={{ margin: '4px 0 0 0', fontSize: '0.6875rem', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-                          VERIFYING SIGNAL...
-                        </p>
-                      </div>
+                      ))}
                     </div>
-                  ) : (
-                    /* DEFAULT: Show holographic access code */
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.35em' }}>
-                        SECURITY KEY
-                      </span>
-                      
-                      {/* Access Code display with glowing holographic letters */}
-                      <div style={{ 
-                        display: 'flex', 
-                        gap: '12px',
-                        margin: '12px 0 4px 0'
-                      }}>
-                        {sessionCode.split('').map((char, i) => (
-                          <span 
-                            key={i} 
-                            style={{
-                              fontSize: '5.25rem', 
-                              fontWeight: '900', 
-                              color: '#10B981',
-                              fontFamily: 'monospace',
-                              letterSpacing: '0.02em',
-                              textShadow: '0 0 25px rgba(16, 185, 129, 0.4)'
-                            }}
-                          >
-                            {char}
-                          </span>
-                        ))}
-                      </div>
 
-                      <span style={{ fontSize: '0.6875rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.15em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'liveDot 1s infinite' }} />
-                        SCANNING LIVE BEACON
-                      </span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.15em', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'liveDot 1s infinite' }} />
+                      TRANSMITTING SECURE BEACON
+                    </span>
+
+                    {/* Real-time Verified Student Name Display (Always overlaid below the code, never hiding it!) */}
+                    <div style={{ height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {radarStudent ? (
+                        <div style={{
+                          animation: 'slideInSpring 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center'
+                        }}>
+                          <p style={{
+                            margin: 0,
+                            fontSize: '2.4rem',
+                            fontWeight: '900',
+                            color: 'white',
+                            letterSpacing: '-0.01em',
+                            textShadow: '0 0 25px rgba(255,255,255,0.6)'
+                          }}>
+                            {radarStudent.name}
+                          </p>
+                          <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px' }}>
+                            MATCH DETECTED • VERIFIED
+                          </span>
+                        </div>
+                      ) : (
+                        <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic', letterSpacing: '0.05em' }}>
+                          Awaiting student responses...
+                        </p>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
