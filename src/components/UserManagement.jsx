@@ -81,7 +81,7 @@ export default function UserManagement() {
         backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', 
         boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', overflow: 'hidden', marginBottom: '32px'
       }}>
-        <div style={{ padding: '24px 32px', display: 'flex', flexWrap: 'wrap', gap: '32px', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '24px 32px', display: 'flex', gap: '24px', alignItems: 'center', justifyContent: 'space-between', overflowX: 'auto' }}>
           {/* Role Pill Navigation */}
           <div style={{ display: 'flex', gap: '8px', backgroundColor: '#F1F5F9', padding: '6px', borderRadius: '20px' }}>
             {roles.map(role => (
@@ -147,7 +147,7 @@ export default function UserManagement() {
             </div>
 
             {/* Search Input */}
-            <div style={{ position: 'relative', width: '320px' }}>
+            <div style={{ position: 'relative', width: activeRole === 'All' ? '320px' : '240px', transition: 'width 0.2s ease-in-out' }}>
               <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
               <input 
                 type="text" 
