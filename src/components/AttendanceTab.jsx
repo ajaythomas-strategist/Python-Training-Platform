@@ -505,9 +505,8 @@ export default function AttendanceTab({ userRole, userName }) {
               <p style={{ margin: '0 0 28px 0', fontSize: '0.8125rem', fontWeight: '900', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.25em', color: 'white' }}>
                 RECENTLY VERIFIED ({presentStudents.length})
               </p>
-              
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {presentStudents.slice(-21).reverse().map((student) => (
+                {presentStudents.slice(-21).map((student) => (
                   <div 
                     key={student.id} 
                     style={{
@@ -539,12 +538,12 @@ export default function AttendanceTab({ userRole, userName }) {
                 ))}
                 
                 {presentStudents.length === 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', opacity: 0.25, marginTop: '20px' }}>
-                    <p style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', color: 'white', fontStyle: 'italic' }}>
-                      Radar scanning batch...
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', opacity: 0.3, marginTop: '20px' }}>
+                    <p style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', color: 'white' }}>
+                      Awaiting verification...
                     </p>
-                    <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: '700', color: 'white' }}>
-                      Waiting for student verification signals
+                    <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: '700', color: 'rgba(255,255,255,0.7)' }}>
+                      Students entering security key will appear here.
                     </p>
                   </div>
                 )}
@@ -577,21 +576,21 @@ export default function AttendanceTab({ userRole, userName }) {
                 transition: 'all 0.4s ease',
                 backgroundColor: 'rgba(16, 185, 129, 0.01)'
               }}>
-                {/* Absolute Outer-Circle Matching Name (Plain glowing text with NO background capsule box!) */}
+                {/* Absolute Outer-Circle Matching Name (Plain glowing text mathematically centered at the top border) */}
                 {radarStudent && (
                   <div style={{
                     position: 'absolute',
-                    top: '-42px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
+                    top: '-45px',
+                    left: 0,
+                    right: 0,
+                    textAlign: 'center',
                     color: 'white',
                     fontWeight: '900',
-                    fontSize: '2.6rem',
+                    fontSize: '2.8rem',
                     letterSpacing: '-0.02em',
-                    textShadow: '0 0 20px #10B981, 0 0 40px #10B981',
+                    textShadow: '0 0 25px #10B981, 0 0 50px #10B981',
                     animation: 'slideInSpring 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                    zIndex: 100,
-                    whiteSpace: 'nowrap'
+                    zIndex: 100
                   }}>
                     {radarStudent.name}
                   </div>
@@ -659,22 +658,22 @@ export default function AttendanceTab({ userRole, userName }) {
                       SECURITY KEY
                     </span>
                     
-                    {/* Access Code display with glowing holographic letters - always visible! */}
+                    {/* Access Code display with glowing colossal letters - easily visible from far! */}
                     <div style={{ 
                       display: 'flex', 
-                      gap: '16px',
-                      margin: '16px 0'
+                      gap: '12px',
+                      margin: '20px 0'
                     }}>
                       {sessionCode.split('').map((char, i) => (
                         <span 
                           key={i} 
                           style={{
-                            fontSize: '7rem', 
+                            fontSize: '9.5rem', 
                             fontWeight: '900', 
                             color: '#10B981',
                             fontFamily: 'monospace',
-                            letterSpacing: '0.02em',
-                            textShadow: '0 0 45px rgba(16, 185, 129, 0.55)'
+                            letterSpacing: '-0.02em',
+                            textShadow: '0 0 60px rgba(16, 185, 129, 0.75)'
                           }}
                         >
                           {char}
@@ -682,41 +681,11 @@ export default function AttendanceTab({ userRole, userName }) {
                       ))}
                     </div>
 
-                    <span style={{ fontSize: '0.95rem', fontWeight: '900', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.18em', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    {/* Central timer display */}
+                    <span style={{ fontSize: '0.95rem', fontWeight: '900', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.18em', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
                       <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: getTimerColor(timeLeft), animation: 'liveDot 1s infinite', boxShadow: `0 0 10px ${getTimerColor(timeLeft)}` }} />
                       ROTATING SECURITY KEY IN <span style={{ color: getTimerColor(timeLeft), fontWeight: '900', fontFamily: 'monospace', fontSize: '1.25rem', marginLeft: '4px' }}>{timeLeft}S</span>
                     </span>
-
-                    {/* Real-time Status/Match indicator (Access Code stays visible!) */}
-                    <div style={{ height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {radarStudent ? (
-                        <div style={{
-                          animation: 'slideInSpring 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center'
-                        }}>
-                          <span style={{ 
-                            fontSize: '0.9rem', 
-                            fontWeight: '900', 
-                            color: '#10B981', 
-                            textTransform: 'uppercase', 
-                            letterSpacing: '0.25em',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            padding: '6px 18px',
-                            borderRadius: '12px',
-                            border: '1px solid rgba(16, 185, 129, 0.25)',
-                            boxShadow: '0 0 15px rgba(16, 185, 129, 0.15)'
-                          }}>
-                            MATCH DETECTED
-                          </span>
-                        </div>
-                      ) : (
-                        <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic', letterSpacing: '0.05em' }}>
-                          Awaiting student responses...
-                        </p>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -730,18 +699,61 @@ export default function AttendanceTab({ userRole, userName }) {
           <div style={{ backgroundColor: 'white', borderRadius: '40px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.08)', border: '1px solid #F1F5F9' }}>
             <div style={{ padding: '40px', background: '#111827', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '900' }}>Attendance Summary</h2>
+                <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '900', color: '#FFFFFF' }}>Attendance Summary</h2>
                 <p style={{ margin: 0, opacity: 0.6, fontSize: '0.875rem', fontWeight: '700' }}>{activeBatch.name} • {new Date().toLocaleDateString()}</p>
               </div>
-              <div style={{ display: 'flex', gap: '24px' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', color: '#10B981' }}>{presentStudents.length}</p>
-                  <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.5 }}>Present</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                {/* Top Action Options */}
+                <div style={{ display: 'flex', gap: '12px', marginRight: '16px' }}>
+                  <button 
+                    onClick={() => setSessionStatus('idle')} 
+                    style={{ 
+                      padding: '12px 24px', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)', 
+                      color: 'white', 
+                      border: '1px solid rgba(255, 255, 255, 0.15)', 
+                      borderRadius: '12px', 
+                      fontWeight: '800', 
+                      fontSize: '0.8125rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'}
+                  >
+                    Discard
+                  </button>
+                  <button 
+                    onClick={() => setSessionStatus('idle')} 
+                    style={{ 
+                      padding: '12px 28px', 
+                      backgroundColor: '#10B981', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '12px', 
+                      fontWeight: '900', 
+                      fontSize: '0.8125rem',
+                      cursor: 'pointer', 
+                      boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.boxShadow = '0 10px 25px rgba(16, 185, 129, 0.5)'}
+                    onMouseLeave={(e) => e.target.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.3)'}
+                  >
+                    Save & Finalize
+                  </button>
                 </div>
-                <div style={{ textAlign: 'center' }}>
-                  {/* Mock: Assume total 15 for summary */}
-                  <p style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', color: '#EF4444' }}>{Math.max(0, 15 - presentStudents.length)}</p>
-                  <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.5 }}>Absent</p>
+
+                <div style={{ display: 'flex', gap: '20px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', color: '#10B981' }}>{presentStudents.length}</p>
+                    <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.5 }}>Present</p>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    {/* Mock: Assume total 15 for summary */}
+                    <p style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', color: '#EF4444' }}>{Math.max(0, 15 - presentStudents.length)}</p>
+                    <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', opacity: 0.5 }}>Absent</p>
+                  </div>
                 </div>
               </div>
             </div>
