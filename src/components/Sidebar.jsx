@@ -12,7 +12,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, userRole, u
   const allItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={20} />, roles: ['SuperAdmin', 'Admin', 'Trainer', 'Co-Trainer'] },
-    { id: 'users', label: 'User Management', icon: <Users size={20} />, superOnly: true },
+    { id: 'users', label: 'User Management', icon: <Users size={20} />, roles: ['SuperAdmin', 'Admin', 'Trainer', 'Co-Trainer'] },
     { id: 'reports', label: 'User Reports', icon: <Star size={20} />, roles: ['SuperAdmin', 'Admin'] },
     { id: 'classes', label: 'Class', icon: <BookOpen size={20} />, roles: ['SuperAdmin', 'Admin', 'Trainer', 'Co-Trainer'] },
     { id: 'material', label: 'Material', icon: <BookOpen size={20} />, roles: ['SuperAdmin', 'Trainer', 'Co-Trainer', 'Student'] },

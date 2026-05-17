@@ -4,8 +4,9 @@ import { users as initialUsers } from '../data/mockData';
 import BulkUploadModal from './BulkUploadModal';
 import UserDetailsModal from './UserDetailsModal';
 import AddUserModal from './AddUserModal';
+import EditUserModal from './EditUserModal';
 
-export default function UserManagement() {
+export default function UserManagement({ userRole, userName }) {
   const [usersList, setUsersList] = useState(initialUsers);
   const [activeRole, setActiveRole] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,6 +15,7 @@ export default function UserManagement() {
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
 
   const roles = [
     { id: 'All', label: 'All Users', icon: <Users size={16} /> },
@@ -26,16 +28,22 @@ export default function UserManagement() {
   const allBatches = Array.from(new Set(usersList.filter(u => u.batch).map(u => u.batch))).sort();
   const allDepts = Array.from(new Set(usersList.filter(u => u.department).map(u => u.department))).sort();
 
-  const filteredUsers = usersList.filter(user => 
-    (activeRole === 'All' || user.role === activeRole) &&
-    (selectedBatch === 'All' || user.batch === selectedBatch) &&
-    (selectedDept === 'All' || user.department === selectedDept) &&
-    (user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-     (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-     (user.phone && user.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
-     (user.department && user.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
-     (user.batch && user.batch.toLowerCase().includes(searchTerm.toLowerCase())))
-  );
+  const isRestricted = userRole === 'Trainer' || userRole === 'Co-Trainer';
+
+  const filteredUsers = usersList.filter(user => {
+    if (isRestricted && user.role !== 'Student') return false;
+
+    return (
+      (activeRole === 'All' || user.role === activeRole) &&
+      (selectedBatch === 'All' || user.batch === selectedBatch) &&
+      (selectedDept === 'All' || user.department === selectedDept) &&
+      (user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+       (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+       (user.phone && user.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+       (user.department && user.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
+       (user.batch && user.batch.toLowerCase().includes(searchTerm.toLowerCase())))
+    );
+  });
 
   const handleAddUser = (newUser) => {
     setUsersList([newUser, ...usersList]);
@@ -51,29 +59,31 @@ export default function UserManagement() {
             Manage and oversee platform access
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <button 
-            onClick={() => setIsBulkUploadOpen(true)}
-            style={{ 
-              padding: '12px 24px', backgroundColor: 'white', border: '1px solid #E5E7EB', borderRadius: '16px',
-              display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.875rem', fontWeight: '800', 
-              color: '#4B5563', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
-            }}
-          >
-            <Upload size={18} /> Bulk Upload
-          </button>
-          <button 
-            onClick={() => setIsAddUserOpen(true)}
-            style={{ 
-              padding: '12px 28px', background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)', 
-              borderRadius: '16px', border: 'none', display: 'flex', alignItems: 'center', gap: '10px', 
-              fontSize: '0.875rem', fontWeight: '900', color: 'white', cursor: 'pointer', 
-              transition: 'all 0.2s', boxShadow: '0 10px 15px -3px rgba(79, 70, 229, 0.3)'
-            }}
-          >
-            <Plus size={18} /> Add New User
-          </button>
-        </div>
+        {!isRestricted && (
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <button 
+              onClick={() => setIsBulkUploadOpen(true)}
+              style={{ 
+                padding: '12px 24px', backgroundColor: 'white', border: '1px solid #E5E7EB', borderRadius: '16px',
+                display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.875rem', fontWeight: '800', 
+                color: '#4B5563', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+              }}
+            >
+              <Upload size={18} /> Bulk Upload
+            </button>
+            <button 
+              onClick={() => setIsAddUserOpen(true)}
+              style={{ 
+                padding: '12px 28px', background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)', 
+                borderRadius: '16px', border: 'none', display: 'flex', alignItems: 'center', gap: '10px', 
+                fontSize: '0.875rem', fontWeight: '900', color: 'white', cursor: 'pointer', 
+                transition: 'all 0.2s', boxShadow: '0 10px 15px -3px rgba(79, 70, 229, 0.3)'
+              }}
+            >
+              <Plus size={18} /> Add New User
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Navigation & Filters Card */}
@@ -83,33 +93,40 @@ export default function UserManagement() {
       }}>
         <div style={{ padding: '24px 32px', display: 'flex', gap: '24px', alignItems: 'center', justifyContent: 'space-between', overflowX: 'auto' }}>
           {/* Role Pill Navigation */}
-          <div style={{ display: 'flex', gap: '8px', backgroundColor: '#F1F5F9', padding: '6px', borderRadius: '20px' }}>
-            {roles.map(role => (
-              <button
-                key={role.id}
-                onClick={() => {
-                  setActiveRole(role.id);
-                  setSelectedBatch('All');
-                  setSelectedDept('All');
-                }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '16px',
-                  border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '800', transition: 'all 0.2s',
-                  backgroundColor: activeRole === role.id ? 'white' : 'transparent',
-                  color: activeRole === role.id ? '#4F46E5' : '#64748B',
-                  boxShadow: activeRole === role.id ? '0 4px 12px rgba(0,0,0,0.05)' : 'none'
-                }}
-              >
-                {role.icon}
-                {role.label}
-              </button>
-            ))}
-          </div>
+          {!isRestricted ? (
+            <div style={{ display: 'flex', gap: '8px', backgroundColor: '#F1F5F9', padding: '6px', borderRadius: '20px' }}>
+              {roles.map(role => (
+                <button
+                  key={role.id}
+                  onClick={() => {
+                    setActiveRole(role.id);
+                    setSelectedBatch('All');
+                    setSelectedDept('All');
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '16px',
+                    border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '800', transition: 'all 0.2s',
+                    backgroundColor: activeRole === role.id ? 'white' : 'transparent',
+                    color: activeRole === role.id ? '#4F46E5' : '#64748B',
+                    boxShadow: activeRole === role.id ? '0 4px 12px rgba(0,0,0,0.05)' : 'none'
+                  }}
+                >
+                  {role.icon}
+                  {role.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#4F46E5', fontWeight: '900', fontSize: '1.125rem' }}>
+              <GraduationCap size={22} />
+              <span>Student Directory</span>
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flex: 1, justifyContent: 'flex-end' }}>
             {/* Batch/Dept Filters */}
             <div style={{ display: 'flex', gap: '12px' }}>
-              {activeRole === 'Student' && (
+              {(activeRole === 'Student' || isRestricted) && (
                 <div style={{ position: 'relative' }}>
                   <Filter size={14} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                   <select 
@@ -250,6 +267,7 @@ export default function UserManagement() {
                         padding: '10px', borderRadius: '12px', border: '1px solid #F1F5F9', backgroundColor: 'white',
                         color: '#64748B', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center'
                       }} title="Edit Profile"
+                      onClick={() => setEditingUser(user)}
                       onMouseEnter={(e) => { e.currentTarget.style.color = '#4F46E5'; e.currentTarget.style.borderColor = '#4F46E5'; e.currentTarget.style.backgroundColor = '#EEF2FF'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.color = '#64748B'; e.currentTarget.style.borderColor = '#F1F5F9'; e.currentTarget.style.backgroundColor = 'white'; }}
                       >
@@ -259,20 +277,34 @@ export default function UserManagement() {
                         padding: '10px', borderRadius: '12px', border: '1px solid #F1F5F9', backgroundColor: 'white',
                         color: '#F59E0B', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center'
                       }} title="Reset Security"
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to reset password for ${user.name}? This will set their password to their phone number (${user.phone}) and require them to reset it on their next login.`)) {
+                          setUsersList(prev => prev.map(u => u.id === user.id ? { ...u, password: user.phone, needsPasswordReset: true } : u));
+                          alert(`Password for ${user.name} successfully reset to: ${user.phone}`);
+                        }
+                      }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FFFBEB'; e.currentTarget.style.borderColor = '#F59E0B'; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.borderColor = '#F1F5F9'; }}
                       >
                         <KeyRound size={16} />
                       </button>
-                      <button style={{ 
-                        padding: '10px', borderRadius: '12px', border: '1px solid #FEE2E2', backgroundColor: 'white',
-                        color: '#EF4444', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }} title="Suspend User"
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FEF2F2'; e.currentTarget.style.borderColor = '#EF4444'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.borderColor = '#FEE2E2'; }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {!isRestricted && (
+                        <button style={{ 
+                          padding: '10px', borderRadius: '12px', border: '1px solid #FEE2E2', backgroundColor: 'white',
+                          color: '#EF4444', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }} title="Suspend User"
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to suspend/delete ${user.name}?`)) {
+                            setUsersList(prev => prev.filter(u => u.id !== user.id));
+                            alert(`${user.name} has been suspended.`);
+                          }
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FEF2F2'; e.currentTarget.style.borderColor = '#EF4444'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.borderColor = '#FEE2E2'; }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -305,6 +337,17 @@ export default function UserManagement() {
         user={selectedUser}
         isOpen={!!selectedUser}
         onClose={() => setSelectedUser(null)}
+      />
+
+      <EditUserModal 
+        isOpen={!!editingUser} 
+        onClose={() => setEditingUser(null)} 
+        user={editingUser} 
+        userRole={userRole}
+        onUpdate={(updatedUser) => {
+          setUsersList(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+          alert(`Successfully updated profile for ${updatedUser.name}!`);
+        }}
       />
     </div>
   );
