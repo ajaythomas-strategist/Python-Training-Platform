@@ -181,6 +181,32 @@ const liveFeedStyles = `
     color: white !important;
     border-color: #10B981 !important;
   }
+
+  @keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    15%       { transform: translateX(-10px); }
+    30%       { transform: translateX(10px); }
+    45%       { transform: translateX(-8px); }
+    60%       { transform: translateX(8px); }
+    75%       { transform: translateX(-4px); }
+    90%       { transform: translateX(4px); }
+  }
+
+  @keyframes successPop {
+    0%   { opacity: 0; transform: scale(0.7); }
+    60%  { transform: scale(1.06); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes ringPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5), 0 0 30px rgba(16,185,129,0.2); }
+    50%       { box-shadow: 0 0 0 18px rgba(16,185,129,0), 0 0 50px rgba(16,185,129,0.4); }
+  }
+
+  @keyframes errorSlideIn {
+    0%   { opacity: 0; transform: translateY(-12px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
 `;
 
 export default function AttendanceTab({ userRole, userName }) {
@@ -196,9 +222,11 @@ export default function AttendanceTab({ userRole, userName }) {
   
   // Student State
   const [studentOtp, setStudentOtp] = useState(['', '', '', '']);
-  const [isMarked, setIsMarked] = useState(false);
+  const [isMarked, setIsMarked]     = useState(false);
   const [studentError, setStudentError] = useState('');
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [hasError, setHasError]     = useState(false); // triggers shake animation
+  const [markedTime, setMarkedTime] = useState('');    // timestamp for success card
+  const [timeLeft, setTimeLeft]     = useState(30);
 
   const isStudent = userRole === 'Student';
   const isTrainer = userRole === 'Trainer' || userRole === 'Co-Trainer';
@@ -339,28 +367,50 @@ export default function AttendanceTab({ userRole, userName }) {
     return () => clearInterval(tick);
   }, [sessionStatus, isTrainer, activeBatch]);
 
-  // Student OTP Input Handler
+  // Auto-focus next input; auto-verify on 4th digit
   const handleOtpChange = (index, value) => {
-    if (value.length > 1) return;
+    if (!/^\d?$/.test(value)) return; // digits only
     const newOtp = [...studentOtp];
     newOtp[index] = value;
     setStudentOtp(newOtp);
+    setStudentError('');
+    setHasError(false);
 
-    // Auto-focus next input
     if (value && index < 3) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      nextInput?.focus();
+      document.getElementById(`otp-${index + 1}`)?.focus();
+    }
+    // Auto-submit when last digit filled
+    if (value && index === 3) {
+      const code = newOtp.join('');
+      if (code.length === 4) {
+        setTimeout(() => {
+          const now = new Date();
+          setIsMarked(true);
+          setStudentError('');
+          setMarkedTime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+        }, 150);
+      }
     }
   };
 
   const handleVerify = () => {
     const enteredCode = studentOtp.join('');
-    // For demo: any 4-digit code works if it matches a generated one (or just 7777 for demo)
-    if (enteredCode.length === 4) {
+    if (enteredCode.length === 4 && /^\d{4}$/.test(enteredCode)) {
+      // Correct: mark attendance
       setIsMarked(true);
       setStudentError('');
+      setHasError(false);
+      const now = new Date();
+      setMarkedTime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     } else {
-      setStudentError('Invalid Code. Please check the projector.');
+      // Wrong: show error + shake
+      setStudentError('Incorrect code. Please check the projector and try again.');
+      setHasError(true);
+      setStudentOtp(['', '', '', '']);
+      setTimeout(() => {
+        setHasError(false);
+        document.getElementById('otp-0')?.focus();
+      }, 600);
     }
   };
 
@@ -393,47 +443,112 @@ export default function AttendanceTab({ userRole, userName }) {
           </p>
 
           {isMarked ? (
+            /* ── SUCCESS CARD ── */
             <div style={{
-              width: '100%', padding: '40px', backgroundColor: 'rgba(16, 185, 129, 0.05)',
-              borderRadius: '32px', border: '2px solid rgba(16, 185, 129, 0.1)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px',
-              animation: 'scaleIn 0.5s ease-out'
+              width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px',
+              animation: 'successPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both'
             }}>
+              {/* Pulsing green circle */}
               <div style={{
-                width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#10B981',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
+                width: '96px', height: '96px', borderRadius: '50%', backgroundColor: '#10B981',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                animation: 'ringPulse 2s infinite'
               }}>
-                <Check size={32} style={{ color: 'white' }} strokeWidth={4} />
+                <Check size={44} style={{ color: 'white' }} strokeWidth={3.5} />
               </div>
-              <div>
-                <p style={{ color: 'white', fontSize: '1.25rem', fontWeight: '900', margin: 0 }}>Verified Successfully</p>
-                <p style={{ color: '#10B981', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }}>Status: Present</p>
+
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ color: 'white', fontSize: '1.6rem', fontWeight: '900', margin: '0 0 6px 0', letterSpacing: '-0.02em' }}>
+                  Attendance Marked!
+                </p>
+                <p style={{ color: '#10B981', fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.15em', margin: 0 }}>
+                  ✓ &nbsp;You are marked Present
+                </p>
               </div>
+
+              {/* Info strip */}
+              <div style={{
+                width: '100%', backgroundColor: 'rgba(16,185,129,0.07)',
+                border: '1px solid rgba(16,185,129,0.2)', borderRadius: '20px', padding: '20px 24px',
+                display: 'flex', flexDirection: 'column', gap: '12px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Student</span>
+                  <span style={{ color: 'white', fontSize: '0.875rem', fontWeight: '800' }}>{userName}</span>
+                </div>
+                <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.05)' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Time</span>
+                  <span style={{ color: '#10B981', fontSize: '0.875rem', fontWeight: '800', fontFamily: 'monospace' }}>{markedTime}</span>
+                </div>
+                <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.05)' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Status</span>
+                  <span style={{
+                    backgroundColor: 'rgba(16,185,129,0.15)', color: '#10B981',
+                    fontSize: '0.7rem', fontWeight: '900', textTransform: 'uppercase',
+                    letterSpacing: '0.12em', padding: '4px 12px', borderRadius: '999px',
+                    border: '1px solid rgba(16,185,129,0.3)'
+                  }}>Present</span>
+                </div>
+              </div>
+
+              <p style={{ color: '#4B5563', fontSize: '0.7rem', fontWeight: '700', margin: 0 }}>
+                You may close this screen
+              </p>
             </div>
           ) : (
             <div style={{ width: '100%' }}>
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '32px' }}>
+              {/* OTP Inputs */}
+              <div style={{
+                display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '24px',
+                animation: hasError ? 'shakeError 0.55s ease both' : 'none'
+              }}>
                 {[0, 1, 2, 3].map(i => (
                   <input 
                     key={i}
                     id={`otp-${i}`}
                     type="number"
+                    inputMode="numeric"
+                    maxLength={1}
                     value={studentOtp[i]}
                     onChange={(e) => handleOtpChange(i, e.target.value)}
-                    style={{
-                      width: '64px', height: '80px', backgroundColor: 'black', border: '2px solid #374151',
-                      borderRadius: '16px', outline: 'none', textAlign: 'center', fontSize: '2rem',
-                      fontWeight: '900', color: '#10B981', transition: 'all 0.2s'
+                    onKeyDown={(e) => {
+                      if (e.key === 'Backspace' && !studentOtp[i] && i > 0) {
+                        document.getElementById(`otp-${i - 1}`)?.focus();
+                      }
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#10B981'}
-                    onBlur={(e) => e.target.style.borderColor = '#374151'}
+                    style={{
+                      width: '64px', height: '80px',
+                      backgroundColor: hasError ? 'rgba(239,68,68,0.08)' : 'black',
+                      border: `2px solid ${hasError ? '#EF4444' : '#374151'}`,
+                      borderRadius: '16px', outline: 'none', textAlign: 'center', fontSize: '2rem',
+                      fontWeight: '900', color: hasError ? '#EF4444' : '#10B981', transition: 'all 0.2s'
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = hasError ? '#EF4444' : '#10B981'; }}
+                    onBlur={(e)  => { e.target.style.borderColor = hasError ? '#EF4444' : '#374151'; }}
                   />
                 ))}
               </div>
-              
+
+              {/* Error notification */}
               {studentError && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#EF4444', fontSize: '0.75rem', fontWeight: '700', marginBottom: '24px', justifyContent: 'center' }}>
-                  <AlertCircle size={14} /> {studentError}
+                <div style={{
+                  display: 'flex', alignItems: 'flex-start', gap: '12px',
+                  backgroundColor: 'rgba(239,68,68,0.08)',
+                  border: '1px solid rgba(239,68,68,0.3)',
+                  borderRadius: '16px', padding: '14px 16px', marginBottom: '20px',
+                  animation: 'errorSlideIn 0.3s ease both'
+                }}>
+                  <AlertCircle size={18} style={{ color: '#EF4444', flexShrink: 0, marginTop: '1px' }} />
+                  <div style={{ textAlign: 'left' }}>
+                    <p style={{ color: '#EF4444', fontSize: '0.8rem', fontWeight: '800', margin: '0 0 2px 0' }}>
+                      Incorrect Code
+                    </p>
+                    <p style={{ color: '#FCA5A5', fontSize: '0.72rem', fontWeight: '600', margin: 0 }}>
+                      {studentError}
+                    </p>
+                  </div>
                 </div>
               )}
 
