@@ -1,7 +1,14 @@
 import React from 'react';
 import { LayoutDashboard, Users, BookOpen, Star, FlaskConical, ShieldAlert, LogOut, Trophy } from 'lucide-react';
 
+import { classes, users } from '../data/mockData';
+
 export default function Sidebar({ activeTab, setActiveTab, onLogout, userRole, userName }) {
+  const studentObj = userRole === 'Student' ? users.find(u => u.name === userName && u.role === 'Student') : null;
+  const isFeedbackEnabledForStudent = studentObj 
+    ? classes.find(c => c.id === studentObj.batch)?.feedbackEnabled 
+    : false;
+
   const allItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={20} />, roles: ['SuperAdmin', 'Admin', 'Trainer', 'Co-Trainer'] },
@@ -11,7 +18,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, userRole, u
     { id: 'material', label: 'Material', icon: <BookOpen size={20} />, roles: ['SuperAdmin', 'Trainer', 'Co-Trainer', 'Student'] },
     { id: 'labs', label: 'Lab Management', icon: <FlaskConical size={20} />, roles: ['SuperAdmin', 'Admin'] },
     { id: 'guidelines', label: 'Guidelines', icon: <ShieldAlert size={20} />, roles: ['SuperAdmin', 'Admin'] },
-    { id: 'mark-rating', label: 'Mark Rating', icon: <Star size={20} />, roles: ['SuperAdmin', 'Admin', 'Trainer', 'Student'] },
+    { id: 'mark-rating', label: 'Mark Rating', icon: <Star size={20} />, roles: (userRole === 'Student' && !isFeedbackEnabledForStudent) ? ['SuperAdmin', 'Admin', 'Trainer'] : ['SuperAdmin', 'Admin', 'Trainer', 'Student'] },
     { id: 'reviews', label: userRole === 'Trainer' ? 'Student Feedback' : 'Reviews & Ratings', icon: <Star size={20} />, roles: ['SuperAdmin', 'Admin', 'Trainer'] },
     { id: 'attendance', label: 'Attendance', icon: <Users size={20} />, roles: ['Trainer', 'Co-Trainer', 'Student'] },
   ];
