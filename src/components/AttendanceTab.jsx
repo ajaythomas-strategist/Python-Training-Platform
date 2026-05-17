@@ -7,6 +7,30 @@ import {
 } from 'lucide-react';
 import { users, classes } from '../data/mockData';
 
+const simulationPool = [
+  { id: 'd1', name: 'Alexander Wright' },
+  { id: 'd2', name: 'Sophia Chen' },
+  { id: 'd3', name: 'Marcus Sterling' },
+  { id: 'd4', name: 'Emily Rodriguez' },
+  { id: 'd5', name: 'Vikram Mehta' },
+  { id: 'd6', name: 'Elena Rostova' },
+  { id: 'd7', name: 'Liam Gallagher' },
+  { id: 'd8', name: 'Zahra Al-Farsi' },
+  { id: 'd9', name: 'Lucas Novak' },
+  { id: 'd10', name: 'Chloe Dubois' },
+  { id: 'd11', name: 'Julian Vance' },
+  { id: 'd12', name: 'Aria Takahashi' },
+  { id: 'd13', name: 'Mateo Silva' },
+  { id: 'd14', name: 'Sarah Jenkins' },
+  { id: 'd15', name: 'Dante Moretti' },
+  { id: 'd16', name: 'Naomi Campbell' },
+  { id: 'd17', name: 'Leo Fitzpatrick' },
+  { id: 'd18', name: 'Sophia Kowalski' },
+  { id: 'd19', name: 'Zane Thompson' },
+  { id: 'd20', name: 'Isabella Vance' },
+  { id: 'd21', name: 'Oliver Bennett' }
+];
+
 const liveFeedStyles = `
   @keyframes sonarPulse {
     0% {
@@ -183,32 +207,7 @@ export default function AttendanceTab({ userRole, userName }) {
   const startSession = (batch) => {
     setActiveBatch(batch);
     generateCode();
-    
-    // Sample with 20 premium dummy names as requested by the user
-    const sampleDummyStudents = [
-      { id: 'd1', name: 'Alexander Wright' },
-      { id: 'd2', name: 'Sophia Chen' },
-      { id: 'd3', name: 'Marcus Sterling' },
-      { id: 'd4', name: 'Emily Rodriguez' },
-      { id: 'd5', name: 'Vikram Mehta' },
-      { id: 'd6', name: 'Elena Rostova' },
-      { id: 'd7', name: 'Liam Gallagher' },
-      { id: 'd8', name: 'Zahra Al-Farsi' },
-      { id: 'd9', name: 'Lucas Novak' },
-      { id: 'd10', name: 'Chloe Dubois' },
-      { id: 'd11', name: 'Julian Vance' },
-      { id: 'd12', name: 'Aria Takahashi' },
-      { id: 'd13', name: 'Mateo Silva' },
-      { id: 'd14', name: 'Sarah Jenkins' },
-      { id: 'd15', name: 'Dante Moretti' },
-      { id: 'd16', name: 'Naomi Campbell' },
-      { id: 'd17', name: 'Leo Fitzpatrick' },
-      { id: 'd18', name: 'Sophia Kowalski' },
-      { id: 'd19', name: 'Zane Thompson' },
-      { id: 'd20', name: 'Isabella Vance' }
-    ];
-    
-    setPresentStudents(sampleDummyStudents);
+    setPresentStudents([]); // Start verified students list from 0!
     setSessionStatus('active');
   };
 
@@ -219,31 +218,27 @@ export default function AttendanceTab({ userRole, userName }) {
   // Mock: Simulate students joining randomly in Trainer View
   useEffect(() => {
     if (sessionStatus === 'active' && isTrainer && activeBatch) {
-      // Find eligible students in mockData that belong to this batch
-      const batchStudents = users.filter(u => u.role === 'Student' && u.batch === activeBatch.id);
-      
       const interval = setInterval(() => {
         // If there's currently a student actively showing/scanning in the radar, wait for them to finish
         if (radarStudent) return;
 
-        // Get a student that isn't already present (excluding current pre-populated lists)
-        const unjoinedStudents = batchStudents.filter(u => !presentStudents.some(p => p.name === u.name));
+        // Get the next student sequentially from simulationPool that isn't already present
+        const unjoinedStudents = simulationPool.filter(u => !presentStudents.some(p => p.name === u.name));
         
         if (unjoinedStudents.length > 0) {
           const nextStudent = unjoinedStudents[0];
-          if (nextStudent && Math.random() > 0.5) {
-            // 1. Show the student inside the radar scan first (directly below code!)
-            setRadarStudent(nextStudent);
-            
-            // 2. After 2 seconds, complete the verification scan and transition them to the Left Panel list
-            setTimeout(() => {
-              setPresentStudents(prev => {
-                if (prev.some(s => s.name === nextStudent.name)) return prev;
-                return [...prev, nextStudent];
-              });
-              setRadarStudent(null);
-            }, 2000);
-          }
+          
+          // 1. Show the student name floating absolutely on the top outer circumference of the circle!
+          setRadarStudent(nextStudent);
+          
+          // 2. After 2 seconds, complete the verification scan and transition them to the Left Panel list
+          setTimeout(() => {
+            setPresentStudents(prev => {
+              if (prev.some(s => s.name === nextStudent.name)) return prev;
+              return [...prev, nextStudent];
+            });
+            setRadarStudent(null);
+          }, 2000);
         }
       }, 4000);
       
@@ -452,7 +447,7 @@ export default function AttendanceTab({ userRole, userName }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'liveDot 1.5s infinite', boxShadow: '0 0 15px #10B981' }} />
               <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Active Holographic Radar Scanner</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.25em' }}>Marking Attendance</span>
                 <h2 style={{ margin: '4px 0 0 0', fontSize: '1.75rem', fontWeight: '900', color: 'white', letterSpacing: '-0.02em' }}>{activeBatch.name}</h2>
               </div>
             </div>
@@ -512,7 +507,7 @@ export default function AttendanceTab({ userRole, userName }) {
               </p>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {presentStudents.slice(-20).reverse().map((student) => (
+                {presentStudents.slice(-21).reverse().map((student) => (
                   <div 
                     key={student.id} 
                     style={{
@@ -582,22 +577,18 @@ export default function AttendanceTab({ userRole, userName }) {
                 transition: 'all 0.4s ease',
                 backgroundColor: 'rgba(16, 185, 129, 0.01)'
               }}>
-                {/* Absolute Outer-Circle Matching Name Capsule (Fitted on the outer top border) */}
+                {/* Absolute Outer-Circle Matching Name (Plain glowing text with NO background capsule box!) */}
                 {radarStudent && (
                   <div style={{
                     position: 'absolute',
-                    top: '-32px',
+                    top: '-42px',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    backgroundColor: '#10B981',
-                    border: '2px solid rgba(255, 255, 255, 0.35)',
-                    borderRadius: '40px',
-                    padding: '12px 36px',
                     color: 'white',
                     fontWeight: '900',
-                    fontSize: '2.25rem',
-                    letterSpacing: '-0.01em',
-                    boxShadow: '0 0 35px #10B981',
+                    fontSize: '2.6rem',
+                    letterSpacing: '-0.02em',
+                    textShadow: '0 0 20px #10B981, 0 0 40px #10B981',
                     animation: 'slideInSpring 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both',
                     zIndex: 100,
                     whiteSpace: 'nowrap'
@@ -672,18 +663,18 @@ export default function AttendanceTab({ userRole, userName }) {
                     <div style={{ 
                       display: 'flex', 
                       gap: '16px',
-                      margin: '12px 0 8px 0'
+                      margin: '16px 0'
                     }}>
                       {sessionCode.split('').map((char, i) => (
                         <span 
                           key={i} 
                           style={{
-                            fontSize: '6.25rem', 
+                            fontSize: '7rem', 
                             fontWeight: '900', 
                             color: '#10B981',
                             fontFamily: 'monospace',
                             letterSpacing: '0.02em',
-                            textShadow: '0 0 35px rgba(16, 185, 129, 0.5)'
+                            textShadow: '0 0 45px rgba(16, 185, 129, 0.55)'
                           }}
                         >
                           {char}
@@ -691,9 +682,9 @@ export default function AttendanceTab({ userRole, userName }) {
                       ))}
                     </div>
 
-                    <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.15em', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'liveDot 1s infinite' }} />
-                      TRANSMITTING SECURE BEACON
+                    <span style={{ fontSize: '0.95rem', fontWeight: '900', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.18em', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: getTimerColor(timeLeft), animation: 'liveDot 1s infinite', boxShadow: `0 0 10px ${getTimerColor(timeLeft)}` }} />
+                      ROTATING SECURITY KEY IN <span style={{ color: getTimerColor(timeLeft), fontWeight: '900', fontFamily: 'monospace', fontSize: '1.25rem', marginLeft: '4px' }}>{timeLeft}S</span>
                     </span>
 
                     {/* Real-time Status/Match indicator (Access Code stays visible!) */}
@@ -728,14 +719,6 @@ export default function AttendanceTab({ userRole, userName }) {
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Countdown Ticker Bar underneath the Radar Scan Circle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '32px', opacity: 0.85 }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: getTimerColor(timeLeft), animation: 'liveDot 1s infinite' }} />
-                <span style={{ fontSize: '0.8125rem', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.18em' }}>
-                  ROTATING SECURITY KEY IN <span style={{ color: getTimerColor(timeLeft), fontWeight: '900', fontFamily: 'monospace', fontSize: '0.9375rem' }}>{timeLeft}S</span>
-                </span>
               </div>
             </div>
           </div>
