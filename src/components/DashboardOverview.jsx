@@ -16,6 +16,8 @@ export default function DashboardOverview({ userRole, userName }) {
 
   const isTrainer = userRole === 'Trainer' || userRole === 'Co-Trainer';
   const isStudent = userRole === 'Student';
+  const showTrainerCol = userRole !== 'Trainer';
+  const showCoTrainersCol = userRole !== 'Co-Trainer';
 
   const studentData = isStudent ? users.find(u => u.name === userName && u.role === 'Student') : null;
   const students = users.filter(u => u.role === 'Student');
@@ -427,8 +429,8 @@ export default function DashboardOverview({ userRole, userName }) {
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
                       <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Time</th>
                       <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
-                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>
-                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">{isTrainer ? 'Trainers' : 'Co Trainers'}</th>
+                      {showTrainerCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>}
+                      {showCoTrainersCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>}
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">No. of Students</th>
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
@@ -456,40 +458,44 @@ export default function DashboardOverview({ userRole, userName }) {
                         <td className="py-4 text-center font-bold text-gray-600">#{batch.sessionNo}</td>
                         <td className="py-4 text-gray-500 font-medium">{batch.sessionTime}</td>
                         <td className="py-4 text-gray-600 font-bold">{batch.lab}</td>
-                        <td className="py-4 text-gray-800 font-bold">
-                          <div className="flex items-center gap-2">
-                            {batch.trainerData.name}
-                            {batch.transferredFrom && (
-                              <button 
-                                className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                                title="Transferred Session"
-                                onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
-                              >
-                                <Eye size={12} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-4">
-                          <div className="flex flex-col gap-1">
+                        {showTrainerCol && (
+                          <td className="py-4 text-gray-800 font-bold">
                             <div className="flex items-center gap-2">
-                              <div className="flex flex-col">
-                                {batch.coTrainersData.map((ct, idx) => (
-                                  <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
-                                ))}
-                              </div>
-                              {batch.transferredCoTrainerFrom && (
+                              {batch.trainerData.name}
+                              {batch.transferredFrom && (
                                 <button 
                                   className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                                  title="Transferred Co-Trainer"
-                                  onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                                  title="Transferred Session"
+                                  onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
                                 >
                                   <Eye size={12} />
                                 </button>
                               )}
                             </div>
-                          </div>
-                        </td>
+                          </td>
+                        )}
+                        {showCoTrainersCol && (
+                          <td className="py-4">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <div className="flex flex-col">
+                                  {batch.coTrainersData.map((ct, idx) => (
+                                    <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
+                                  ))}
+                                </div>
+                                {batch.transferredCoTrainerFrom && (
+                                  <button 
+                                    className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                    title="Transferred Co-Trainer"
+                                    onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                                  >
+                                    <Eye size={12} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        )}
                         <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
                         <td className="py-4 text-center font-bold text-emerald-600">{batch.attendancePct}%</td>
                         <td className="py-4 text-center">
@@ -565,11 +571,11 @@ export default function DashboardOverview({ userRole, userName }) {
                 <tr>
                   <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Time</th>
                   <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
-                  <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>
+                  {showTrainerCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>}
                   {!isStudent && (
                     <>
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch</th>
-                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">{isTrainer ? 'Trainers' : 'Co Trainers'}</th>
+                      {showCoTrainersCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>}
                     </>
                   )}
                 </tr>
@@ -579,43 +585,47 @@ export default function DashboardOverview({ userRole, userName }) {
                   <tr key={batch.id} className="border-t border-gray-50 text-sm">
                     <td className="py-4 text-gray-500 font-medium">{batch.sessionTime}</td>
                     <td className="py-4 text-gray-600 font-bold">{batch.lab}</td>
-                    <td className="py-4 text-gray-800 font-bold">
-                      <div className="flex items-center gap-2">
-                        {batch.trainerData.name}
-                        {batch.transferredFrom && (
-                          <button 
-                            className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                            title="Transferred Session"
-                            onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
-                          >
-                            <Eye size={12} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
+                    {showTrainerCol && (
+                      <td className="py-4 text-gray-800 font-bold">
+                        <div className="flex items-center gap-2">
+                          {batch.trainerData.name}
+                          {batch.transferredFrom && (
+                            <button 
+                              className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                              title="Transferred Session"
+                              onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
+                            >
+                              <Eye size={12} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    )}
                     {!isStudent && (
                       <>
                         <td className="py-4 text-center font-bold text-gray-800">{batch.id}</td>
-                        <td className="py-4">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                              <div className="flex flex-col">
-                                {batch.coTrainersData.map((ct, idx) => (
-                                  <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
-                                ))}
+                        {showCoTrainersCol && (
+                          <td className="py-4">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <div className="flex flex-col">
+                                  {batch.coTrainersData.map((ct, idx) => (
+                                    <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
+                                  ))}
+                                </div>
+                                {batch.transferredCoTrainerFrom && (
+                                  <button 
+                                    className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                    title="Transferred Co-Trainer"
+                                    onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                                  >
+                                    <Eye size={12} />
+                                  </button>
+                                )}
                               </div>
-                              {batch.transferredCoTrainerFrom && (
-                                <button 
-                                  className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                                  title="Transferred Co-Trainer"
-                                  onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
-                                >
-                                  <Eye size={12} />
-                                </button>
-                              )}
                             </div>
-                          </div>
-                        </td>
+                          </td>
+                        )}
                       </>
                     )}
                   </tr>
@@ -761,8 +771,8 @@ export default function DashboardOverview({ userRole, userName }) {
                     <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
                     <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
                     <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
-                    <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>
-                    <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">{isTrainer ? 'Trainers' : 'Co Trainers'}</th>
+                    {showTrainerCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>}
+                    {showCoTrainersCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>}
                     <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">No. of Students</th>
                     <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
                     <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
@@ -781,40 +791,44 @@ export default function DashboardOverview({ userRole, userName }) {
                       <td className="py-4 text-center font-bold text-gray-600">#{batch.sessionNo}</td>
                       <td className="py-4 text-gray-500">{batch.sessionTime}</td>
                       <td className="py-4 text-gray-600 font-medium">{batch.lab}</td>
-                      <td className="py-4 text-gray-800 font-bold">
-                        <div className="flex items-center gap-2">
-                          {batch.trainerData.name}
-                          {batch.transferredFrom && (
-                            <button 
-                              className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                              title="Transferred Session"
-                              onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
-                            >
-                              <Eye size={12} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-4">
-                        <div className="flex flex-col gap-1">
+                      {showTrainerCol && (
+                        <td className="py-4 text-gray-800 font-bold">
                           <div className="flex items-center gap-2">
-                            <div className="flex flex-col">
-                              {batch.coTrainersData.map((ct, idx) => (
-                                <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
-                              ))}
-                            </div>
-                            {batch.transferredCoTrainerFrom && (
+                            {batch.trainerData.name}
+                            {batch.transferredFrom && (
                               <button 
                                 className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                                title="Transferred Co-Trainer"
-                                onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                                title="Transferred Session"
+                                onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
                               >
                                 <Eye size={12} />
                               </button>
                             )}
                           </div>
-                        </div>
-                      </td>
+                        </td>
+                      )}
+                      {showCoTrainersCol && (
+                        <td className="py-4">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <div className="flex flex-col">
+                                {batch.coTrainersData.map((ct, idx) => (
+                                  <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
+                                ))}
+                              </div>
+                              {batch.transferredCoTrainerFrom && (
+                                <button 
+                                  className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                  title="Transferred Co-Trainer"
+                                  onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                                >
+                                  <Eye size={12} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      )}
                       <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
                       <td className="py-4">
                         <div className="flex items-center justify-center gap-3">
