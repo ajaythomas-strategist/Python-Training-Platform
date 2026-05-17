@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   Check, X, UserCheck, UserMinus, Save, Shield, Lock, 
   Fingerprint, Monitor, Users, Play, Pause, RefreshCw, 
-  ChevronRight, AlertCircle, Clock
+  ChevronRight, AlertCircle, Clock, Maximize2, Minimize2
 } from 'lucide-react';
 import { users, classes } from '../data/mockData';
 
@@ -28,7 +28,16 @@ const simulationPool = [
   { id: 'd18', name: 'Sophia Kowalski' },
   { id: 'd19', name: 'Zane Thompson' },
   { id: 'd20', name: 'Isabella Vance' },
-  { id: 'd21', name: 'Oliver Bennett' }
+  { id: 'd21', name: 'Oliver Bennett' },
+  { id: 'd22', name: 'Noah King' },
+  { id: 'd23', name: 'Mia Patel' },
+  { id: 'd24', name: 'Ethan Hunt' },
+  { id: 'd25', name: 'Ava Adams' },
+  { id: 'd26', name: 'James Wilson' },
+  { id: 'd27', name: 'Lily Smith' },
+  { id: 'd28', name: 'Daniel Brown' },
+  { id: 'd29', name: 'Olivia Jones' },
+  { id: 'd30', name: 'William Taylor' }
 ];
 
 const liveFeedStyles = `
@@ -61,6 +70,19 @@ const liveFeedStyles = `
     }
   }
 
+  @keyframes tickerSlideUp {
+    0% {
+      opacity: 0;
+      transform: translateY(40px) scale(0.9);
+      filter: blur(4px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+  }
+
   @keyframes perspectiveFlip {
     0% {
       opacity: 0;
@@ -88,6 +110,20 @@ const liveFeedStyles = `
     0% {
       transform: scale(0.35);
       opacity: 0.95;
+    }
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+
+  @keyframes nameOnRing {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    55% {
+      opacity: 0.75;
     }
     100% {
       transform: scale(2.4);
@@ -153,7 +189,10 @@ export default function AttendanceTab({ userRole, userName }) {
   const [sessionStatus, setSessionStatus] = useState('idle'); // 'idle', 'active', 'summary'
   const [sessionCode, setSessionCode] = useState('');
   const [presentStudents, setPresentStudents] = useState([]);
-  const [radarStudent, setRadarStudent] = useState(null);
+  const [radarStudents, setRadarStudents] = useState([]);
+  const [waitingQueue, setWaitingQueue] = useState([]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const verifiedListRef = useRef(null);
   
   // Student State
   const [studentOtp, setStudentOtp] = useState(['', '', '', '']);
@@ -163,6 +202,39 @@ export default function AttendanceTab({ userRole, userName }) {
 
   const isStudent = userRole === 'Student';
   const isTrainer = userRole === 'Trainer' || userRole === 'Co-Trainer';
+
+  // Smoothly scroll the verified list to the bottom whenever a new student verifies (Bottom-to-Up movement)
+  useEffect(() => {
+    if (verifiedListRef.current) {
+      setTimeout(() => {
+        if (verifiedListRef.current) {
+          verifiedListRef.current.scrollTo({
+            top: verifiedListRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    }
+  }, [presentStudents.length]);
+
+  // Track Full Screen state change
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error enabling full-screen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
 
   // Filter classes based on user role and name
   const visibleClasses = classes.filter(batch => {
@@ -208,6 +280,8 @@ export default function AttendanceTab({ userRole, userName }) {
     setActiveBatch(batch);
     generateCode();
     setPresentStudents([]); // Start verified students list from 0!
+    setRadarStudents([]);   // Clear active radar slots!
+    setWaitingQueue([]);    // Clear waiting queue!
     setSessionStatus('active');
   };
 
@@ -215,36 +289,55 @@ export default function AttendanceTab({ userRole, userName }) {
     setSessionStatus('summary');
   };
 
-  // Mock: Simulate students joining randomly in Trainer View
+  // Single clean simulation engine using refs to avoid stale-closure issues
+  const simStateRef = useRef({ presentStudents: [], radarStudents: [], waitingQueue: [] });
+  
   useEffect(() => {
-    if (sessionStatus === 'active' && isTrainer && activeBatch) {
-      const interval = setInterval(() => {
-        // If there's currently a student actively showing/scanning in the radar, wait for them to finish
-        if (radarStudent) return;
+    simStateRef.current = { presentStudents, radarStudents, waitingQueue };
+  }, [presentStudents, radarStudents, waitingQueue]);
 
-        // Get the next student sequentially from simulationPool that isn't already present
-        const unjoinedStudents = simulationPool.filter(u => !presentStudents.some(p => p.name === u.name));
-        
-        if (unjoinedStudents.length > 0) {
-          const nextStudent = unjoinedStudents[0];
-          
-          // 1. Show the student name floating absolutely on the top outer circumference of the circle!
-          setRadarStudent(nextStudent);
-          
-          // 2. After 2 seconds, complete the verification scan and transition them to the Left Panel list
-          setTimeout(() => {
-            setPresentStudents(prev => {
-              if (prev.some(s => s.name === nextStudent.name)) return prev;
-              return [...prev, nextStudent];
-            });
-            setRadarStudent(null);
-          }, 2000);
-        }
-      }, 4000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [sessionStatus, activeBatch, isTrainer, presentStudents.length, radarStudent]);
+  useEffect(() => {
+    if (sessionStatus !== 'active' || !isTrainer || !activeBatch) return;
+
+    const tick = setInterval(() => {
+      const { presentStudents: ps, radarStudents: rs, waitingQueue: wq } = simStateRef.current;
+      const now = Date.now();
+
+      // Step 1: Graduate verified radar students (>= 4s) to present list
+      const verified = rs.filter(s => now - s.joinedAt >= 4000);
+      const stillOnRadar = rs.filter(s => now - s.joinedAt < 4000);
+
+      if (verified.length > 0) {
+        setPresentStudents(prev => {
+          const next = [...prev];
+          verified.forEach(v => {
+            if (!next.some(s => s.name === v.name)) next.push(v);
+          });
+          return next;
+        });
+        setRadarStudents(stillOnRadar);
+        return; // Let state settle before next step
+      }
+
+      // Step 2: Fill radar slots from waiting queue (up to 5 at a time)
+      const openSlots = 5 - rs.length;
+      if (openSlots > 0 && wq.length > 0) {
+        const toAdd = wq.slice(0, openSlots).map(s => ({ ...s, joinedAt: Date.now() }));
+        setWaitingQueue(prev => prev.slice(toAdd.length));
+        setRadarStudents(prev => [...prev, ...toAdd]);
+        return;
+      }
+
+      // Step 3: Pull next unqueued student into waiting queue
+      const allAccounted = [...ps, ...rs, ...wq].map(s => s.name);
+      const unjoined = simulationPool.filter(u => !allAccounted.includes(u.name));
+      if (unjoined.length > 0) {
+        setWaitingQueue(prev => [...prev, unjoined[0]]);
+      }
+    }, 1200);
+
+    return () => clearInterval(tick);
+  }, [sessionStatus, isTrainer, activeBatch]);
 
   // Student OTP Input Handler
   const handleOtpChange = (index, value) => {
@@ -489,45 +582,53 @@ export default function AttendanceTab({ userRole, userName }) {
             display: 'flex',
             flexDirection: 'row',
             flex: '1',
-            gap: '60px',
+            gap: '280px',
             alignItems: 'stretch',
             overflow: 'hidden'
           }}>
-            {/* LEFT COLUMN: Transparent Verified Names List ("Plain" - No Card Backgrounds) */}
-            <div style={{
-              width: '45%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-start',
-              padding: '20px 0',
-              overflowY: 'auto'
-            }}>
+            {/* LEFT COLUMN: Transparent Verified Names List */}
+            <div 
+              ref={verifiedListRef}
+              style={{
+                width: '30%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                padding: '20px 0',
+                overflow: 'hidden'
+              }}
+            >
               <p style={{ margin: '0 0 28px 0', fontSize: '0.8125rem', fontWeight: '900', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.25em', color: 'white' }}>
                 RECENTLY VERIFIED ({presentStudents.length})
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {presentStudents.slice(-21).map((student) => (
+              {/* Queue count badge */}
+              {waitingQueue.length > 0 && (
+                <p style={{ margin: '-18px 0 20px 0', fontSize: '0.7rem', fontWeight: '800', opacity: 0.35, textTransform: 'uppercase', letterSpacing: '0.2em', color: '#F59E0B' }}>
+                  {waitingQueue.length} in queue
+                </p>
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                {presentStudents.slice(-10).map((student) => (
                   <div 
                     key={student.id} 
                     style={{
                       display: 'flex', 
                       alignItems: 'center', 
-                      animation: 'slideInSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                      animation: 'tickerSlideUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) both',
                     }}
                   >
                     <span style={{ 
-                      width: '12px', height: '12px', borderRadius: '50%', 
+                      width: '10px', height: '10px', borderRadius: '50%', 
                       backgroundColor: '#10B981', display: 'inline-block',
-                      boxShadow: '0 0 10px #10B981', animation: 'liveDot 1s infinite',
-                      marginRight: '24px',
+                      boxShadow: '0 0 10px #10B981',
+                      marginRight: '20px',
                       flexShrink: 0
                     }} />
                     <span style={{ 
-                      fontSize: '2.2rem', 
+                      fontSize: '2rem', 
                       fontWeight: '800', 
                       color: 'white',
                       letterSpacing: '-0.02em',
-                      textShadow: '0 2px 10px rgba(255,255,255,0.05)',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis'
@@ -550,144 +651,134 @@ export default function AttendanceTab({ userRole, userName }) {
               </div>
             </div>
 
-            {/* Divider Line */}
-            <div style={{ width: '1px', backgroundColor: 'rgba(255, 255, 255, 0.05)', alignSelf: 'stretch' }} />
 
-            {/* RIGHT COLUMN: Cinematic Orbital Radar Scan & Access Code Core */}
+
+            {/* RIGHT COLUMN: Cinematic Orbital Radar — names sit ON the outermost ring */}
             <div style={{
-              width: '55%',
+              width: '70%',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               justifyContent: 'center',
+              paddingLeft: '0px',
               position: 'relative'
             }}>
-              {/* Circular Holographic Radar Sweep Shell */}
+              {/* 
+                600×600 outer wrapper — names are positioned here relative to center (300, 300).
+                The 390px circle is placed at offset (105, 105) so its center aligns with (300, 300).
+                Names at R=195 will land exactly ON the outermost circle ring, like radar blips.
+              */}
               <div style={{
                 position: 'relative',
-                width: '390px',
-                height: '390px',
-                borderRadius: '50%',
-                border: radarStudent ? '4px solid #10B981' : '2px dashed rgba(16, 185, 129, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: radarStudent ? '0 0 50px rgba(16, 185, 129, 0.35), inset 0 0 50px rgba(16, 185, 129, 0.35)' : '0 0 60px rgba(16, 185, 129, 0.03), inset 0 0 60px rgba(16, 185, 129, 0.03)',
-                transition: 'all 0.4s ease',
-                backgroundColor: 'rgba(16, 185, 129, 0.01)'
+                width: '600px',
+                height: '600px',
+                flexShrink: 0
               }}>
-                {/* Absolute Outer-Circle Matching Name (Plain glowing text mathematically centered at the top border) */}
-                {radarStudent && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '-45px',
-                    left: 0,
-                    right: 0,
-                    textAlign: 'center',
-                    color: 'white',
-                    fontWeight: '900',
-                    fontSize: '2.8rem',
-                    letterSpacing: '-0.02em',
-                    textShadow: '0 0 25px #10B981, 0 0 50px #10B981',
-                    animation: 'slideInSpring 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                    zIndex: 100
-                  }}>
-                    {radarStudent.name}
-                  </div>
-                )}
 
-                {/* Orbital Rings */}
-                <div style={{ position: 'absolute', width: '80%', height: '80%', borderRadius: '50%', border: '1px solid rgba(16, 185, 129, 0.08)' }} />
-                <div style={{ position: 'absolute', width: '55%', height: '55%', borderRadius: '50%', border: '1px dashed rgba(16, 185, 129, 0.05)' }} />
-
-                {/* Staggered Circular Emitting Waves (Large Concentric Round Signals Emitters) */}
+                {/* ── The 390px radar circle, centered in the 600px wrapper ── */}
                 <div style={{
                   position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  top: 0, left: 0,
+                  left: '105px',
+                  top: '105px',
+                  width: '390px',
+                  height: '390px',
+                  borderRadius: '50%',
+                  border: '2px dashed rgba(16, 185, 129, 0.2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  pointerEvents: 'none',
-                  zIndex: 1
+                  boxShadow: '0 0 60px rgba(16, 185, 129, 0.04), inset 0 0 60px rgba(16, 185, 129, 0.04)',
+                  backgroundColor: 'rgba(16, 185, 129, 0.01)',
+                  overflow: 'visible'
                 }}>
-                  <div style={{
-                    position: 'absolute',
-                    width: '390px',
-                    height: '390px',
-                    borderRadius: '50%',
-                    border: '4px solid rgba(16, 185, 129, 0.4)',
-                    animation: 'signalEmit 4s infinite linear'
-                  }} />
-                  <div style={{
-                    position: 'absolute',
-                    width: '390px',
-                    height: '390px',
-                    borderRadius: '50%',
-                    border: '3px solid rgba(16, 185, 129, 0.25)',
-                    animation: 'signalEmit 4s infinite linear 1.3s'
-                  }} />
-                  <div style={{
-                    position: 'absolute',
-                    width: '390px',
-                    height: '390px',
-                    borderRadius: '50%',
-                    border: '2px solid rgba(16, 185, 129, 0.15)',
-                    animation: 'signalEmit 4s infinite linear 2.6s'
-                  }} />
-                </div>
 
-                {/* Dynamic Holographic Scanner Screen Content */}
-                <div style={{
-                  zIndex: 10,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  width: '100%',
-                  padding: '24px'
-                }}>
+                  {/* Orbital Rings (relative to the 390px circle) */}
+                  <div style={{ position: 'absolute', width: '80%', height: '80%', borderRadius: '50%', border: '1px solid rgba(16, 185, 129, 0.08)' }} />
+                  <div style={{ position: 'absolute', width: '55%', height: '55%', borderRadius: '50%', border: '1px dashed rgba(16, 185, 129, 0.05)' }} />
+
+                  {/* Staggered Circular Emitting Waves */}
                   <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '4px'
+                    position: 'absolute', width: '100%', height: '100%',
+                    top: 0, left: 0, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', pointerEvents: 'none', zIndex: 1
                   }}>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.35em' }}>
-                      SECURITY KEY
-                    </span>
-                    
-                    {/* Access Code display with glowing colossal letters - easily visible from far! */}
-                    <div style={{ 
-                      display: 'flex', 
-                      gap: '12px',
-                      margin: '20px 0'
-                    }}>
-                      {sessionCode.split('').map((char, i) => (
-                        <span 
-                          key={i} 
-                          style={{
-                            fontSize: '9.5rem', 
-                            fontWeight: '900', 
-                            color: '#10B981',
-                            fontFamily: 'monospace',
-                            letterSpacing: '-0.02em',
-                            textShadow: '0 0 60px rgba(16, 185, 129, 0.75)'
-                          }}
-                        >
-                          {char}
-                        </span>
-                      ))}
-                    </div>
+                    <div style={{ position: 'absolute', width: '390px', height: '390px', borderRadius: '50%', border: '4px solid rgba(16, 185, 129, 0.4)', animation: 'signalEmit 4s infinite linear' }} />
+                    <div style={{ position: 'absolute', width: '390px', height: '390px', borderRadius: '50%', border: '3px solid rgba(16, 185, 129, 0.25)', animation: 'signalEmit 4s infinite linear 1.3s' }} />
+                    <div style={{ position: 'absolute', width: '390px', height: '390px', borderRadius: '50%', border: '2px solid rgba(16, 185, 129, 0.15)', animation: 'signalEmit 4s infinite linear 2.6s' }} />
+                  </div>
 
-                    {/* Central timer display */}
-                    <span style={{ fontSize: '0.95rem', fontWeight: '900', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.18em', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
-                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: getTimerColor(timeLeft), animation: 'liveDot 1s infinite', boxShadow: `0 0 10px ${getTimerColor(timeLeft)}` }} />
-                      ROTATING SECURITY KEY IN <span style={{ color: getTimerColor(timeLeft), fontWeight: '900', fontFamily: 'monospace', fontSize: '1.25rem', marginLeft: '4px' }}>{timeLeft}S</span>
-                    </span>
+                  {/* Security Key + Timer (inside circle) */}
+                  <div style={{ zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%', padding: '24px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.35em' }}>
+                        SECURITY KEY
+                      </span>
+                      <div style={{ display: 'flex', gap: '12px', margin: '20px 0' }}>
+                        {sessionCode.split('').map((char, i) => (
+                          <span key={i} style={{ fontSize: '9.5rem', fontWeight: '900', color: '#10B981', fontFamily: 'monospace', letterSpacing: '-0.02em', textShadow: '0 0 60px rgba(16, 185, 129, 0.75)' }}>
+                            {char}
+                          </span>
+                        ))}
+                      </div>
+                      <span style={{ fontSize: '0.95rem', fontWeight: '900', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.18em', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
+                        <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: getTimerColor(timeLeft), animation: 'liveDot 1s infinite', boxShadow: `0 0 10px ${getTimerColor(timeLeft)}` }} />
+                        ROTATING SECURITY KEY IN <span style={{ color: getTimerColor(timeLeft), fontWeight: '900', fontFamily: 'monospace', fontSize: '1.25rem', marginLeft: '4px' }}>{timeLeft}S</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {/* ── Names: static on the outermost ring, fade-in only ── */}
+                {radarStudents.map((student, index) => {
+                  const angle = -90 + index * 72;
+                  const R = 195;
+                  const cx = 300;
+                  const cy = 300;
+                  const x = cx + R * Math.cos(angle * Math.PI / 180);
+                  const y = cy + R * Math.sin(angle * Math.PI / 180);
+
+                  return (
+                    <div
+                      key={student.id}
+                      style={{
+                        position: 'absolute',
+                        left: `${x}px`,
+                        top: `${y}px`,
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 200,
+                        pointerEvents: 'none',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        animation: 'tickerSlideUp 0.5s ease both'
+                      }}
+                    >
+                      {/* Pulsing blip dot */}
+                      <div style={{
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        backgroundColor: '#10B981',
+                        boxShadow: '0 0 12px #10B981, 0 0 24px #10B981',
+                        marginBottom: '6px',
+                        animation: 'liveDot 1.2s infinite'
+                      }} />
+                      {/* Name label — static, no outward expansion */}
+                      <span style={{
+                        color: 'white',
+                        fontWeight: '900',
+                        fontSize: '1.2rem',
+                        letterSpacing: '-0.02em',
+                        textShadow: '0 0 20px #10B981, 0 0 40px #10B981',
+                        whiteSpace: 'nowrap',
+                        textAlign: 'center'
+                      }}>
+                        {student.name}
+                      </span>
+                    </div>
+                  );
+                })}
+
               </div>
             </div>
           </div>
