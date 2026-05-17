@@ -36,9 +36,9 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, userRole, u
           <div className="avatar">{userName ? userName.charAt(0) : 'TM'}</div>
           {userName || 'TrainMaster'}
         </div>
-        <div className={`badge ${userRole === 'SuperAdmin' ? 'badge-purple' : userRole === 'Admin' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'} flex items-center gap-1 mt-2`} style={{ fontSize: '0.65rem' }}>
+        <div className={`badge ${userRole === 'SuperAdmin' ? 'badge-purple' : userRole === 'Admin' ? 'bg-blue-100 text-blue-600' : userRole === 'Co-Trainer' ? 'bg-teal-100 text-teal-600' : 'bg-emerald-100 text-emerald-600'} flex items-center gap-1 mt-2`} style={{ fontSize: '0.65rem' }}>
           <ShieldAlert size={12} />
-          {userRole === 'SuperAdmin' ? 'SUPER ADMIN' : userRole === 'Admin' ? 'ADMIN' : userRole === 'Student' ? 'STUDENT' : 'TRAINER'}
+          {userRole === 'SuperAdmin' ? 'SUPER ADMIN' : userRole === 'Admin' ? 'ADMIN' : userRole === 'Student' ? 'STUDENT' : userRole === 'Co-Trainer' ? 'CO TRAINER' : 'TRAINER'}
         </div>
       </div>
       <nav className="sidebar-nav mt-4" style={{ flex: 1 }}>
