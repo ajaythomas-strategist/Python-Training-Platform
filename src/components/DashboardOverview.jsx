@@ -444,7 +444,6 @@ export default function DashboardOverview({ userRole, userName }) {
                       <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance</th>
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Score</th>
-                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Evaluation</th>
                     </>
                   )}
                 </tr>
@@ -541,15 +540,6 @@ export default function DashboardOverview({ userRole, userName }) {
                           </span>
                         </td>
                         <td className="py-4 text-center font-bold text-indigo-600">--</td>
-                        <td className="py-4 text-center">
-                          <button
-                            className="btn btn-primary py-2 px-4 text-[10px] font-black uppercase tracking-widest"
-                            style={{ background: 'linear-gradient(to right, #4F46E5, #7C3AED)' }}
-                            onClick={() => setSelectedBatchForEvaluation(batch)}
-                          >
-                            Mark Rating & Comment
-                          </button>
-                        </td>
                       </>
                     )}
                   </tr>
