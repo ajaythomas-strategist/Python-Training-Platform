@@ -37,6 +37,20 @@ const liveFeedStyles = `
     }
   }
 
+  @keyframes perspectiveFlip {
+    0% {
+      opacity: 0;
+      transform: translateY(50px) scale(0.7) rotateX(-45deg);
+    }
+    60% {
+      transform: translateY(-8px) scale(1.06) rotateX(10deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1) rotateX(0deg);
+    }
+  }
+
   @keyframes pulseRadar {
     0%, 100% {
       opacity: 1;
@@ -55,7 +69,7 @@ const liveFeedStyles = `
     }
     50% {
       border-color: rgba(16, 185, 129, 0.4);
-      box-shadow: 0 0 14px rgba(16, 185, 129, 0.15);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
     }
   }
 
@@ -71,18 +85,18 @@ const liveFeedStyles = `
   }
 
   .joining-student-card {
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
   }
 
   .joining-student-card:hover {
-    transform: translateY(-6px) scale(1.02) !important;
-    box-shadow: 0 15px 30px -10px rgba(16, 185, 129, 0.25) !important;
-    border-color: rgba(16, 185, 129, 0.5) !important;
-    background-color: #FAFDFB !important;
+    transform: translateY(-8px) scale(1.03) !important;
+    box-shadow: 0 20px 40px -15px rgba(16, 185, 129, 0.45) !important;
+    border-color: rgba(16, 185, 129, 0.6) !important;
+    background-color: rgba(255, 255, 255, 0.06) !important;
   }
 
   .joining-student-card:hover .student-card-avatar {
-    transform: scale(1.1) rotate(6deg) !important;
+    transform: scale(1.12) rotate(8deg) !important;
     background-color: #10B981 !important;
     color: white !important;
     border-color: #10B981 !important;
@@ -340,17 +354,83 @@ export default function AttendanceTab({ userRole, userName }) {
       )}
 
       {sessionStatus === 'active' && activeBatch && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-          {/* Big Projector View */}
+        <div style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 99999, // Overlays everything including sidebar
+          background: 'radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%)',
+          padding: '48px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '32px',
+          overflowY: 'auto',
+          boxSizing: 'border-box'
+        }}>
+          {/* Immersive Cinematic Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'liveDot 1.5s infinite', boxShadow: '0 0 15px #10B981' }} />
+              <div>
+                <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Live Verification Session</span>
+                <h2 style={{ margin: '4px 0 0 0', fontSize: '1.75rem', fontWeight: '900', color: 'white', letterSpacing: '-0.02em' }}>{activeBatch.name}</h2>
+              </div>
+            </div>
+            
+            <button 
+              onClick={endSession}
+              style={{
+                padding: '16px 32px', 
+                backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                color: '#EF4444', 
+                border: '1.5px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '16px', 
+                fontWeight: '900', 
+                fontSize: '0.75rem', 
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                cursor: 'pointer', 
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.05)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#EF4444';
+                e.target.style.color = 'white';
+                e.target.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                e.target.style.color = '#EF4444';
+                e.target.style.boxShadow = '0 4px 15px rgba(239, 68, 68, 0.05)';
+              }}
+            >
+              Close & Review Session
+            </button>
+          </div>
+
+          {/* Huge Projector Display */}
           <div style={{
-            background: 'linear-gradient(135deg, #111827 0%, #1F2937 100%)',
-            borderRadius: '40px', padding: '60px', textAlign: 'center', color: 'white',
-            boxShadow: '0 30px 60px -12px rgba(0,0,0,0.3)', position: 'relative', overflow: 'hidden'
+            background: 'rgba(255, 255, 255, 0.02)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            borderRadius: '40px', 
+            padding: '50px 60px', 
+            textAlign: 'center', 
+            color: 'white',
+            boxShadow: '0 30px 60px -12px rgba(0,0,0,0.4)', 
+            position: 'relative', 
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flex: '1' // Flex grow to take maximum available space
           }}>
             {/* Countdown Progress Bar (Right to Left) */}
             <div style={{ 
-              position: 'absolute', top: 0, left: 0, right: 0, height: '12px', 
-              backgroundColor: 'rgba(255,255,255,0.05)' 
+              position: 'absolute', top: 0, left: 0, right: 0, height: '10px', 
+              backgroundColor: 'rgba(255,255,255,0.02)' 
             }}>
               <div style={{ 
                 height: '100%', 
@@ -358,74 +438,73 @@ export default function AttendanceTab({ userRole, userName }) {
                 backgroundColor: getTimerColor(timeLeft),
                 transition: 'width 1s linear',
                 position: 'absolute',
-                left: 0, // Anchor to left so the right edge shrinks towards the left
+                left: 0,
                 boxShadow: `0 0 20px ${getTimerColor(timeLeft)}80`
               }} />
             </div>
 
-            <div style={{ position: 'absolute', top: '40px', right: '48px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: 0, fontSize: '3.5rem', fontWeight: '900', color: getTimerColor(timeLeft), lineHeight: 0.9, letterSpacing: '-0.05em' }}>
-                  {timeLeft}<span style={{ fontSize: '1.5rem', opacity: 0.5 }}>s</span>
+            {/* Timer Hub */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '4.5rem', fontWeight: '900', color: getTimerColor(timeLeft), lineHeight: 0.9, letterSpacing: '-0.05em' }}>
+                  {timeLeft}<span style={{ fontSize: '1.75rem', opacity: 0.5 }}>s</span>
                 </p>
-                <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '800', opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px' }}>
-                  Refresh In
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', fontWeight: '900', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.25em' }}>
+                  REFRESHING CODE IN
                 </p>
               </div>
-              <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: getTimerColor(timeLeft), animation: 'pulse 1.5s infinite', boxShadow: `0 0 20px ${getTimerColor(timeLeft)}` }} />
             </div>
 
-            <p style={{ fontSize: '0.875rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.3em', color: 'rgba(255,255,255,0.4)', marginBottom: '32px' }}>
-              Batch: {activeBatch.name} • Access Code
+            <p style={{ fontSize: '0.8125rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.35em', color: 'rgba(255,255,255,0.3)', marginBottom: '32px' }}>
+              ACCESS CODE
             </p>
 
             <div style={{ 
-              display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '40px'
+              display: 'flex', justifyContent: 'center', gap: '28px', marginBottom: '36px'
             }}>
               {sessionCode.split('').map((char, i) => (
                 <div key={i} style={{
-                  width: '100px', height: '140px', backgroundColor: 'rgba(255,255,255,0.05)',
-                  border: '2px solid rgba(255,255,255,0.1)', borderRadius: '24px',
+                  width: '120px', height: '170px', 
+                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                  border: '2.5px solid rgba(255, 255, 255, 0.08)', 
+                  borderRadius: '28px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '5rem', fontWeight: '900', color: '#10B981',
-                  boxShadow: '0 0 40px rgba(16, 185, 129, 0.1)'
+                  fontSize: '5.5rem', fontWeight: '900', color: '#10B981',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 40px rgba(16, 185, 129, 0.15)',
+                  textShadow: '0 0 30px rgba(16, 185, 129, 0.3)'
                 }}>
                   {char}
                 </div>
               ))}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', color: 'rgba(255,255,255,0.5)' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', color: 'rgba(255,255,255,0.4)', alignItems: 'center' }}>
               <Clock size={16} />
-              <span style={{ fontSize: '0.875rem', fontWeight: '700' }}>Students are joining... Please keep this screen projected.</span>
+              <span style={{ fontSize: '0.875rem', fontWeight: '800', letterSpacing: '0.02em' }}>
+                Students can mark presence via their panel. Please keep this projected.
+              </span>
             </div>
           </div>
 
           {/* Joining Feed */}
           <div style={{ 
-            backgroundColor: 'white', borderRadius: '32px', padding: '40px', 
-            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', border: '1px solid #F1F5F9'
+            backgroundColor: 'rgba(255, 255, 255, 0.02)', 
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            borderRadius: '40px', 
+            padding: '32px 40px', 
+            boxShadow: '0 20px 50px rgba(0,0,0,0.2)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ padding: '8px', backgroundColor: '#F0FDF4', borderRadius: '12px', color: '#10B981' }}>
+                <div style={{ padding: '8px', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10B981' }}>
                   <UserCheck size={20} />
                 </div>
-                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900' }}>Live Joining Feed</h3>
-                <span style={{ backgroundColor: '#F1F5F9', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', color: '#475569' }}>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: 'white' }}>Live Joining Feed</h3>
+                <span style={{ backgroundColor: 'rgba(255,255,255,0.06)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '900', color: '#E2E8F0' }}>
                   {presentStudents.length} Students Present
                 </span>
               </div>
-              <button 
-                onClick={endSession}
-                style={{
-                  padding: '12px 24px', backgroundColor: '#EF4444', color: 'white', border: 'none',
-                  borderRadius: '12px', fontWeight: '800', fontSize: '0.75rem', textTransform: 'uppercase',
-                  cursor: 'pointer', transition: 'all 0.2s'
-                }}
-              >
-                Close & Review
-              </button>
             </div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
@@ -437,14 +516,14 @@ export default function AttendanceTab({ userRole, userName }) {
                     className="joining-student-card"
                     style={{
                       padding: '16px 24px', 
-                      backgroundColor: 'white', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.03)', 
                       borderRadius: '24px', 
-                      border: '1px solid #E2E8F0',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: '16px', 
-                      animation: `slideInSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay} both, signalPulse 2.5s ease-in-out infinite`,
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01)',
+                      animation: `perspectiveFlip 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay} both, signalPulse 2.5s ease-in-out infinite`,
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                       position: 'relative',
                       overflow: 'hidden',
                       cursor: 'pointer'
@@ -465,7 +544,7 @@ export default function AttendanceTab({ userRole, userName }) {
                       width: '40px', 
                       height: '40px', 
                       borderRadius: '50%', 
-                      backgroundColor: '#E6FBF2', 
+                      backgroundColor: 'rgba(16, 185, 129, 0.1)', 
                       color: '#10B981', 
                       display: 'flex', 
                       alignItems: 'center', 
@@ -480,7 +559,7 @@ export default function AttendanceTab({ userRole, userName }) {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '0.9375rem', fontWeight: '900', color: '#1E293B' }}>{student.name}</span>
+                      <span style={{ fontSize: '0.9375rem', fontWeight: '900', color: 'white' }}>{student.name}</span>
                       <span style={{ fontSize: '0.6875rem', fontWeight: '800', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', animation: 'liveDot 1s infinite' }} />
                         Verified
@@ -508,13 +587,13 @@ export default function AttendanceTab({ userRole, userName }) {
                   width: '100%',
                   padding: '60px 40px',
                   textAlign: 'center',
-                  border: '2px dashed #E2E8F0',
+                  border: '2px dashed rgba(255, 255, 255, 0.1)',
                   borderRadius: '32px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: '#FAFDFB',
+                  backgroundColor: 'rgba(255,255,255,0.01)',
                   position: 'relative',
                   overflow: 'hidden',
                   gap: '24px'
@@ -559,7 +638,7 @@ export default function AttendanceTab({ userRole, userName }) {
                       width: '48px',
                       height: '48px',
                       borderRadius: '50%',
-                      backgroundColor: '#E6FBF2',
+                      backgroundColor: 'rgba(16, 185, 129, 0.1)',
                       border: '2px solid #10B981',
                       display: 'flex',
                       alignItems: 'center',
@@ -573,10 +652,10 @@ export default function AttendanceTab({ userRole, userName }) {
                   </div>
 
                   <div style={{ zIndex: 2 }}>
-                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       Radar Active & Scanning
                     </h4>
-                    <p style={{ margin: '6px 0 0 0', color: '#64748B', fontSize: '0.8125rem', fontWeight: '700' }}>
+                    <p style={{ margin: '6px 0 0 0', color: 'rgba(255,255,255,0.4)', fontSize: '0.8125rem', fontWeight: '700' }}>
                       Waiting for students to enter the 4-digit security code...
                     </p>
                   </div>
