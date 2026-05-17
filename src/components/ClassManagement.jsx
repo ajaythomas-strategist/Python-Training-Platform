@@ -179,6 +179,10 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
   };
   const updateClass = (classId, field, value) => {
     setClasses(classes.map(c => c.id === classId ? { ...c, [field]: value } : c));
+    const rawClass = initialClasses.find(c => c.id === classId);
+    if (rawClass) {
+      rawClass[field] = value;
+    }
   };
 
   const handleOpenModal = (modalType, classId) => {
