@@ -79,6 +79,9 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
   const [showReportFor, setShowReportFor] = useState(null);
   const [activeReportTab, setActiveReportTab] = useState('Attendance');
 
+  // Pending Feedback State
+  const [showPendingFeedbackFor, setShowPendingFeedbackFor] = useState(null);
+
   const handleDownloadCSV = (batchId, tab, batchStudents, sessionColumns, allActivities) => {
     let csvContent = "\ufeff"; // BOM for Excel UTF-8 support
     
@@ -137,7 +140,43 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
     setShowReportFor(batchId);
     setActiveReportTab('Attendance');
   };
+  const getPendingFeedbackStudents = (batchId, trainerName) => {
+    const batchStudents = users.filter(u => u.role === 'Student' && u.batch === batchId);
+    const feedbackStudentNames = new Set();
+    
+    const manualData = [
+      { id: 'm1', sessionNo: 4, batch: '1 BCA A', date: '2026-05-15', time: '13:00 - 15:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Alice Johnson', feedback: 'Amazing depth of knowledge in Python.', rating: 5 },
+      { id: 'm2', sessionNo: 4, batch: '1 BCA A', date: '2026-05-15', time: '13:00 - 15:00', staffName: 'James Carter', role: 'Co-Trainer', studentName: 'Alice Johnson', feedback: 'Very helpful during the hands-on lab.', rating: 4 },
+      { id: 'm3', sessionNo: 1, batch: '1 PERFECT', date: '2026-05-15', time: '08:00 - 10:00', staffName: 'Margaret Hamilton', role: 'Trainer', studentName: 'Zara Ali', feedback: 'Flawless execution of the session.', rating: 5 },
+      { id: 'm4', sessionNo: 2, batch: '1 BSC CS', date: '2026-05-14', time: '14:00 - 16:00', staffName: 'Michael Chang', role: 'Trainer', studentName: 'Bob Smith', feedback: 'Good pacing, but complex concepts need more time.', rating: 3 },
+      { id: 'm5', sessionNo: 3, batch: '1 BCA A', date: '2026-05-11', time: '10:00 - 12:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Excellent session on Data Structures.', rating: 5 },
+      { id: 'm6', sessionNo: 1, batch: '1 BBA', date: '2026-05-16', time: '08:00 - 10:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Very engaging and interactive.', rating: 4 },
+    ];
+    
+    manualData.forEach(item => {
+      if (item.batch === batchId && item.staffName === trainerName) {
+        feedbackStudentNames.add(item.studentName);
+      }
+    });
+    
+    const cls = classes.find(c => c.id === batchId);
+    if (cls) {
+      cls.sessions?.forEach((session, sIdx) => {
+        batchStudents.forEach(student => {
+          const hash = (student.id * 1000 + sIdx + new Date(session.date).getTime()) % 100;
+          if (hash > 70) {
+            feedbackStudentNames.add(student.name);
+          }
+        });
+      });
+    }
+    
+    return batchStudents.filter(student => !feedbackStudentNames.has(student.name));
+  };
 
+  const getPendingFeedbackCount = (batchId, trainerName) => {
+    return getPendingFeedbackStudents(batchId, trainerName).length;
+  };
   const updateClass = (classId, field, value) => {
     setClasses(classes.map(c => c.id === classId ? { ...c, [field]: value } : c));
   };
@@ -606,26 +645,41 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
               </div>
 
               {/* Feedback Section */}
-              <div className="mt-2 pt-4 border-t border-gray-100 flex items-center justify-between">
-                {userRole === 'Trainer' && (
-                  <div className="flex items-center gap-3 w-full justify-between">
-                    <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4B5563' }}>Enable Student Feedback</span>
-                    <button 
-                      onClick={() => updateClass(cls.id, 'feedbackEnabled', !cls.feedbackEnabled)}
-                      style={{
-                        position: 'relative', width: '44px', height: '24px', borderRadius: '12px',
-                        backgroundColor: cls.feedbackEnabled ? '#10B981' : '#E5E7EB',
-                        border: 'none', cursor: 'pointer', transition: 'background-color 0.2s'
-                      }}
-                    >
-                      <div style={{
-                        position: 'absolute', top: '2px', left: cls.feedbackEnabled ? '22px' : '2px',
-                        width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'white',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)', transition: 'left 0.2s'
-                      }} />
-                    </button>
-                  </div>
-                )}
+              <div className="mt-2 pt-4 border-t border-gray-100 flex items-center justify-between w-full">
+                {userRole === 'Trainer' && (() => {
+                  const batchStudents = users.filter(u => u.role === 'Student' && u.batch === cls.id);
+                  const totalCount = batchStudents.length;
+                  const pendingCount = getPendingFeedbackStudents(cls.id, cls.trainer).length;
+                  const givenCount = totalCount - pendingCount;
+                  return (
+                    <div className="flex flex-col gap-3 w-full">
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4B5563' }}>Enable Student Feedback</span>
+                        <button 
+                          onClick={() => updateClass(cls.id, 'feedbackEnabled', !cls.feedbackEnabled)}
+                          style={{
+                            position: 'relative', width: '44px', height: '24px', borderRadius: '12px',
+                            backgroundColor: cls.feedbackEnabled ? '#10B981' : '#E5E7EB',
+                            border: 'none', cursor: 'pointer', transition: 'background-color 0.2s'
+                          }}
+                        >
+                          <div style={{
+                            position: 'absolute', top: '2px', left: cls.feedbackEnabled ? '22px' : '2px',
+                            width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'white',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)', transition: 'left 0.2s'
+                          }} />
+                        </button>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setShowPendingFeedbackFor(cls.id); }}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-all border border-indigo-100/50 active:scale-95 w-full justify-center"
+                      >
+                        <Users size={16} className="text-indigo-500" />
+                        Feedback ({givenCount}/{totalCount})
+                      </button>
+                    </div>
+                  );
+                })()}
                 
                 {(userRole === 'Student' || userRole === 'Admin' || userRole === 'SuperAdmin') && cls.feedbackEnabled && (
                   <button 
@@ -1006,6 +1060,98 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                 }}
               >
                 Close Operational Panel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    })(), document.body)}
+
+    {showPendingFeedbackFor && createPortal((() => {
+      const cls = classes.find(c => c.id === showPendingFeedbackFor);
+      if (!cls) return null;
+      const pendingList = getPendingFeedbackStudents(cls.id, cls.trainer);
+      return (
+        <div style={{ 
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
+          backgroundColor: 'rgba(15, 23, 42, 0.3)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+          animation: 'fadeIn 0.3s ease-out'
+        }}>
+          <div style={{ 
+            width: '100%', maxWidth: '480px', backgroundColor: 'white', borderRadius: '32px',
+            boxShadow: '0 30px 60px -12px rgba(15, 23, 42, 0.25)', overflow: 'hidden',
+            animation: 'scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}>
+            {/* Header */}
+            <div style={{ padding: '32px', borderBottom: '1px solid #F1F5F9', position: 'relative' }}>
+              <button 
+                onClick={() => setShowPendingFeedbackFor(null)}
+                style={{ 
+                  position: 'absolute', top: '28px', right: '28px', border: 'none', background: 'none',
+                  color: '#9CA3AF', cursor: 'pointer', transition: 'color 0.2s', width: '32px', height: '32px',
+                  borderRadius: '50%', backgroundColor: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#111827'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
+              >
+                <X size={18} />
+              </button>
+              <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '900', color: '#111827', letterSpacing: '-0.02em' }}>Pending Feedback</h3>
+              <p style={{ margin: '8px 0 0 0', color: '#6B7280', fontSize: '0.875rem', fontWeight: '600' }}>Batch: {cls.id} • {pendingList.length} Students Pending</p>
+            </div>
+
+            {/* List */}
+            <div style={{ padding: '32px', maxHeight: '45vh', overflowY: 'auto', backgroundColor: '#FFFFFF' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {pendingList.length === 0 ? (
+                  <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                    <CheckCircle2 size={40} style={{ color: '#10B981', marginBottom: '12px' }} />
+                    <p style={{ margin: 0, color: '#065F46', fontWeight: '800', fontSize: '1rem' }}>All Caught Up!</p>
+                    <p style={{ margin: '4px 0 0 0', color: '#6B7280', fontSize: '0.875rem', fontWeight: '500' }}>All students in this batch have submitted their feedback.</p>
+                  </div>
+                ) : (
+                  pendingList.map((student) => (
+                    <div 
+                      key={student.id} 
+                      style={{ 
+                        display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', 
+                        borderRadius: '20px', border: '1px solid #F1F5F9', backgroundColor: '#F8FAFC'
+                      }}
+                    >
+                      <div style={{ 
+                        width: '38px', height: '38px', borderRadius: '50%', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: '#EEF2FF', color: '#4F46E5', fontWeight: '900', fontSize: '0.875rem'
+                      }}>
+                        {student.name.charAt(0)}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontSize: '0.925rem', fontWeight: '800', color: '#1E293B' }}>
+                          {student.name}
+                        </span>
+                        <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#6B7280', marginTop: '2px' }}>
+                          {student.email}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '32px', backgroundColor: '#F9FAFB', borderTop: '1px solid #F1F5F9' }}>
+              <button 
+                onClick={() => setShowPendingFeedbackFor(null)}
+                style={{ 
+                  width: '100%', padding: '18px', backgroundColor: '#111827', color: 'white', 
+                  border: 'none', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '900', 
+                  textTransform: 'uppercase', letterSpacing: '0.2em', cursor: 'pointer',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                }}
+              >
+                Close List
               </button>
             </div>
           </div>
