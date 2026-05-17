@@ -45,12 +45,10 @@ function LiquidProgress({ percent, title, themeColor }) {
   return (
     <div style={{
       position: 'absolute',
-      width: '166px',
-      height: '166px',
+      width: '170px',
+      height: '170px',
       borderRadius: '50%',
-      backgroundColor: '#f8fafc',
-      boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04)',
-      border: '4px solid #ffffff',
+      backgroundColor: 'transparent',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
@@ -58,7 +56,7 @@ function LiquidProgress({ percent, title, themeColor }) {
       justifyContent: 'center',
       userSelect: 'none',
       zIndex: 5,
-      top: 'calc(50% - 15px)',
+      top: 'calc(50% - 20px)',
       left: '50%',
       transform: 'translate(-50%, -50%)',
       pointerEvents: 'none'
@@ -136,18 +134,6 @@ function LiquidProgress({ percent, title, themeColor }) {
           pointerEvents: 'none'
         }} />
       </div>
-
-      {/* Glass Gloss effect */}
-      <div style={{
-        position: 'absolute',
-        top: '6px',
-        left: '6px',
-        right: '6px',
-        height: '35%',
-        background: 'linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%)',
-        borderRadius: '80px 80px 10px 10px',
-        pointerEvents: 'none'
-      }} />
 
       {/* Percentage and Labels overlay */}
       <div style={{
