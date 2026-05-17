@@ -37,9 +37,8 @@ function LiquidProgress({ percent, title, themeColor }) {
     ? 'linear-gradient(to top, #047857, #10b981)'
     : 'linear-gradient(to top, #0284c7, #38bdf8)'; // Glassy, tropical light blue water!
 
-  // Mathematical-visual height mapping to fit physical container sloshing to the mockups perfectly.
-  // 14% completion visualizes perfectly filled at 37% height, matching the sloshing water mockup perfectly!
-  const visualHeight = percent === 0 ? 0 : Math.max(30, Math.min(95, 28 + percent * 0.64));
+  // Map water level height exactly 1:1 to the percentage value inside the donut.
+  const visualHeight = percent;
   const isSubmerged = visualHeight > 48;
 
   return (
@@ -107,15 +106,15 @@ function LiquidProgress({ percent, title, themeColor }) {
         opacity: 0.85
       }}>
         {/* Irregular rotating shapes to simulate wave action */}
-        {/* Placed at top: '-25px' / '-20px' so they extend DOWNWARDS (matching 280px/290px height), */}
-        {/* keeping the top half of the donut hole 100% transparent and blank as requested! */}
+        {/* Placed close to top ('-8px' / '-5px') so they extend DOWNWARDS (matching 280px/290px height), */}
+        {/* keeping the visible waterline sloshing exactly around the percentage value! */}
         <div style={{
           position: 'absolute',
           width: '280px',
           height: '280px',
           backgroundColor: primaryColor,
           borderRadius: '45% 47% 43% 46%',
-          top: '-25px',
+          top: '-8px',
           left: '50%',
           transform: 'translateX(-50%)',
           animation: 'wave-spin-1 10s infinite linear',
@@ -128,7 +127,7 @@ function LiquidProgress({ percent, title, themeColor }) {
           height: '290px',
           backgroundColor: secondaryColor,
           borderRadius: '46% 44% 48% 45%',
-          top: '-20px',
+          top: '-5px',
           left: '50%',
           transform: 'translateX(-50%)',
           animation: 'wave-spin-2 8s infinite linear',
