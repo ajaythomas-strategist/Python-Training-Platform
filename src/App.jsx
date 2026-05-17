@@ -32,7 +32,7 @@ function App() {
       case 'dashboard': return <DashboardOverview userRole={userRole} userName={userName} />;
       case 'users': return <UserManagement userRole={userRole} userName={userName} />;
       case 'labs': return <LabManagement userRole={userRole} userName={userName} />;
-      case 'classes': return <ClassManagement userRole={userRole} userName={userName} />;
+      case 'classes': return <ClassManagement userRole={userRole} userName={userName} setActiveTab={setActiveTab} />;
       case 'material': return <Materials userRole={userRole} userName={userName} />;
       case 'reviews': return <ReviewsAndRatings userRole={userRole} userName={userName} />;
       case 'reports': return <UserReports userRole={userRole} userName={userName} />;

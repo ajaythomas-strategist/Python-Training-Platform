@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Star, Filter, Calendar, Users, Search, X, ChevronDown } from 'lucide-react';
 import { users, classes } from '../data/mockData';
 
-export default function ReviewsAndRatings() {
+export default function ReviewsAndRatings({ userRole, userName }) {
   const [filters, setFilters] = useState({
     batch: '',
     dateFrom: '',
@@ -13,6 +13,7 @@ export default function ReviewsAndRatings() {
   });
 
   const students = users.filter(u => u.role === 'Student');
+  const isTrainerRole = userRole === 'Trainer';
 
   // Derive all individual reviews from mock data with more dummy entries
   const allReviews = [];
@@ -57,9 +58,11 @@ export default function ReviewsAndRatings() {
     });
   });
 
-  const filteredReviews = allReviews.filter(review => {
+  const baseReviews = isTrainerRole ? allReviews.filter(r => r.staffName === userName) : allReviews;
+
+  const filteredReviews = baseReviews.filter(review => {
     const matchBatch = !filters.batch || review.batch === filters.batch;
-    const matchName = !filters.name || review.staffName === filters.name;
+    const matchName = isTrainerRole || !filters.name || review.staffName === filters.name;
     const matchRatingMin = !filters.ratingMin || review.rating >= Number(filters.ratingMin);
     const matchRatingMax = !filters.ratingMax || review.rating <= Number(filters.ratingMax);
     
@@ -78,14 +81,58 @@ export default function ReviewsAndRatings() {
   const uniqueBatches = [...new Set(classes.map(c => c.id))];
   const uniqueTrainers = [...new Set(allReviews.map(r => r.staffName))].sort();
 
+  // Calculate summary stats
+  const trainerRatings = baseReviews.map(r => r.rating);
+  const totalReviews = trainerRatings.length;
+  const averageRating = totalReviews > 0 ? (trainerRatings.reduce((a, b) => a + b, 0) / totalReviews).toFixed(1) : '0.0';
+  const excellenceRatio = totalReviews > 0 ? Math.round((trainerRatings.filter(r => r >= 4).length / totalReviews) * 100) : 0;
+
   return (
     <div className="animate-fade-in p-6">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 m-0">Reviews & Ratings</h1>
-          <p className="text-sm text-gray-500">Student feedback and staff performance tracking</p>
+          <h1 className="text-2xl font-bold text-gray-800 m-0">
+            {isTrainerRole ? 'Student Feedback Dashboard' : 'Reviews & Ratings'}
+          </h1>
+          <p className="text-sm text-gray-500">
+            {isTrainerRole ? 'Track anonymous evaluations and session feedback' : 'Student feedback and staff performance tracking'}
+          </p>
         </div>
       </div>
+
+      {isTrainerRole && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '24px', marginBottom: '32px' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', padding: '32px', display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '20px', backgroundColor: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
+              <Star size={32} fill="#D97706" />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#94A3B8', letterSpacing: '0.05em' }}>Average Rating</p>
+              <h3 style={{ margin: '4px 0 0 0', fontSize: '1.75rem', fontWeight: '900', color: '#1E293B' }}>{averageRating} <span style={{ fontSize: '1rem', color: '#94A3B8', fontWeight: '600' }}>/ 5.0</span></h3>
+            </div>
+          </div>
+
+          <div style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', padding: '32px', display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '20px', backgroundColor: '#E0F2FE', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284C7' }}>
+              <Users size={32} />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#94A3B8', letterSpacing: '0.05em' }}>Total Reviews</p>
+              <h3 style={{ margin: '4px 0 0 0', fontSize: '1.75rem', fontWeight: '900', color: '#1E293B' }}>{totalReviews} <span style={{ fontSize: '1rem', color: '#94A3B8', fontWeight: '600' }}>Reviews</span></h3>
+            </div>
+          </div>
+
+          <div style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', padding: '32px', display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '20px', backgroundColor: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
+              <Star size={32} fill="#059669" />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', color: '#94A3B8', letterSpacing: '0.05em' }}>Excellence Score</p>
+              <h3 style={{ margin: '4px 0 0 0', fontSize: '1.75rem', fontWeight: '900', color: '#1E293B' }}>{excellenceRatio}% <span style={{ fontSize: '1rem', color: '#94A3B8', fontWeight: '600' }}>4★ & 5★</span></h3>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Primary Filters (Unified Single Row Bar - Optimized Spacing) */}
       <div className="card mb-8" style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB', padding: '1.25rem 2rem', marginBottom: '0.5cm' }}>
@@ -127,22 +174,24 @@ export default function ReviewsAndRatings() {
             </select>
           </div>
 
-          <div className="w-px h-8 bg-gray-200"></div>
+          {!isTrainerRole && (
+            <>
+              {/* Trainer Selection */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-gray-600 whitespace-nowrap">Trainer:</span>
+                <select 
+                  className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm outline-none shadow-sm focus:ring-2 focus:ring-indigo-500/20 transition-all min-w-[160px]"
+                  value={filters.name}
+                  onChange={(e) => setFilters(f => ({ ...f, name: e.target.value }))}
+                >
+                  <option value="">All Trainers</option>
+                  {uniqueTrainers.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
 
-          {/* Trainer Selection */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-gray-600 whitespace-nowrap">Trainer:</span>
-            <select 
-              className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm outline-none shadow-sm focus:ring-2 focus:ring-indigo-500/20 transition-all min-w-[160px]"
-              value={filters.name}
-              onChange={(e) => setFilters(f => ({ ...f, name: e.target.value }))}
-            >
-              <option value="">All Trainers</option>
-              {uniqueTrainers.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-
-          <div className="w-px h-8 bg-gray-200"></div>
+              <div className="w-px h-8 bg-gray-200"></div>
+            </>
+          )}
 
           {/* Rating Filter */}
           <div className="flex items-center gap-3">
@@ -191,13 +240,11 @@ export default function ReviewsAndRatings() {
           <table className="w-full">
             <thead>
               <tr>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Date & Time</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer Name</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Role</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Student</th>
-                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4 w-1/4">Feedback</th>
+                {!isTrainerRole && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer Name</th>}
+                {!isTrainerRole && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Role</th>}
+                {!isTrainerRole && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Student</th>}
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4 w-1/2">Feedback</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Rating</th>
               </tr>
             </thead>
@@ -205,28 +252,25 @@ export default function ReviewsAndRatings() {
               {filteredReviews.length > 0 ? filteredReviews.map((rev) => (
                 <tr key={rev.id} className="border-t border-gray-50 text-sm hover:bg-gray-50/50 transition-colors">
                   <td className="py-4">
-                    <span className="font-bold text-gray-700">No. {rev.sessionNo}</span>
-                  </td>
-                  <td className="py-4">
                     <span className="badge badge-blue">{rev.batch}</span>
                   </td>
-                  <td className="py-4">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-gray-800">{rev.date}</span>
-                      <span className="text-[10px] text-gray-400">{rev.time}</span>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <span className="font-bold text-gray-800">{rev.staffName}</span>
-                  </td>
-                  <td className="py-4">
-                    <span className={`text-xs font-bold ${rev.role === 'Trainer' ? 'text-indigo-600' : 'text-purple-600'}`}>
-                      {rev.role}
-                    </span>
-                  </td>
-                  <td className="py-4 text-gray-600 font-medium">
-                    {rev.studentName}
-                  </td>
+                  {!isTrainerRole && (
+                    <td className="py-4">
+                      <span className="font-bold text-gray-800">{rev.staffName}</span>
+                    </td>
+                  )}
+                  {!isTrainerRole && (
+                    <td className="py-4">
+                      <span className={`text-xs font-bold ${rev.role === 'Trainer' ? 'text-indigo-600' : 'text-purple-600'}`}>
+                        {rev.role}
+                      </span>
+                    </td>
+                  )}
+                  {!isTrainerRole && (
+                    <td className="py-4 text-gray-600 font-medium">
+                      {rev.studentName}
+                    </td>
+                  )}
                   <td className="py-4">
                     <p className="m-0 text-gray-500 leading-relaxed italic">"{rev.feedback}"</p>
                   </td>
@@ -247,7 +291,7 @@ export default function ReviewsAndRatings() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="8" className="py-12 text-center text-gray-400 italic font-medium">
+                  <td colSpan={isTrainerRole ? "3" : "6"} className="py-12 text-center text-gray-400 italic font-medium">
                     No reviews found matching your current filters.
                   </td>
                 </tr>

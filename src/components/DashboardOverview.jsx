@@ -139,59 +139,119 @@ export default function DashboardOverview({ userRole, userName }) {
       }}>
         {isTrainer ? (
           <>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon blue" style={{ width: '48px', height: '48px' }}><BookOpen size={24} /></div>
-              <div className="stat-content"><h3>Total Batches</h3><p>{trainerKPIs.totalBatches}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EEF2FF', color: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BookOpen size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Batches</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.totalBatches}</p>
+              </div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon green" style={{ width: '48px', height: '48px', backgroundColor: '#ECFDF5', color: '#10B981' }}><Shield size={24} /></div>
-              <div className="stat-content"><h3>Completed</h3><p>{trainerKPIs.completedBatches}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F0FDF4', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Shield size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Completed</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.completedBatches}</p>
+              </div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon purple" style={{ width: '48px', height: '48px' }}><Users size={24} /></div>
-              <div className="stat-content"><h3>Total Sessions</h3><p>{trainerKPIs.totalSessions}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F5F3FF', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Sessions</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.totalSessions}</p>
+              </div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon cyan" style={{ width: '48px', height: '48px' }}><Percent size={24} /></div>
-              <div className="stat-content"><h3>Sessions Done</h3><p>{trainerKPIs.completedSessions}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#ECFEFF', color: '#06B6D4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Percent size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sessions Done</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.completedSessions}</p>
+              </div>
             </div>
           </>
         ) : isStudent ? (
           <>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon blue" style={{ width: '48px', height: '48px' }}><UserCheck size={24} /></div>
-              <div className="stat-content"><h3>Attendance %</h3><p>{studentKPIs.attendance}%</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EEF2FF', color: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <UserCheck size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Attendance %</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.attendance}%</p>
+              </div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon green" style={{ width: '48px', height: '48px', backgroundColor: '#ECFDF5', color: '#10B981' }}><Trophy size={24} /></div>
-              <div className="stat-content"><h3>Performance</h3><p>{studentKPIs.score}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F0FDF4', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Trophy size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Performance</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.score}</p>
+              </div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon purple" style={{ width: '48px', height: '48px' }}><ClipboardCheck size={24} /></div>
-              <div className="stat-content"><h3>Activities</h3><p>{studentKPIs.activitiesCompleted}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F5F3FF', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ClipboardCheck size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Activities</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.activitiesCompleted}</p>
+              </div>
             </div>
-            <div className="card stat-card" style={{ padding: '1.5rem' }}>
-              <div className="stat-icon cyan" style={{ width: '48px', height: '48px' }}><Percent size={24} /></div>
-              <div className="stat-content"><h3>Progress %</h3><p>{studentKPIs.progress}%</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#ECFEFF', color: '#06B6D4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Percent size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Progress %</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.progress}%</p>
+              </div>
             </div>
           </>
         ) : (
           <>
-            <div className="card stat-card">
-              <div className="stat-icon blue"><Users size={24} /></div>
-              <div className="stat-content"><h3>Total Trainers</h3><p>{users.filter(u => u.role === 'Trainer').length}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EEF2FF', color: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Trainers</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{users.filter(u => u.role === 'Trainer').length}</p>
+              </div>
             </div>
-            <div className="card stat-card">
-              <div className="stat-icon purple"><UserCheck size={24} /></div>
-              <div className="stat-content"><h3>Co Trainers</h3><p>{users.filter(u => u.role === 'Co-Trainer').length}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F5F3FF', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <UserCheck size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Co Trainers</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{users.filter(u => u.role === 'Co-Trainer').length}</p>
+              </div>
             </div>
-            <div className="card stat-card">
-              <div className="stat-icon cyan"><BookOpen size={24} /></div>
-              <div className="stat-content"><h3>No. of Batches</h3><p>{classes.length}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#ECFEFF', color: '#06B6D4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BookOpen size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>No. of Batches</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{classes.length}</p>
+              </div>
             </div>
-            <div className="card stat-card">
-              <div className="stat-icon orange"><Users size={24} /></div>
-              <div className="stat-content"><h3>Total Students</h3><p>{users.filter(u => u.role === 'Student').length}</p></div>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#FFF7ED', color: '#EA580C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={28} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Students</h3>
+                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{users.filter(u => u.role === 'Student').length}</p>
+              </div>
             </div>
           </>
         )}
@@ -228,31 +288,40 @@ export default function DashboardOverview({ userRole, userName }) {
         ];
 
         return (
-          <div className="dashboard-grid mb-8 mt-2" style={{ 
+          <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', 
-            gap: '1.5rem',
-            marginBottom: '0.5cm' 
+            gridTemplateColumns: 'repeat(2, 1fr)', 
+            gap: '32px',
+            marginBottom: '48px',
+            marginTop: '16px'
           }}>
             {/* Batch Status Overview */}
-            <div className="card flex flex-col" style={{ gridColumn: 'span 2' }}>
-              <div className="w-full flex justify-between items-center mb-2">
-                <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
-                  <BarChart2 size={18} className="text-gray-500" />
+            <div style={{ 
+              backgroundColor: 'white', borderRadius: '32px', padding: '32px', 
+              border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)',
+              display: 'flex', flexDirection: 'column'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ padding: '8px', borderRadius: '12px', backgroundColor: '#EEF2FF', color: '#4F46E5' }}>
+                    <BarChart2 size={20} />
+                  </div>
                   Batch Status Overview
                 </h2>
-                <span className="text-sm text-gray-500">Total: {totalBatches}</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: '800', color: '#64748B', backgroundColor: '#F8FAFC', padding: '6px 16px', borderRadius: '12px' }}>
+                  Total: {totalBatches}
+                </span>
               </div>
               
-              <div style={{ width: '100%', height: 320 }} className="relative flex justify-center items-center">
+              <div style={{ width: '100%', height: 320, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Tooltip wrapperStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Tooltip wrapperStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }} contentStyle={{ borderRadius: '16px', border: 'none', padding: '12px 20px', fontWeight: '700' }} />
                     <Legend 
                       verticalAlign="bottom" 
                       align="center"
                       iconType="circle" 
-                      wrapperStyle={{ fontSize: '12px', color: '#6b7280', paddingTop: '20px' }} 
+                      wrapperStyle={{ fontSize: '0.875rem', fontWeight: '700', color: '#64748B', paddingTop: '20px' }} 
                     />
                     <Pie
                       data={batchData}
@@ -273,7 +342,7 @@ export default function DashboardOverview({ userRole, userName }) {
                       <Label 
                         value={`${batchCompletionPercent}%`} 
                         position="center" 
-                        style={{ fontSize: '44px', fontWeight: '800', fill: '#1f2937' }} 
+                        style={{ fontSize: '44px', fontWeight: '900', fill: '#111827' }} 
                       />
                     </Pie>
                   </PieChart>
@@ -282,24 +351,32 @@ export default function DashboardOverview({ userRole, userName }) {
             </div>
 
             {/* Student Status Overview */}
-            <div className="card flex flex-col" style={{ gridColumn: 'span 2' }}>
-              <div className="w-full flex justify-between items-center mb-2">
-                <h2 className="text-base font-bold text-gray-700 flex items-center gap-2">
-                  <Users size={18} className="text-gray-500" />
+            <div style={{ 
+              backgroundColor: 'white', borderRadius: '32px', padding: '32px', 
+              border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)',
+              display: 'flex', flexDirection: 'column'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ padding: '8px', borderRadius: '12px', backgroundColor: '#F0FDF4', color: '#10B981' }}>
+                    <Users size={20} />
+                  </div>
                   Student Status Overview
                 </h2>
-                <span className="text-sm text-gray-500">Total: {totalStudents}</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: '800', color: '#64748B', backgroundColor: '#F8FAFC', padding: '6px 16px', borderRadius: '12px' }}>
+                  Total: {totalStudents}
+                </span>
               </div>
               
-              <div style={{ width: '100%', height: 320 }} className="relative flex justify-center items-center">
+              <div style={{ width: '100%', height: 320, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Tooltip wrapperStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Tooltip wrapperStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }} contentStyle={{ borderRadius: '16px', border: 'none', padding: '12px 20px', fontWeight: '700' }} />
                     <Legend 
                       verticalAlign="bottom" 
                       align="center"
                       iconType="circle" 
-                      wrapperStyle={{ fontSize: '12px', color: '#6b7280', paddingTop: '20px' }} 
+                      wrapperStyle={{ fontSize: '0.875rem', fontWeight: '700', color: '#64748B', paddingTop: '20px' }} 
                     />
                     <Pie
                       data={studentData}
@@ -320,7 +397,7 @@ export default function DashboardOverview({ userRole, userName }) {
                       <Label 
                         value={`${studentCompletionPercent}%`} 
                         position="center" 
-                        style={{ fontSize: '44px', fontWeight: '800', fill: '#1f2937' }} 
+                        style={{ fontSize: '44px', fontWeight: '900', fill: '#111827' }} 
                       />
                     </Pie>
                   </PieChart>
@@ -335,7 +412,7 @@ export default function DashboardOverview({ userRole, userName }) {
       <div className="flex flex-col" style={{ gap: '20px' }}>
 
         {/* Active Session Table (Common for all but layout slightly different) */}
-        <div className="card flex-col" style={{ gap: '1.5rem' }}>
+        <div style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', overflow: 'hidden', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600"><BookOpen size={20} /></div>
             {isStudent ? 'Active Session' : "Today's Batch"}
@@ -477,7 +554,7 @@ export default function DashboardOverview({ userRole, userName }) {
         </div>
 
         {/* Upcoming Session Table */}
-        <div className="card flex-col" style={{ gap: '1.5rem' }}>
+        <div style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', overflow: 'hidden', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <div className="p-2 bg-amber-50 rounded-lg text-amber-600"><ClipboardList size={20} /></div>
             Upcoming Session
@@ -550,7 +627,7 @@ export default function DashboardOverview({ userRole, userName }) {
 
         {/* Completed Session Table (Student Only) */}
         {isStudent && (
-          <div className="card flex-col" style={{ gap: '1.5rem' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', overflow: 'hidden', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><UserCheck size={20} /></div>
               Completed Session
@@ -601,7 +678,7 @@ export default function DashboardOverview({ userRole, userName }) {
 
         {/* Activity Wise Report Table (Student Only) */}
         {isStudent && (
-          <div className="card flex-col" style={{ gap: '1.5rem' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', overflow: 'hidden', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><Trophy size={20} /></div>
               Activity Wise Report
@@ -638,7 +715,7 @@ export default function DashboardOverview({ userRole, userName }) {
           <div style={{ height: '40px' }}></div>
 
           {/* Completed Session Table */}
-          <div className="card mb-12 flex-col" style={{ gap: '1.5rem' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', overflow: 'hidden', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '48px' }}>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-4">
                 <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -784,7 +861,7 @@ export default function DashboardOverview({ userRole, userName }) {
       {/* Absent Students Modal */}
       {selectedBatchForAbsents && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '450px', padding: '32px', borderRadius: '24px', border: 'none' }}>
+          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '100%', maxWidth: '450px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9' }}>
             <div className="flex justify-between items-center mb-6">
               <div><h2 className="text-2xl font-bold text-gray-800 m-0">Absent Students</h2><p style={{ margin: 0, fontSize: '0.875rem', color: '#6B7280' }}>Batch: {selectedBatchForAbsents.id}</p></div>
               <button onClick={() => setSelectedBatchForAbsents(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
@@ -811,7 +888,7 @@ export default function DashboardOverview({ userRole, userName }) {
       {/* Comments Modal */}
       {selectedBatchForComments && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '500px', padding: '32px', borderRadius: '24px', border: 'none' }}>
+          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '100%', maxWidth: '500px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9' }}>
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 m-0">Staff Comments</h2>
@@ -862,7 +939,7 @@ export default function DashboardOverview({ userRole, userName }) {
 
         return (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-            <div className="card animate-fade-in" style={{ width: '95%', maxWidth: '1000px', padding: '32px', borderRadius: '24px', border: 'none' }}>
+            <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '95%', maxWidth: '1000px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9' }}>
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800 m-0">Batch Activity Reports</h2>
@@ -925,7 +1002,7 @@ export default function DashboardOverview({ userRole, userName }) {
       {/* Session Evaluation Modal */}
       {selectedBatchForEvaluation && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '500px', padding: '32px', borderRadius: '24px', border: 'none' }}>
+          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '100%', maxWidth: '500px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9' }}>
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 m-0">Evaluate Session</h2>
@@ -991,7 +1068,7 @@ export default function DashboardOverview({ userRole, userName }) {
       {/* Transfer Information Modal */}
       {transferInfo && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-          <div className="card animate-fade-in" style={{ width: '400px', padding: '24px', borderRadius: '20px', border: 'none', textAlign: 'center' }}>
+          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '400px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9', textAlign: 'center' }}>
             <div className="flex justify-center mb-4">
               <div className="p-3 bg-amber-50 rounded-full text-amber-600">
                 <Info size={32} />

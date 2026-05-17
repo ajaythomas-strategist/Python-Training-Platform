@@ -13,11 +13,17 @@ export default function MarkRating({ userRole, userName }) {
   // Determine who to rate based on role
   const isTrainer = userRole === 'Trainer';
   const isAdmin = userRole === 'SuperAdmin' || userRole === 'Admin';
+  const isStudent = userRole === 'Student';
+
+  // Find current student's batch
+  const currentUserObj = users.find(u => u.name === userName && u.role === userRole);
+  const studentBatchId = currentUserObj?.batch;
 
   // Filter batches visible to the user
   const visibleClasses = classes.filter(batch => {
     if (isAdmin) return true;
     if (isTrainer) return batch.trainer === userName;
+    if (isStudent) return batch.id === studentBatchId;
     return false;
   });
 
@@ -38,6 +44,7 @@ export default function MarkRating({ userRole, userName }) {
   const getTargetRole = () => {
     if (isAdmin) return 'Trainer';
     if (isTrainer) return 'Co-Trainer';
+    if (isStudent) return selectedCoTrainer ? 'Co-Trainer' : 'Trainer';
     return '';
   };
 
@@ -58,7 +65,7 @@ export default function MarkRating({ userRole, userName }) {
       <div style={{ marginBottom: '40px' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#111827', margin: 0, letterSpacing: '-0.02em' }}>Performance Rating</h1>
         <p style={{ color: '#6B7280', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.75rem', marginTop: '8px' }}>
-          {isAdmin ? 'Evaluate Trainer Excellence' : 'Assess Co-Trainer Support'}
+          {isAdmin ? 'Evaluate Trainer Excellence' : isTrainer ? 'Assess Co-Trainer Support' : 'Share Your Feedback & Rate Your Trainers'}
         </p>
       </div>
 
@@ -156,16 +163,18 @@ export default function MarkRating({ userRole, userName }) {
               </div>
             )}
 
+
+
             <div style={{ padding: '24px', backgroundColor: '#F8FAFC', borderRadius: '24px', border: '1px solid #F1F5F9', textAlign: 'center' }}>
               <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: '800', textTransform: 'uppercase', color: '#94A3B8', letterSpacing: '0.05em', marginBottom: '12px' }}>
                 Evaluating {getTargetRole()}
               </p>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#4F46E5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.875rem' }}>
-                  {(isAdmin ? selectedBatch.trainer : selectedCoTrainer)?.charAt(0)}
+                  {((isAdmin || selectedCoTrainer === null) ? selectedBatch.trainer : selectedCoTrainer)?.charAt(0)}
                 </div>
                 <span style={{ fontSize: '1.125rem', fontWeight: '900', color: '#1E293B' }}>
-                  {isAdmin ? selectedBatch.trainer : selectedCoTrainer}
+                  {(isAdmin || selectedCoTrainer === null) ? selectedBatch.trainer : selectedCoTrainer}
                 </span>
               </div>
             </div>

@@ -9,7 +9,7 @@ import { classes as initialClasses, users } from '../data/mockData';
 import StaffSelectionModal from './StaffSelectionModal';
 import LabSelectionModal from './LabSelectionModal';
 
-export default function ClassManagement({ userRole, userName }) {
+export default function ClassManagement({ userRole, userName, setActiveTab }) {
   const [classes, setClasses] = useState(initialClasses);
   const [filters, setFilters] = useState({ Active: true, Upcoming: true, Completed: true });
   const isAdmin = userRole === 'Admin' || userRole === 'Trainer' || userRole === 'Co-Trainer';
@@ -273,7 +273,7 @@ export default function ClassManagement({ userRole, userName }) {
 
       <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1.5rem' }}>
         {filteredClasses.map(cls => (
-          <div key={cls.id} className="card flex-col" style={{ gap: '1rem', minHeight: '350px' }}>
+          <div key={cls.id} style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', overflow: 'hidden', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px', minHeight: '350px' }}>
             
             <div className="flex justify-between items-start">
               <h2 style={{ fontSize: '1.25rem', margin: 0 }}>{cls.id}</h2>
@@ -605,6 +605,38 @@ export default function ClassManagement({ userRole, userName }) {
                 </button>
               </div>
 
+              {/* Feedback Section */}
+              <div className="mt-2 pt-4 border-t border-gray-100 flex items-center justify-between">
+                {userRole === 'Trainer' && (
+                  <div className="flex items-center gap-3 w-full justify-between">
+                    <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4B5563' }}>Enable Student Feedback</span>
+                    <button 
+                      onClick={() => updateClass(cls.id, 'feedbackEnabled', !cls.feedbackEnabled)}
+                      style={{
+                        position: 'relative', width: '44px', height: '24px', borderRadius: '12px',
+                        backgroundColor: cls.feedbackEnabled ? '#10B981' : '#E5E7EB',
+                        border: 'none', cursor: 'pointer', transition: 'background-color 0.2s'
+                      }}
+                    >
+                      <div style={{
+                        position: 'absolute', top: '2px', left: cls.feedbackEnabled ? '22px' : '2px',
+                        width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'white',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)', transition: 'left 0.2s'
+                      }} />
+                    </button>
+                  </div>
+                )}
+                
+                {(userRole === 'Student' || userRole === 'Admin' || userRole === 'SuperAdmin') && cls.feedbackEnabled && (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setActiveTab('mark-rating'); }}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 group w-full justify-center"
+                  >
+                    Provide Feedback
+                  </button>
+                )}
+              </div>
+
             </div>
           </div>
         ))}
@@ -632,7 +664,7 @@ export default function ClassManagement({ userRole, userName }) {
     {/* Transfer Information Modal */}
     {transferInfo && (
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-        <div className="card animate-fade-in" style={{ width: '400px', padding: '24px', borderRadius: '20px', border: 'none', textAlign: 'center' }}>
+        <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '400px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9', textAlign: 'center' }}>
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-amber-50 rounded-full text-amber-600">
               <Info size={32} />
@@ -692,7 +724,7 @@ export default function ClassManagement({ userRole, userName }) {
           backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10000,
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
         }}>
-          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '1000px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', backgroundColor: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+          <div className="animate-fade-in" style={{ width: '100%', maxWidth: '1000px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', backgroundColor: 'white', padding: '32px', borderRadius: '32px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', border: '1px solid #F1F5F9' }}>
             <button 
               onClick={() => setShowReportFor(null)}
               style={{ position: 'absolute', right: '20px', top: '20px', background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}
