@@ -574,14 +574,38 @@ export default function AttendanceTab({ userRole, userName }) {
                 width: '390px',
                 height: '390px',
                 borderRadius: '50%',
-                border: '2px dashed rgba(16, 185, 129, 0.15)',
+                border: radarStudent ? '4px solid #10B981' : '2px dashed rgba(16, 185, 129, 0.15)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 60px rgba(16, 185, 129, 0.03), inset 0 0 60px rgba(16, 185, 129, 0.03)',
-                transition: 'all 0.5s ease',
+                boxShadow: radarStudent ? '0 0 50px rgba(16, 185, 129, 0.35), inset 0 0 50px rgba(16, 185, 129, 0.35)' : '0 0 60px rgba(16, 185, 129, 0.03), inset 0 0 60px rgba(16, 185, 129, 0.03)',
+                transition: 'all 0.4s ease',
                 backgroundColor: 'rgba(16, 185, 129, 0.01)'
               }}>
+                {/* Absolute Outer-Circle Matching Name Capsule (Fitted on the outer top border) */}
+                {radarStudent && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-32px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: '#10B981',
+                    border: '2px solid rgba(255, 255, 255, 0.35)',
+                    borderRadius: '40px',
+                    padding: '12px 36px',
+                    color: 'white',
+                    fontWeight: '900',
+                    fontSize: '2.25rem',
+                    letterSpacing: '-0.01em',
+                    boxShadow: '0 0 35px #10B981',
+                    animation: 'slideInSpring 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                    zIndex: 100,
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {radarStudent.name}
+                  </div>
+                )}
+
                 {/* Orbital Rings */}
                 <div style={{ position: 'absolute', width: '80%', height: '80%', borderRadius: '50%', border: '1px solid rgba(16, 185, 129, 0.08)' }} />
                 <div style={{ position: 'absolute', width: '55%', height: '55%', borderRadius: '50%', border: '1px dashed rgba(16, 185, 129, 0.05)' }} />
@@ -672,7 +696,7 @@ export default function AttendanceTab({ userRole, userName }) {
                       TRANSMITTING SECURE BEACON
                     </span>
 
-                    {/* Real-time Verified Student Name Display (Always overlaid below the code, never hiding it!) */}
+                    {/* Real-time Status/Match indicator (Access Code stays visible!) */}
                     <div style={{ height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {radarStudent ? (
                         <div style={{
@@ -681,18 +705,19 @@ export default function AttendanceTab({ userRole, userName }) {
                           flexDirection: 'column',
                           alignItems: 'center'
                         }}>
-                          <p style={{
-                            margin: 0,
-                            fontSize: '2.4rem',
-                            fontWeight: '900',
-                            color: 'white',
-                            letterSpacing: '-0.01em',
-                            textShadow: '0 0 25px rgba(255,255,255,0.6)'
+                          <span style={{ 
+                            fontSize: '0.9rem', 
+                            fontWeight: '900', 
+                            color: '#10B981', 
+                            textTransform: 'uppercase', 
+                            letterSpacing: '0.25em',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            padding: '6px 18px',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(16, 185, 129, 0.25)',
+                            boxShadow: '0 0 15px rgba(16, 185, 129, 0.15)'
                           }}>
-                            {radarStudent.name}
-                          </p>
-                          <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px' }}>
-                            MATCH DETECTED • VERIFIED
+                            MATCH DETECTED
                           </span>
                         </div>
                       ) : (
