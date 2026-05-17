@@ -51,6 +51,15 @@ const liveFeedStyles = `
     }
   }
 
+  @keyframes radarSweep {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
   @keyframes pulseRadar {
     0%, 100% {
       opacity: 1;
@@ -109,6 +118,7 @@ export default function AttendanceTab({ userRole, userName }) {
   const [sessionStatus, setSessionStatus] = useState('idle'); // 'idle', 'active', 'summary'
   const [sessionCode, setSessionCode] = useState('');
   const [presentStudents, setPresentStudents] = useState([]);
+  const [radarStudent, setRadarStudent] = useState(null);
   
   // Student State
   const [studentOtp, setStudentOtp] = useState(['', '', '', '']);
@@ -173,19 +183,34 @@ export default function AttendanceTab({ userRole, userName }) {
   // Mock: Simulate students joining randomly in Trainer View
   useEffect(() => {
     if (sessionStatus === 'active' && isTrainer && activeBatch) {
-      // Find students belonging to THIS batch in mockData
-      const batchStudents = users.filter(u => u.role === 'Student' && u.batch === activeBatch.id).slice(0, 8);
+      // Find students belonging to THIS batch in mockData (up to 15 students for robust live scanning demo)
+      const batchStudents = users.filter(u => u.role === 'Student' && u.batch === activeBatch.id).slice(0, 15);
+      
       const interval = setInterval(() => {
+        // If there's currently a student actively showing/scanning in the radar, wait for them to finish
+        if (radarStudent) return;
+
         if (presentStudents.length < batchStudents.length) {
           const nextStudent = batchStudents[presentStudents.length];
-          if (nextStudent && Math.random() > 0.7) {
-            setPresentStudents(prev => [...prev, nextStudent]);
+          if (nextStudent && Math.random() > 0.6) {
+            // 1. Show the student inside the radar scan first
+            setRadarStudent(nextStudent);
+            
+            // 2. After 2 seconds, complete the verification scan and transition them to the Left Panel list
+            setTimeout(() => {
+              setPresentStudents(prev => {
+                if (prev.some(s => s.id === nextStudent.id)) return prev;
+                return [...prev, nextStudent];
+              });
+              setRadarStudent(null);
+            }, 2000);
           }
         }
-      }, 3000);
+      }, 4000);
+      
       return () => clearInterval(interval);
     }
-  }, [sessionStatus, activeBatch, isTrainer, presentStudents.length]);
+  }, [sessionStatus, activeBatch, isTrainer, presentStudents.length, radarStudent]);
 
   // Student OTP Input Handler
   const handleOtpChange = (index, value) => {
@@ -361,13 +386,13 @@ export default function AttendanceTab({ userRole, userName }) {
           width: '100vw',
           height: '100vh',
           zIndex: 99999, // Overlays everything including sidebar
-          background: 'radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%)',
-          padding: '40px 48px',
+          background: 'radial-gradient(circle at 50% 20%, #080d1a 0%, #02050d 100%)',
+          padding: '40px 60px',
           display: 'flex',
           flexDirection: 'column',
           gap: '24px',
-          overflowY: 'auto',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          overflow: 'hidden'
         }}>
           {/* Top Edge Neon Countdown Progress Bar */}
           <div style={{ 
@@ -384,11 +409,11 @@ export default function AttendanceTab({ userRole, userName }) {
           </div>
 
           {/* Immersive Cinematic Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'liveDot 1.5s infinite', boxShadow: '0 0 15px #10B981' }} />
               <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Live Verification Session</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Active Holographic Radar Scanner</span>
                 <h2 style={{ margin: '4px 0 0 0', fontSize: '1.75rem', fontWeight: '900', color: 'white', letterSpacing: '-0.02em' }}>{activeBatch.name}</h2>
               </div>
             </div>
@@ -407,7 +432,8 @@ export default function AttendanceTab({ userRole, userName }) {
                 letterSpacing: '0.12em',
                 cursor: 'pointer', 
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.05)'
+                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.05)',
+                zIndex: 20
               }}
               onMouseEnter={(e) => {
                 e.target.style.backgroundColor = '#EF4444';
@@ -424,240 +450,207 @@ export default function AttendanceTab({ userRole, userName }) {
             </button>
           </div>
 
-          {/* Huge Projector Display (Side-by-Side Widescreen design to optimize screen usage and prevent vertical squeezing) */}
+          {/* Futuristic Two-Column Split Screen Panel */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-            borderRadius: '40px', 
-            padding: '40px 60px', 
-            color: 'white',
-            boxShadow: '0 30px 60px -12px rgba(0,0,0,0.4)', 
-            position: 'relative', 
-            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            gap: '40px',
-            flex: '1' // Flex grow to take maximum available space
+            flex: '1',
+            gap: '60px',
+            alignItems: 'stretch',
+            overflow: 'hidden'
           }}>
-            {/* Left Side: Glowing Timer Hub */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '8px' }}>
-              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '900', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.25em', color: 'white' }}>
-                REFRESHING CODE IN
+            {/* LEFT COLUMN: Transparent Verified Names List ("Plain" - No Card Backgrounds) */}
+            <div style={{
+              width: '40%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              padding: '20px 0',
+              overflowY: 'auto'
+            }}>
+              <p style={{ margin: '0 0 28px 0', fontSize: '0.8125rem', fontWeight: '900', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.25em', color: 'white' }}>
+                RECENTLY VERIFIED ({presentStudents.length})
               </p>
-              <p style={{ margin: 0, fontSize: '5.5rem', fontWeight: '900', color: getTimerColor(timeLeft), lineHeight: 1, letterSpacing: '-0.05em' }}>
-                {timeLeft}<span style={{ fontSize: '1.75rem', opacity: 0.5 }}>s</span>
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.6, marginTop: '8px' }}>
-                <Clock size={16} style={{ color: getTimerColor(timeLeft) }} />
-                <span style={{ fontSize: '0.8125rem', fontWeight: '800', color: 'white', letterSpacing: '0.02em' }}>Active Security Feed</span>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div style={{ width: '1px', height: '140px', backgroundColor: 'rgba(255, 255, 255, 0.06)' }} />
-
-            {/* Right Side: Access Code Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.35em', color: 'rgba(255,255,255,0.3)' }}>
-                ACCESS CODE
-              </p>
-
-              <div style={{ display: 'flex', gap: '20px' }}>
-                {sessionCode.split('').map((char, i) => (
-                  <div key={i} style={{
-                    width: '110px', height: '155px', 
-                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                    border: '2.5px solid rgba(255, 255, 255, 0.08)', 
-                    borderRadius: '24px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '5rem', fontWeight: '900', color: '#10B981',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 35px rgba(16, 185, 129, 0.12)',
-                    textShadow: '0 0 25px rgba(16, 185, 129, 0.25)'
-                  }}>
-                    {char}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Joining Feed */}
-          <div style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.02)', 
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            borderRadius: '40px', 
-            padding: '32px 40px', 
-            boxShadow: '0 20px 50px rgba(0,0,0,0.2)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ padding: '8px', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', color: '#10B981' }}>
-                  <UserCheck size={20} />
-                </div>
-                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: 'white' }}>Live Joining Feed</h3>
-                <span style={{ backgroundColor: 'rgba(255,255,255,0.06)', padding: '6px 16px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '900', color: '#E2E8F0' }}>
-                  {presentStudents.length} Students Present
-                </span>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-              {presentStudents.map((student, index) => {
-                const delay = `${index * 0.05}s`;
-                return (
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {presentStudents.slice(-10).reverse().map((student) => (
                   <div 
                     key={student.id} 
-                    className="joining-student-card"
                     style={{
-                      padding: '16px 24px', 
-                      backgroundColor: 'rgba(255, 255, 255, 0.03)', 
-                      borderRadius: '24px', 
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
                       display: 'flex', 
                       alignItems: 'center', 
-                      gap: '16px', 
-                      animation: `perspectiveFlip 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay} both, signalPulse 2.5s ease-in-out infinite`,
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      cursor: 'pointer'
+                      animation: 'slideInSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
                     }}
                   >
-                    {/* Glowing Left Border Accent */}
-                    <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '4px',
-                      height: '100%',
-                      backgroundColor: '#10B981'
+                    <span style={{ 
+                      width: '10px', height: '10px', borderRadius: '50%', 
+                      backgroundColor: '#10B981', display: 'inline-block',
+                      boxShadow: '0 0 10px #10B981', animation: 'liveDot 1s infinite',
+                      marginRight: '20px'
                     }} />
-
-                    {/* Animated Avatar Circle */}
-                    <div style={{ 
-                      width: '40px', 
-                      height: '40px', 
-                      borderRadius: '50%', 
-                      backgroundColor: 'rgba(16, 185, 129, 0.1)', 
-                      color: '#10B981', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      fontWeight: '900', 
-                      fontSize: '0.875rem',
-                      border: '1.5px solid rgba(16, 185, 129, 0.2)',
-                      boxShadow: '0 0 10px rgba(16, 185, 129, 0.1)',
-                      transition: 'transform 0.3s ease'
-                    }} className="student-card-avatar">
-                      {student.name.charAt(0)}
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '0.9375rem', fontWeight: '900', color: 'white' }}>{student.name}</span>
-                      <span style={{ fontSize: '0.6875rem', fontWeight: '800', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', animation: 'liveDot 1s infinite' }} />
-                        Verified
-                      </span>
-                    </div>
-
-                    <div style={{ 
-                      width: '22px', 
-                      height: '22px', 
-                      borderRadius: '50%', 
-                      backgroundColor: '#10B981', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      boxShadow: '0 4px 10px rgba(16, 185, 129, 0.3)',
-                      marginLeft: '4px'
+                    <span style={{ 
+                      fontSize: '1.9rem', 
+                      fontWeight: '800', 
+                      color: 'white',
+                      letterSpacing: '-0.02em',
+                      textShadow: '0 2px 10px rgba(255,255,255,0.05)'
                     }}>
-                      <Check size={12} style={{ color: 'white' }} strokeWidth={4} />
-                    </div>
+                      {student.name}
+                    </span>
                   </div>
-                );
-              })}
-              {presentStudents.length === 0 && (
+                ))}
+                
+                {presentStudents.length === 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', opacity: 0.25, marginTop: '20px' }}>
+                    <p style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', color: 'white', fontStyle: 'italic' }}>
+                      Radar scanning batch...
+                    </p>
+                    <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: '700', color: 'white' }}>
+                      Waiting for student verification signals
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Divider Line */}
+            <div style={{ width: '1px', backgroundColor: 'rgba(255, 255, 255, 0.05)', alignSelf: 'stretch' }} />
+
+            {/* RIGHT COLUMN: Cinematic Orbital Radar Scan & Access Code Core */}
+            <div style={{
+              width: '60%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}>
+              {/* Circular Holographic Radar Sweep Shell */}
+              <div style={{
+                position: 'relative',
+                width: '390px',
+                height: '390px',
+                borderRadius: '50%',
+                border: '2px dashed rgba(16, 185, 129, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 60px rgba(16, 185, 129, 0.03), inset 0 0 60px rgba(16, 185, 129, 0.03)',
+                transition: 'all 0.5s ease',
+                backgroundColor: 'rgba(16, 185, 129, 0.01)'
+              }}>
+                {/* Orbital Rings */}
+                <div style={{ position: 'absolute', width: '80%', height: '80%', borderRadius: '50%', border: '1px solid rgba(16, 185, 129, 0.08)' }} />
+                <div style={{ position: 'absolute', width: '55%', height: '55%', borderRadius: '50%', border: '1px dashed rgba(16, 185, 129, 0.05)' }} />
+
+                {/* Rotating Conic Sweeper Needle */}
                 <div style={{
-                  width: '100%',
-                  padding: '60px 40px',
-                  textAlign: 'center',
-                  border: '2px dashed rgba(255, 255, 255, 0.1)',
-                  borderRadius: '32px',
+                  position: 'absolute',
+                  top: 0, left: 0, right: 0, bottom: 0,
+                  borderRadius: '50%',
+                  background: 'conic-gradient(from 0deg, transparent 40%, rgba(16, 185, 129, 0.18) 100%)',
+                  animation: 'radarSweep 5s infinite linear',
+                  pointerEvents: 'none',
+                  zIndex: 2
+                }} />
+
+                {/* Dynamic Holographic Scanner Screen Content */}
+                <div style={{
+                  zIndex: 10,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(255,255,255,0.01)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  gap: '24px'
+                  textAlign: 'center',
+                  width: '100%',
+                  padding: '24px'
                 }}>
-                  {/* Modern Sonar Radar Scan animation */}
-                  <div style={{
-                    position: 'relative',
-                    width: '100px',
-                    height: '100px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    {/* Expanding Sonar Waves */}
+                  {radarStudent ? (
+                    /* SCAN MATCH: Show verified student inside radar */
                     <div style={{
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: '50%',
-                      border: '2px solid rgba(16, 185, 129, 0.2)',
-                      animation: 'sonarPulse 3s infinite linear'
-                    }} />
-                    <div style={{
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: '50%',
-                      border: '2px solid rgba(16, 185, 129, 0.15)',
-                      animation: 'sonarPulse 3s infinite linear 1s'
-                    }} />
-                    <div style={{
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: '50%',
-                      border: '2px solid rgba(16, 185, 129, 0.1)',
-                      animation: 'sonarPulse 3s infinite linear 2s'
-                    }} />
-                    
-                    {/* Centered Glowing Radar Hub */}
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '50%',
-                      backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                      border: '2px solid #10B981',
+                      animation: 'slideInSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 0 25px rgba(16, 185, 129, 0.2)',
-                      zIndex: 2,
-                      animation: 'pulseRadar 2s infinite ease-in-out'
+                      gap: '12px'
                     }}>
-                      <Fingerprint size={24} style={{ color: '#10B981' }} />
+                      <div style={{
+                        width: '76px', height: '76px', borderRadius: '50%',
+                        backgroundColor: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 0 30px rgba(16, 185, 129, 0.5)', animation: 'pulseRadar 1.5s infinite'
+                      }}>
+                        <Fingerprint size={40} style={{ color: 'white' }} />
+                      </div>
+                      
+                      <div style={{ marginTop: '8px' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.3em' }}>
+                          MATCH DETECTED
+                        </span>
+                        <h3 style={{
+                          margin: '4px 0 0 0',
+                          fontSize: '2.25rem',
+                          fontWeight: '900',
+                          color: 'white',
+                          letterSpacing: '-0.02em',
+                          textShadow: '0 0 15px rgba(255,255,255,0.4)'
+                        }}>
+                          {radarStudent.name}
+                        </h3>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '0.6875rem', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+                          VERIFYING SIGNAL...
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* DEFAULT: Show holographic access code */
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '900', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.35em' }}>
+                        SECURITY KEY
+                      </span>
+                      
+                      {/* Access Code display with glowing holographic letters */}
+                      <div style={{ 
+                        display: 'flex', 
+                        gap: '12px',
+                        margin: '12px 0 4px 0'
+                      }}>
+                        {sessionCode.split('').map((char, i) => (
+                          <span 
+                            key={i} 
+                            style={{
+                              fontSize: '5.25rem', 
+                              fontWeight: '900', 
+                              color: '#10B981',
+                              fontFamily: 'monospace',
+                              letterSpacing: '0.02em',
+                              textShadow: '0 0 25px rgba(16, 185, 129, 0.4)'
+                            }}
+                          >
+                            {char}
+                          </span>
+                        ))}
+                      </div>
 
-                  <div style={{ zIndex: 2 }}>
-                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                      Radar Active & Scanning
-                    </h4>
-                    <p style={{ margin: '6px 0 0 0', color: 'rgba(255,255,255,0.4)', fontSize: '0.8125rem', fontWeight: '700' }}>
-                      Waiting for students to enter the 4-digit security code...
-                    </p>
-                  </div>
+                      <span style={{ fontSize: '0.6875rem', fontWeight: '900', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.15em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'liveDot 1s infinite' }} />
+                        SCANNING LIVE BEACON
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              {/* Countdown Ticker Bar underneath the Radar Scan Circle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '32px', opacity: 0.85 }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: getTimerColor(timeLeft), animation: 'liveDot 1s infinite' }} />
+                <span style={{ fontSize: '0.8125rem', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.18em' }}>
+                  ROTATING SECURITY KEY IN <span style={{ color: getTimerColor(timeLeft), fontWeight: '900', fontFamily: 'monospace', fontSize: '0.9375rem' }}>{timeLeft}S</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
