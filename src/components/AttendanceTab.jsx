@@ -362,15 +362,29 @@ export default function AttendanceTab({ userRole, userName }) {
           height: '100vh',
           zIndex: 99999, // Overlays everything including sidebar
           background: 'radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%)',
-          padding: '48px',
+          padding: '40px 48px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '32px',
+          gap: '24px',
           overflowY: 'auto',
           boxSizing: 'border-box'
         }}>
+          {/* Top Edge Neon Countdown Progress Bar */}
+          <div style={{ 
+            position: 'absolute', top: 0, left: 0, right: 0, height: '6px', 
+            backgroundColor: 'rgba(255,255,255,0.01)', zIndex: 100000 
+          }}>
+            <div style={{ 
+              height: '100%', 
+              width: `${(timeLeft / 30) * 100}%`, 
+              backgroundColor: getTimerColor(timeLeft),
+              transition: 'width 1s linear',
+              boxShadow: `0 0 15px ${getTimerColor(timeLeft)}`
+            }} />
+          </div>
+
           {/* Immersive Cinematic Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'liveDot 1.5s infinite', boxShadow: '0 0 15px #10B981' }} />
               <div>
@@ -382,7 +396,7 @@ export default function AttendanceTab({ userRole, userName }) {
             <button 
               onClick={endSession}
               style={{
-                padding: '16px 32px', 
+                padding: '14px 28px', 
                 backgroundColor: 'rgba(239, 68, 68, 0.1)', 
                 color: '#EF4444', 
                 border: '1.5px solid rgba(239, 68, 68, 0.2)',
@@ -410,79 +424,62 @@ export default function AttendanceTab({ userRole, userName }) {
             </button>
           </div>
 
-          {/* Huge Projector Display */}
+          {/* Huge Projector Display (Side-by-Side Widescreen design to optimize screen usage and prevent vertical squeezing) */}
           <div style={{
             background: 'rgba(255, 255, 255, 0.02)',
             border: '1px solid rgba(255, 255, 255, 0.05)',
             borderRadius: '40px', 
-            padding: '50px 60px', 
-            textAlign: 'center', 
+            padding: '40px 60px', 
             color: 'white',
             boxShadow: '0 30px 60px -12px rgba(0,0,0,0.4)', 
             position: 'relative', 
             overflow: 'hidden',
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'space-around',
+            gap: '40px',
             flex: '1' // Flex grow to take maximum available space
           }}>
-            {/* Countdown Progress Bar (Right to Left) */}
-            <div style={{ 
-              position: 'absolute', top: 0, left: 0, right: 0, height: '10px', 
-              backgroundColor: 'rgba(255,255,255,0.02)' 
-            }}>
-              <div style={{ 
-                height: '100%', 
-                width: `${(timeLeft / 30) * 100}%`, 
-                backgroundColor: getTimerColor(timeLeft),
-                transition: 'width 1s linear',
-                position: 'absolute',
-                left: 0,
-                boxShadow: `0 0 20px ${getTimerColor(timeLeft)}80`
-              }} />
-            </div>
-
-            {/* Timer Hub */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: '4.5rem', fontWeight: '900', color: getTimerColor(timeLeft), lineHeight: 0.9, letterSpacing: '-0.05em' }}>
-                  {timeLeft}<span style={{ fontSize: '1.75rem', opacity: 0.5 }}>s</span>
-                </p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', fontWeight: '900', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.25em' }}>
-                  REFRESHING CODE IN
-                </p>
+            {/* Left Side: Glowing Timer Hub */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '8px' }}>
+              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '900', opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.25em', color: 'white' }}>
+                REFRESHING CODE IN
+              </p>
+              <p style={{ margin: 0, fontSize: '5.5rem', fontWeight: '900', color: getTimerColor(timeLeft), lineHeight: 1, letterSpacing: '-0.05em' }}>
+                {timeLeft}<span style={{ fontSize: '1.75rem', opacity: 0.5 }}>s</span>
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.6, marginTop: '8px' }}>
+                <Clock size={16} style={{ color: getTimerColor(timeLeft) }} />
+                <span style={{ fontSize: '0.8125rem', fontWeight: '800', color: 'white', letterSpacing: '0.02em' }}>Active Security Feed</span>
               </div>
             </div>
 
-            <p style={{ fontSize: '0.8125rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.35em', color: 'rgba(255,255,255,0.3)', marginBottom: '32px' }}>
-              ACCESS CODE
-            </p>
+            {/* Divider */}
+            <div style={{ width: '1px', height: '140px', backgroundColor: 'rgba(255, 255, 255, 0.06)' }} />
 
-            <div style={{ 
-              display: 'flex', justifyContent: 'center', gap: '28px', marginBottom: '36px'
-            }}>
-              {sessionCode.split('').map((char, i) => (
-                <div key={i} style={{
-                  width: '120px', height: '170px', 
-                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                  border: '2.5px solid rgba(255, 255, 255, 0.08)', 
-                  borderRadius: '28px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '5.5rem', fontWeight: '900', color: '#10B981',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 40px rgba(16, 185, 129, 0.15)',
-                  textShadow: '0 0 30px rgba(16, 185, 129, 0.3)'
-                }}>
-                  {char}
-                </div>
-              ))}
-            </div>
+            {/* Right Side: Access Code Cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+              <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.35em', color: 'rgba(255,255,255,0.3)' }}>
+                ACCESS CODE
+              </p>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', color: 'rgba(255,255,255,0.4)', alignItems: 'center' }}>
-              <Clock size={16} />
-              <span style={{ fontSize: '0.875rem', fontWeight: '800', letterSpacing: '0.02em' }}>
-                Students can mark presence via their panel. Please keep this projected.
-              </span>
+              <div style={{ display: 'flex', gap: '20px' }}>
+                {sessionCode.split('').map((char, i) => (
+                  <div key={i} style={{
+                    width: '110px', height: '155px', 
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                    border: '2.5px solid rgba(255, 255, 255, 0.08)', 
+                    borderRadius: '24px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '5rem', fontWeight: '900', color: '#10B981',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 35px rgba(16, 185, 129, 0.12)',
+                    textShadow: '0 0 25px rgba(16, 185, 129, 0.25)'
+                  }}>
+                    {char}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
