@@ -7,6 +7,88 @@ import {
 } from 'lucide-react';
 import { users, classes } from '../data/mockData';
 
+const liveFeedStyles = `
+  @keyframes sonarPulse {
+    0% {
+      transform: scale(0.95);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 0.35;
+    }
+    100% {
+      transform: scale(1.45);
+      opacity: 0;
+    }
+  }
+
+  @keyframes slideInSpring {
+    0% {
+      opacity: 0;
+      transform: translateY(30px) scale(0.8) rotate(-1.5deg);
+    }
+    70% {
+      transform: translateY(-4px) scale(1.04) rotate(0.5deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1) rotate(0deg);
+    }
+  }
+
+  @keyframes pulseRadar {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(0.93);
+    }
+  }
+
+  @keyframes signalPulse {
+    0%, 100% {
+      border-color: rgba(16, 185, 129, 0.15);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01);
+    }
+    50% {
+      border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.15);
+    }
+  }
+
+  @keyframes liveDot {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(0.85);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+
+  .joining-student-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  }
+
+  .joining-student-card:hover {
+    transform: translateY(-6px) scale(1.02) !important;
+    box-shadow: 0 15px 30px -10px rgba(16, 185, 129, 0.25) !important;
+    border-color: rgba(16, 185, 129, 0.5) !important;
+    background-color: #FAFDFB !important;
+  }
+
+  .joining-student-card:hover .student-card-avatar {
+    transform: scale(1.1) rotate(6deg) !important;
+    background-color: #10B981 !important;
+    color: white !important;
+    border-color: #10B981 !important;
+  }
+`;
+
 export default function AttendanceTab({ userRole, userName }) {
   // Common State
   const [activeBatch, setActiveBatch] = useState(null);
@@ -215,6 +297,7 @@ export default function AttendanceTab({ userRole, userName }) {
   // --- TRAINER VIEW ---
   return (
     <div className="p-8" style={{ backgroundColor: '#F9FAFB', minHeight: '100vh' }}>
+      <style>{liveFeedStyles}</style>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
         <div>
@@ -345,22 +428,158 @@ export default function AttendanceTab({ userRole, userName }) {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-              {presentStudents.map(student => (
-                <div key={student.id} style={{
-                  padding: '12px 20px', backgroundColor: '#F8FAFC', borderRadius: '20px', border: '1px solid #F1F5F9',
-                  display: 'flex', alignItems: 'center', gap: '12px', animation: 'scaleIn 0.4s ease-out'
-                }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#10B981', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.75rem' }}>
-                    {student.name.charAt(0)}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+              {presentStudents.map((student, index) => {
+                const delay = `${index * 0.05}s`;
+                return (
+                  <div 
+                    key={student.id} 
+                    className="joining-student-card"
+                    style={{
+                      padding: '16px 24px', 
+                      backgroundColor: 'white', 
+                      borderRadius: '24px', 
+                      border: '1px solid #E2E8F0',
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '16px', 
+                      animation: `slideInSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay} both, signalPulse 2.5s ease-in-out infinite`,
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {/* Glowing Left Border Accent */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '4px',
+                      height: '100%',
+                      backgroundColor: '#10B981'
+                    }} />
+
+                    {/* Animated Avatar Circle */}
+                    <div style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      borderRadius: '50%', 
+                      backgroundColor: '#E6FBF2', 
+                      color: '#10B981', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      fontWeight: '900', 
+                      fontSize: '0.875rem',
+                      border: '1.5px solid rgba(16, 185, 129, 0.2)',
+                      boxShadow: '0 0 10px rgba(16, 185, 129, 0.1)',
+                      transition: 'transform 0.3s ease'
+                    }} className="student-card-avatar">
+                      {student.name.charAt(0)}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '0.9375rem', fontWeight: '900', color: '#1E293B' }}>{student.name}</span>
+                      <span style={{ fontSize: '0.6875rem', fontWeight: '800', color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', animation: 'liveDot 1s infinite' }} />
+                        Verified
+                      </span>
+                    </div>
+
+                    <div style={{ 
+                      width: '22px', 
+                      height: '22px', 
+                      borderRadius: '50%', 
+                      backgroundColor: '#10B981', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      boxShadow: '0 4px 10px rgba(16, 185, 129, 0.3)',
+                      marginLeft: '4px'
+                    }}>
+                      <Check size={12} style={{ color: 'white' }} strokeWidth={4} />
+                    </div>
                   </div>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '800', color: '#1E293B' }}>{student.name}</span>
-                  <Check size={16} style={{ color: '#10B981' }} />
-                </div>
-              ))}
+                );
+              })}
               {presentStudents.length === 0 && (
-                <div style={{ width: '100%', padding: '40px', textAlign: 'center', border: '2px dashed #F1F5F9', borderRadius: '24px' }}>
-                  <p style={{ color: '#94A3B8', fontWeight: '700', margin: 0 }}>Waiting for first student to enter the code...</p>
+                <div style={{
+                  width: '100%',
+                  padding: '60px 40px',
+                  textAlign: 'center',
+                  border: '2px dashed #E2E8F0',
+                  borderRadius: '32px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#FAFDFB',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  gap: '24px'
+                }}>
+                  {/* Modern Sonar Radar Scan animation */}
+                  <div style={{
+                    position: 'relative',
+                    width: '100px',
+                    height: '100px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {/* Expanding Sonar Waves */}
+                    <div style={{
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      border: '2px solid rgba(16, 185, 129, 0.2)',
+                      animation: 'sonarPulse 3s infinite linear'
+                    }} />
+                    <div style={{
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      border: '2px solid rgba(16, 185, 129, 0.15)',
+                      animation: 'sonarPulse 3s infinite linear 1s'
+                    }} />
+                    <div style={{
+                      position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      border: '2px solid rgba(16, 185, 129, 0.1)',
+                      animation: 'sonarPulse 3s infinite linear 2s'
+                    }} />
+                    
+                    {/* Centered Glowing Radar Hub */}
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '50%',
+                      backgroundColor: '#E6FBF2',
+                      border: '2px solid #10B981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 0 25px rgba(16, 185, 129, 0.2)',
+                      zIndex: 2,
+                      animation: 'pulseRadar 2s infinite ease-in-out'
+                    }}>
+                      <Fingerprint size={24} style={{ color: '#10B981' }} />
+                    </div>
+                  </div>
+
+                  <div style={{ zIndex: 2 }}>
+                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '900', color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      Radar Active & Scanning
+                    </h4>
+                    <p style={{ margin: '6px 0 0 0', color: '#64748B', fontSize: '0.8125rem', fontWeight: '700' }}>
+                      Waiting for students to enter the 4-digit security code...
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
