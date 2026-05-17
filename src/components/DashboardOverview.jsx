@@ -443,8 +443,8 @@ export default function DashboardOverview({ userRole, userName }) {
         const batchCompletionPercent = totalBatches > 0 ? Math.round((completedBatchesCount / totalBatches) * 100) : 0;
 
         const batchData = [
-          { name: 'Active Batches', value: activeBatchesCount, fill: '#3b82f6' },
-          { name: 'Completed Batches', value: completedBatchesCount, fill: '#10b981' },
+          { name: 'Active Batches', value: activeBatchesCount, fill: '#10b981' },
+          { name: 'Completed Batches', value: completedBatchesCount, fill: '#0ea5e9' },
           { name: 'Remaining Batches', value: remainingBatchesCount, fill: '#f59e0b' }
         ];
 
@@ -457,8 +457,8 @@ export default function DashboardOverview({ userRole, userName }) {
         const studentCompletionPercent = totalStudents > 0 ? Math.round((completedStudentsCount / totalStudents) * 100) : 0;
 
         const studentData = [
-          { name: 'Attending Students', value: attendingStudentsCount, fill: '#3b82f6' },
-          { name: 'Completed Students', value: completedStudentsCount, fill: '#10b981' },
+          { name: 'Attending Students', value: attendingStudentsCount, fill: '#10b981' },
+          { name: 'Completed Students', value: completedStudentsCount, fill: '#0ea5e9' },
           { name: 'Remaining Students', value: remainingStudentsCount, fill: '#f59e0b' }
         ];
 
@@ -569,7 +569,7 @@ export default function DashboardOverview({ userRole, userName }) {
                       </Pie>
                     </PieChart>
                   </ResponsiveContainer>
-                  <LiquidProgress percent={studentCompletionPercent} title="Completed" themeColor="green" />
+                  <LiquidProgress percent={studentCompletionPercent} title="Completed" themeColor="blue" />
                 </div>
 
                 {/* Highly Polished External HTML Legend for Perfect Centering */}
