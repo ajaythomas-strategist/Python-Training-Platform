@@ -30,11 +30,12 @@ const waveStyles = `
 `;
 
 function LiquidProgress({ percent, title, themeColor }) {
-  const primaryColor = themeColor === 'green' ? '#10b981' : '#3b82f6';
-  const secondaryColor = themeColor === 'green' ? '#34d399' : '#60a5fa';
+  // Ultra-Premium dynamic theme palettes (Light Blue / Water theme & Emerald theme)
+  const primaryColor = themeColor === 'green' ? '#10b981' : '#0ea5e9'; // Stunning sky blue
+  const secondaryColor = themeColor === 'green' ? '#34d399' : '#38bdf8'; // Stunning light sky blue
   const liquidBg = themeColor === 'green'
     ? 'linear-gradient(to top, #047857, #10b981)'
-    : 'linear-gradient(to top, #1e3a8a, #3b82f6)';
+    : 'linear-gradient(to top, #0284c7, #38bdf8)'; // Glassy, tropical light blue water!
 
   return (
     <div style={{
@@ -152,25 +153,28 @@ function LiquidProgress({ percent, title, themeColor }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        color: percent > 45 ? '#ffffff' : '#1e293b',
-        textShadow: percent > 45 ? '0 2px 4px rgba(0,0,0,0.2)' : 'none',
-        transition: 'color 0.5s ease-in-out'
+        textShadow: percent > 45 ? '0 2px 4px rgba(0,0,0,0.25)' : 'none'
       }}>
         <span style={{
           fontSize: '34px',
           fontWeight: '900',
           lineHeight: '1',
           letterSpacing: '-0.02em',
-          marginBottom: '2px'
+          marginBottom: '4px',
+          color: percent > 45 ? '#ffffff' : '#0f172a',
+          transition: 'color 0.5s ease-in-out'
         }}>
           {percent}%
         </span>
         <span style={{
-          fontSize: '9px',
-          fontWeight: '800',
+          fontSize: '10px',
+          fontWeight: '900',
           textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          opacity: percent > 45 ? 0.9 : 0.6
+          letterSpacing: '0.08em',
+          color: percent > 45 
+            ? (themeColor === 'green' ? '#e6fffa' : '#e0f2fe') 
+            : (themeColor === 'green' ? '#059669' : '#0284c7'),
+          transition: 'color 0.5s ease-in-out'
         }}>
           {title}
         </span>
