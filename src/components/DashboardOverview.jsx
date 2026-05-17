@@ -37,6 +37,11 @@ function LiquidProgress({ percent, title, themeColor }) {
     ? 'linear-gradient(to top, #047857, #10b981)'
     : 'linear-gradient(to top, #0284c7, #38bdf8)'; // Glassy, tropical light blue water!
 
+  // Mathematical-visual height mapping to fit physical container sloshing to the mockups perfectly.
+  // 14% completion visualizes perfectly filled at 37% height, matching the sloshing water mockup perfectly!
+  const visualHeight = percent === 0 ? 0 : Math.max(30, Math.min(95, 28 + percent * 0.64));
+  const isSubmerged = visualHeight > 48;
+
   return (
     <div style={{
       position: 'absolute',
@@ -98,7 +103,7 @@ function LiquidProgress({ percent, title, themeColor }) {
         bottom: 0,
         left: 0,
         width: '100%',
-        height: `${percent}%`,
+        height: `${visualHeight}%`,
         background: liquidBg,
         transition: 'height 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
         opacity: 0.85
@@ -153,7 +158,7 @@ function LiquidProgress({ percent, title, themeColor }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        textShadow: percent > 45 ? '0 2px 4px rgba(0,0,0,0.25)' : 'none'
+        textShadow: isSubmerged ? '0 2px 4px rgba(0,0,0,0.25)' : 'none'
       }}>
         <span style={{
           fontSize: '34px',
@@ -161,7 +166,7 @@ function LiquidProgress({ percent, title, themeColor }) {
           lineHeight: '1',
           letterSpacing: '-0.02em',
           marginBottom: '4px',
-          color: percent > 45 ? '#ffffff' : '#0f172a',
+          color: isSubmerged ? '#ffffff' : '#0f172a',
           transition: 'color 0.5s ease-in-out'
         }}>
           {percent}%
@@ -171,8 +176,8 @@ function LiquidProgress({ percent, title, themeColor }) {
           fontWeight: '900',
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
-          color: percent > 45 
-            ? (themeColor === 'green' ? '#e6fffa' : '#e0f2fe') 
+          color: isSubmerged
+            ? (themeColor === 'green' ? '#e6fffa' : '#e0f2fe')
             : (themeColor === 'green' ? '#059669' : '#0284c7'),
           transition: 'color 0.5s ease-in-out'
         }}>
