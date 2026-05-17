@@ -3,6 +3,182 @@ import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageS
 import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Cell, Label } from 'recharts';
 import { users, classes } from '../data/mockData';
 
+const waveStyles = `
+@keyframes wave-spin-1 {
+  from { transform: translate(-50%, 0) rotate(0deg); }
+  to { transform: translate(-50%, 0) rotate(360deg); }
+}
+@keyframes wave-spin-2 {
+  from { transform: translate(-50%, 0) rotate(0deg); }
+  to { transform: translate(-50%, 0) rotate(-360deg); }
+}
+@keyframes bubble-rise-1 {
+  0% { transform: translateY(120px) scale(0.3); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-20px) scale(1); opacity: 0; }
+}
+@keyframes bubble-rise-2 {
+  0% { transform: translateY(120px) scale(0.4); opacity: 0; }
+  30% { opacity: 0.7; }
+  100% { transform: translateY(-30px) scale(0.8); opacity: 0; }
+}
+@keyframes bubble-rise-3 {
+  0% { transform: translateY(120px) scale(0.2); opacity: 0; }
+  60% { opacity: 0.9; }
+  100% { transform: translateY(-10px) scale(1.1); opacity: 0; }
+}
+`;
+
+function LiquidProgress({ percent, title, themeColor }) {
+  const primaryColor = themeColor === 'green' ? '#10b981' : '#3b82f6';
+  const secondaryColor = themeColor === 'green' ? '#34d399' : '#60a5fa';
+  const liquidBg = themeColor === 'green'
+    ? 'linear-gradient(to top, #047857, #10b981)'
+    : 'linear-gradient(to top, #1e3a8a, #3b82f6)';
+
+  return (
+    <div style={{
+      position: 'absolute',
+      width: '166px',
+      height: '166px',
+      borderRadius: '50%',
+      backgroundColor: '#f8fafc',
+      boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04)',
+      border: '4px solid #ffffff',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      userSelect: 'none',
+      zIndex: 5,
+      top: 'calc(50% - 15px)',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      pointerEvents: 'none'
+    }}>
+      <style>{waveStyles}</style>
+
+      {/* Bubbles */}
+      <div style={{
+        position: 'absolute',
+        width: '4px',
+        height: '4px',
+        backgroundColor: secondaryColor,
+        borderRadius: '50%',
+        left: '25%',
+        animation: 'bubble-rise-1 4s infinite ease-in-out',
+        opacity: 0
+      }} />
+      <div style={{
+        position: 'absolute',
+        width: '6px',
+        height: '6px',
+        backgroundColor: secondaryColor,
+        borderRadius: '50%',
+        left: '55%',
+        animation: 'bubble-rise-2 5s infinite ease-in-out 1.5s',
+        opacity: 0
+      }} />
+      <div style={{
+        position: 'absolute',
+        width: '3px',
+        height: '3px',
+        backgroundColor: secondaryColor,
+        borderRadius: '50%',
+        left: '75%',
+        animation: 'bubble-rise-3 4.5s infinite ease-in-out 0.7s',
+        opacity: 0
+      }} />
+
+      {/* Liquid Wave Mask & Container */}
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        height: `${percent}%`,
+        background: liquidBg,
+        transition: 'height 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: 0.85
+      }}>
+        {/* Irregular rotating shapes to simulate wave action */}
+        <div style={{
+          position: 'absolute',
+          width: '280px',
+          height: '280px',
+          backgroundColor: primaryColor,
+          borderRadius: '45% 47% 43% 46%',
+          bottom: 'calc(100% - 15px)',
+          left: '50%',
+          transform: 'translate(-50%, 0)',
+          animation: 'wave-spin-1 10s infinite linear',
+          opacity: 0.9,
+          pointerEvents: 'none'
+        }} />
+        <div style={{
+          position: 'absolute',
+          width: '290px',
+          height: '290px',
+          backgroundColor: secondaryColor,
+          borderRadius: '46% 44% 48% 45%',
+          bottom: 'calc(100% - 10px)',
+          left: '50%',
+          transform: 'translate(-50%, 0)',
+          animation: 'wave-spin-2 8s infinite linear',
+          opacity: 0.5,
+          pointerEvents: 'none'
+        }} />
+      </div>
+
+      {/* Glass Gloss effect */}
+      <div style={{
+        position: 'absolute',
+        top: '6px',
+        left: '6px',
+        right: '6px',
+        height: '35%',
+        background: 'linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%)',
+        borderRadius: '80px 80px 10px 10px',
+        pointerEvents: 'none'
+      }} />
+
+      {/* Percentage and Labels overlay */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: percent > 45 ? '#ffffff' : '#1e293b',
+        textShadow: percent > 45 ? '0 2px 4px rgba(0,0,0,0.2)' : 'none',
+        transition: 'color 0.5s ease-in-out'
+      }}>
+        <span style={{
+          fontSize: '34px',
+          fontWeight: '900',
+          lineHeight: '1',
+          letterSpacing: '-0.02em',
+          marginBottom: '2px'
+        }}>
+          {percent}%
+        </span>
+        <span style={{
+          fontSize: '9px',
+          fontWeight: '800',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          opacity: percent > 45 ? 0.9 : 0.6
+        }}>
+          {title}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardOverview({ userRole, userName }) {
   const [selectedBatchForAbsents, setSelectedBatchForAbsents] = useState(null);
   const [selectedBatchForComments, setSelectedBatchForComments] = useState(null);
@@ -341,14 +517,10 @@ export default function DashboardOverview({ userRole, userName }) {
                       {batchData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
-                      <Label 
-                        value={`${batchCompletionPercent}%`} 
-                        position="center" 
-                        style={{ fontSize: '44px', fontWeight: '900', fill: '#111827' }} 
-                      />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
+                <LiquidProgress percent={batchCompletionPercent} title="Completed" themeColor="blue" />
               </div>
             </div>
 
@@ -396,14 +568,10 @@ export default function DashboardOverview({ userRole, userName }) {
                       {studentData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
-                      <Label 
-                        value={`${studentCompletionPercent}%`} 
-                        position="center" 
-                        style={{ fontSize: '44px', fontWeight: '900', fill: '#111827' }} 
-                      />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
+                <LiquidProgress percent={studentCompletionPercent} title="Completed" themeColor="green" />
               </div>
             </div>
           </div>
