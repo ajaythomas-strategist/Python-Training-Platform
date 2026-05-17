@@ -45,8 +45,8 @@ function LiquidProgress({ percent, title, themeColor }) {
   return (
     <div style={{
       position: 'absolute',
-      width: '170px',
-      height: '170px',
+      width: '160px', // Perfectly fits the innerRadius={80} (160px diameter) donut hole
+      height: '160px',
       borderRadius: '50%',
       backgroundColor: 'transparent',
       overflow: 'hidden',
@@ -56,7 +56,7 @@ function LiquidProgress({ percent, title, themeColor }) {
       justifyContent: 'center',
       userSelect: 'none',
       zIndex: 5,
-      top: 'calc(50% - 20px)',
+      top: '50%', // Mathematically perfect centering (legend rendered as HTML outside SVG)
       left: '50%',
       transform: 'translate(-50%, -50%)',
       pointerEvents: 'none'
@@ -107,17 +107,19 @@ function LiquidProgress({ percent, title, themeColor }) {
         opacity: 0.85
       }}>
         {/* Irregular rotating shapes to simulate wave action */}
+        {/* Placed at top: '-25px' / '-20px' so they extend DOWNWARDS (matching 280px/290px height), */}
+        {/* keeping the top half of the donut hole 100% transparent and blank as requested! */}
         <div style={{
           position: 'absolute',
           width: '280px',
           height: '280px',
           backgroundColor: primaryColor,
           borderRadius: '45% 47% 43% 46%',
-          bottom: 'calc(100% - 15px)',
+          top: '-25px',
           left: '50%',
-          transform: 'translate(-50%, 0)',
+          transform: 'translateX(-50%)',
           animation: 'wave-spin-1 10s infinite linear',
-          opacity: 0.9,
+          opacity: 0.8,
           pointerEvents: 'none'
         }} />
         <div style={{
@@ -126,9 +128,9 @@ function LiquidProgress({ percent, title, themeColor }) {
           height: '290px',
           backgroundColor: secondaryColor,
           borderRadius: '46% 44% 48% 45%',
-          bottom: 'calc(100% - 10px)',
+          top: '-20px',
           left: '50%',
-          transform: 'translate(-50%, 0)',
+          transform: 'translateX(-50%)',
           animation: 'wave-spin-2 8s infinite linear',
           opacity: 0.5,
           pointerEvents: 'none'
@@ -161,7 +163,7 @@ function LiquidProgress({ percent, title, themeColor }) {
           fontSize: '10px',
           fontWeight: '900',
           textTransform: 'uppercase',
-          letterSpacing: '0.08em',
+          letterSpacing: '0.12em', // Premium wider letter-spacing
           color: isSubmerged
             ? (themeColor === 'green' ? '#e6fffa' : '#e0f2fe')
             : (themeColor === 'green' ? '#059669' : '#0284c7'),
@@ -486,36 +488,42 @@ export default function DashboardOverview({ userRole, userName }) {
                 </span>
               </div>
               
-              <div style={{ width: '100%', height: 320, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Tooltip wrapperStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }} contentStyle={{ borderRadius: '16px', border: 'none', padding: '12px 20px', fontWeight: '700' }} />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      align="center"
-                      iconType="circle" 
-                      wrapperStyle={{ fontSize: '0.875rem', fontWeight: '700', color: '#64748B', paddingTop: '20px' }} 
-                    />
-                    <Pie
-                      data={batchData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={85}
-                      outerRadius={120}
-                      paddingAngle={0}
-                      dataKey="value"
-                      stroke="none"
-                      startAngle={90}
-                      endAngle={-270}
-                      isAnimationActive
-                    >
-                      {batchData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <LiquidProgress percent={batchCompletionPercent} title="Completed" themeColor="blue" />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginTop: '20px' }}>
+                <div style={{ width: '100%', height: 260, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Tooltip wrapperStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }} contentStyle={{ borderRadius: '16px', border: 'none', padding: '12px 20px', fontWeight: '700' }} />
+                      <Pie
+                        data={batchData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={80}
+                        outerRadius={110}
+                        paddingAngle={0}
+                        dataKey="value"
+                        stroke="none"
+                        startAngle={90}
+                        endAngle={-270}
+                        isAnimationActive
+                      >
+                        {batchData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <LiquidProgress percent={batchCompletionPercent} title="Completed" themeColor="blue" />
+                </div>
+
+                {/* Highly Polished External HTML Legend for Perfect Centering */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', marginTop: '16px' }}>
+                  {batchData.map((entry, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: entry.fill }} />
+                      <span style={{ fontSize: '0.8125rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{entry.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -537,36 +545,42 @@ export default function DashboardOverview({ userRole, userName }) {
                 </span>
               </div>
               
-              <div style={{ width: '100%', height: 320, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '20px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Tooltip wrapperStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }} contentStyle={{ borderRadius: '16px', border: 'none', padding: '12px 20px', fontWeight: '700' }} />
-                    <Legend 
-                      verticalAlign="bottom" 
-                      align="center"
-                      iconType="circle" 
-                      wrapperStyle={{ fontSize: '0.875rem', fontWeight: '700', color: '#64748B', paddingTop: '20px' }} 
-                    />
-                    <Pie
-                      data={studentData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={85}
-                      outerRadius={120}
-                      paddingAngle={0}
-                      dataKey="value"
-                      stroke="none"
-                      startAngle={90}
-                      endAngle={-270}
-                      isAnimationActive
-                    >
-                      {studentData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <LiquidProgress percent={studentCompletionPercent} title="Completed" themeColor="green" />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginTop: '20px' }}>
+                <div style={{ width: '100%', height: 260, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Tooltip wrapperStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }} contentStyle={{ borderRadius: '16px', border: 'none', padding: '12px 20px', fontWeight: '700' }} />
+                      <Pie
+                        data={studentData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={80}
+                        outerRadius={110}
+                        paddingAngle={0}
+                        dataKey="value"
+                        stroke="none"
+                        startAngle={90}
+                        endAngle={-270}
+                        isAnimationActive
+                      >
+                        {studentData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <LiquidProgress percent={studentCompletionPercent} title="Completed" themeColor="green" />
+                </div>
+
+                {/* Highly Polished External HTML Legend for Perfect Centering */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', marginTop: '16px' }}>
+                  {studentData.map((entry, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: entry.fill }} />
+                      <span style={{ fontSize: '0.8125rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{entry.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
