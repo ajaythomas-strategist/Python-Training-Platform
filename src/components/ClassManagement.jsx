@@ -401,11 +401,6 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                         <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }} title={`${session.date} • ${session.startTime}-${session.endTime}`}>
                           {formatSessionDate(session.date)} • {session.startTime}-{session.endTime}
                         </span>
-                        {hasTransfer && (
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7C3AED', backgroundColor: '#EDE9FE', borderRadius: '999px', padding: '1px 6px', whiteSpace: 'nowrap', flexShrink: 0, lineHeight: 1.5 }}>
-                            → {session.transferredTo || session.transferredCoTrainerTo || (session.transferredFrom ? cls.trainer : (cls.coTrainers?.[0] || 'Co-Trainer'))}
-                          </span>
-                        )}
                       </div>
 
                       {/* Right: action icons — always visible for non-admin, Eye only if transferred */}
