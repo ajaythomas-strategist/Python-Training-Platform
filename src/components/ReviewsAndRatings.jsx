@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Star, Filter, Calendar, Users, Search, X, ChevronDown, Lock, MessageSquare } from 'lucide-react';
 import { users, classes, adjustDate } from '../data/mockData';
-import { privateCommentsStore } from '../data/commentsStore';
+import { privateCommentsStore, trainerReviewsStore } from '../data/commentsStore';
 
 export default function ReviewsAndRatings({ userRole, userName }) {
   const [filters, setFilters] = useState({
@@ -30,6 +30,7 @@ export default function ReviewsAndRatings({ userRole, userName }) {
   ];
 
   allReviews.push(...manualData);
+  allReviews.push(...trainerReviewsStore);
 
   classes.forEach(cls => {
     cls.sessions.forEach((session, sIdx) => {
@@ -328,6 +329,7 @@ export default function ReviewsAndRatings({ userRole, userName }) {
                 <tr>
                   <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Student</th>
                   <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch</th>
+                  <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Rating</th>
                   <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4 w-1/2">Comment</th>
                   <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>
                   <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Date</th>
@@ -348,6 +350,23 @@ export default function ReviewsAndRatings({ userRole, userName }) {
                       <span className="badge badge-purple">{c.batch}</span>
                     </td>
                     <td className="py-4">
+                      {c.rating ? (
+                        <div style={{ display: 'flex', gap: '2px' }}>
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              size={12} 
+                              fill={i < c.rating ? '#F59E0B' : 'transparent'}
+                              color={i < c.rating ? '#F59E0B' : '#E2E8F0'}
+                              strokeWidth={i < c.rating ? 0 : 2}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>-</span>
+                      )}
+                    </td>
+                    <td className="py-4">
                       <p style={{ margin: 0, color: '#374151', fontWeight: '600', fontSize: '0.875rem', lineHeight: 1.5 }}>{c.comment}</p>
                     </td>
                     <td className="py-4">
@@ -359,8 +378,8 @@ export default function ReviewsAndRatings({ userRole, userName }) {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: '#9CA3AF', fontStyle: 'italic', fontWeight: '600', fontSize: '0.875rem' }}>
-                      No private comments submitted yet. Trainers can add comments from the Performance Rating page.
+                    <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: '#9CA3AF', fontStyle: 'italic', fontWeight: '600', fontSize: '0.875rem' }}>
+                      No private comments submitted yet. Trainers can add comments and ratings from the Performance Rating page.
                     </td>
                   </tr>
                 )}
