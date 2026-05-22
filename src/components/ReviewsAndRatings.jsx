@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Star, Filter, Calendar, Users, Search, X, ChevronDown, Lock, MessageSquare } from 'lucide-react';
 import { users, classes, adjustDate } from '../data/mockData';
-import { privateCommentsStore } from './MarkRating';
+import { privateCommentsStore } from '../data/commentsStore';
 
 export default function ReviewsAndRatings({ userRole, userName }) {
   const [filters, setFilters] = useState({
