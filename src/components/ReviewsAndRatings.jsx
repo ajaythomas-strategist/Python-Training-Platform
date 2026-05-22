@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Star, Filter, Calendar, Users, Search, X, ChevronDown } from 'lucide-react';
+import { Star, Filter, Calendar, Users, Search, X, ChevronDown, Lock, MessageSquare } from 'lucide-react';
 import { users, classes, adjustDate } from '../data/mockData';
+import { privateCommentsStore } from './MarkRating';
 
 export default function ReviewsAndRatings({ userRole, userName }) {
   const [filters, setFilters] = useState({
@@ -300,6 +301,74 @@ export default function ReviewsAndRatings({ userRole, userName }) {
           </table>
         </div>
       </div>
+
+      {/* Private Student Comments — visible only to SuperAdmin, Admin, Trainer */}
+      {(userRole === 'SuperAdmin' || userRole === 'Admin' || userRole === 'Trainer') && (
+        <div className="card flex-col" style={{ gap: '1.5rem', marginTop: '1.5rem' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                <MessageSquare size={20} />
+              </div>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: '800', color: '#111827' }}>Private Student Comments</h2>
+                <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: '600', color: '#7C3AED' }}>Submitted by Trainers · Hidden from Students & Co-Trainers</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', backgroundColor: '#EDE9FE', borderRadius: '9999px', border: '1px solid #DDD6FE' }}>
+              <Lock size={12} color="#7C3AED" />
+              <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Confidential</span>
+            </div>
+          </div>
+
+          <div className="table-container">
+            <table className="w-full">
+              <thead>
+                <tr>
+                  <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Student</th>
+                  <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch</th>
+                  <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4 w-1/2">Comment</th>
+                  <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>
+                  <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {privateCommentsStore.length > 0 ? privateCommentsStore.map((c) => (
+                  <tr key={c.id} className="border-t border-gray-50 text-sm hover:bg-purple-50/30 transition-colors">
+                    <td className="py-4">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#EDE9FE', color: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '0.7rem', flexShrink: 0 }}>
+                          {c.studentName.charAt(0)}
+                        </div>
+                        <span style={{ fontWeight: '700', color: '#1F2937' }}>{c.studentName}</span>
+                      </div>
+                    </td>
+                    <td className="py-4">
+                      <span className="badge badge-purple">{c.batch}</span>
+                    </td>
+                    <td className="py-4">
+                      <p style={{ margin: 0, color: '#374151', fontWeight: '600', fontSize: '0.875rem', lineHeight: 1.5 }}>{c.comment}</p>
+                    </td>
+                    <td className="py-4">
+                      <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#6B7280' }}>{c.trainerName}</span>
+                    </td>
+                    <td className="py-4">
+                      <span style={{ fontSize: '0.8rem', fontWeight: '600', color: '#9CA3AF' }}>{c.date}</span>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: '#9CA3AF', fontStyle: 'italic', fontWeight: '600', fontSize: '0.875rem' }}>
+                      No private comments submitted yet. Trainers can add comments from the Performance Rating page.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
