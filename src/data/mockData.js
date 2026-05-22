@@ -237,3 +237,42 @@ export const reviews = [
     ]
   }
 ];
+
+// Dynamic mock date shifting logic
+const referenceDate = new Date("2026-05-15T00:00:00");
+const currentDate = new Date();
+referenceDate.setHours(0, 0, 0, 0);
+currentDate.setHours(0, 0, 0, 0);
+const diffTime = currentDate.getTime() - referenceDate.getTime();
+const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+export const adjustDate = (oldDateStr) => {
+  if (!oldDateStr) return oldDateStr;
+  const d = new Date(oldDateStr + "T00:00:00");
+  d.setDate(d.getDate() + diffDays);
+  return d.toISOString().split('T')[0];
+};
+
+// Adjust user detailed reports and session reports in-place
+users.forEach(u => {
+  if (u.detailedReport?.sessions) {
+    u.detailedReport.sessions.forEach(s => {
+      s.date = adjustDate(s.date);
+    });
+  }
+  if (u.sessionReports) {
+    u.sessionReports.forEach(r => {
+      r.date = adjustDate(r.date);
+    });
+  }
+});
+
+// Adjust class sessions in-place
+classes.forEach(c => {
+  if (c.sessions) {
+    c.sessions.forEach(s => {
+      s.date = adjustDate(s.date);
+    });
+  }
+});
+

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Monitor, Shield, Users, Cpu, Save } from 'lucide-react';
 
 export default function EditLabModal({ isOpen, onClose, onUpdate, lab }) {
@@ -69,7 +70,7 @@ export default function EditLabModal({ isOpen, onClose, onUpdate, lab }) {
     pointerEvents: 'none'
   };
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(15, 23, 42, 0.6)', zIndex: 1000,
@@ -78,7 +79,7 @@ export default function EditLabModal({ isOpen, onClose, onUpdate, lab }) {
       padding: '20px'
     }}>
       <div className="animate-fade-in" style={{ 
-        width: '100%', maxWidth: '650px', backgroundColor: 'white', borderRadius: '32px', overflow: 'hidden',
+        width: '100%', maxWidth: '650px', backgroundColor: 'white', borderRadius: '32px', overflowY: 'auto', maxHeight: '90vh',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
         border: '1px solid rgba(255, 255, 255, 0.2)'
       }}>
@@ -206,6 +207,7 @@ export default function EditLabModal({ isOpen, onClose, onUpdate, lab }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

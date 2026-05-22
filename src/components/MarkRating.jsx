@@ -60,7 +60,7 @@ export default function MarkRating({ userRole, userName }) {
   };
 
   return (
-    <div className="p-8" style={{ backgroundColor: '#F9FAFB', minHeight: '100vh' }}>
+    <div className="animate-fade-in p-8">
       {/* Header */}
       <div style={{ marginBottom: '40px' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#111827', margin: 0, letterSpacing: '-0.02em' }}>Performance Rating</h1>

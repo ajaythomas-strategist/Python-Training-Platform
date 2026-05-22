@@ -577,7 +577,7 @@ export default function AttendanceTab({ userRole, userName }) {
 
   // --- TRAINER VIEW ---
   return (
-    <div className="p-8" style={{ backgroundColor: '#F9FAFB', minHeight: '100vh' }}>
+    <div className="animate-fade-in p-8">
       <style>{liveFeedStyles}</style>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
@@ -620,7 +620,7 @@ export default function AttendanceTab({ userRole, userName }) {
         </div>
       )}
 
-      {sessionStatus === 'active' && activeBatch && (
+      {sessionStatus === 'active' && activeBatch && createPortal(
         <div style={{ 
           position: 'fixed',
           top: 0,
@@ -897,7 +897,8 @@ export default function AttendanceTab({ userRole, userName }) {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {sessionStatus === 'summary' && activeBatch && (

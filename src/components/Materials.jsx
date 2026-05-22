@@ -13,7 +13,7 @@ export default function Materials({ userRole }) {
   const isAdminOrTrainer = userRole === 'Admin' || userRole === 'SuperAdmin' || userRole === 'Trainer' || userRole === 'Co-Trainer';
 
   return (
-    <div className="animate-fade-in p-8" style={{ backgroundColor: '#F9FAFB', minHeight: '100vh' }}>
+    <div className="animate-fade-in p-8">
       <div className="flex justify-between items-center mb-10">
         <div>
           <h1 className="text-3xl font-black text-gray-900 m-0 tracking-tight">Curriculum Materials</h1>

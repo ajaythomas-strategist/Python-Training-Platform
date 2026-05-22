@@ -50,7 +50,7 @@ export default function UserManagement({ userRole, userName }) {
   };
 
   return (
-    <div className="p-8" style={{ backgroundColor: '#F9FAFB', minHeight: '100vh' }}>
+    <div className="animate-fade-in p-8">
       {/* Header Section */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
         <div>

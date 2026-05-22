@@ -52,7 +52,7 @@ export default function Guidelines({ userRole }) {
   ];
 
   return (
-    <div className="p-8 animate-fade-in" style={{ backgroundColor: '#F9FAFB', minHeight: '100vh' }}>
+    <div className="p-8 animate-fade-in">
       {/* Page Header */}
       <div className="mb-12">
         <h1 className="text-4xl font-black text-gray-900 tracking-tight m-0">Platform Guidelines</h1>

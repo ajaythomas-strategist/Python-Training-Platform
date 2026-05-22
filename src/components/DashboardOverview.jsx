@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, User, Info, MessageSquare, ClipboardList, Shield, ClipboardCheck, Trophy, BarChart2 } from 'lucide-react';
-import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Cell, Label } from 'recharts';
-import { users, classes } from '../data/mockData';
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Users, UserCheck, BookOpen, Percent, Eye, X, Star, Info, MessageSquare, ClipboardList, Shield, ClipboardCheck, Trophy, BarChart2, Clock } from 'lucide-react';
+import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { users, classes, adjustDate } from '../data/mockData';
 
 const waveStyles = `
 @keyframes wave-spin-1 {
@@ -183,8 +184,11 @@ export default function DashboardOverview({ userRole, userName }) {
   const [transferInfo, setTransferInfo] = useState(null);
   const [evaluationRating, setEvaluationRating] = useState(0);
   const [evaluationFeedback, setEvaluationFeedback] = useState('');
-  const [upcomingRange, setUpcomingRange] = useState({ from: "", to: "" });
+  const [upcomingRange] = useState({ from: "", to: "" });
   const [completedRange, setCompletedRange] = useState({ from: "", to: "" });
+
+  const today = adjustDate("2026-05-15");
+  const tomorrow = adjustDate("2026-05-16");
 
   const isTrainer = userRole === 'Trainer' || userRole === 'Co-Trainer';
   const isStudent = userRole === 'Student';
@@ -204,8 +208,8 @@ export default function DashboardOverview({ userRole, userName }) {
     completedBatches: myClasses.filter(c => c.status === 'Completed').length,
     remainingBatches: myClasses.filter(c => c.status !== 'Completed').length,
     totalSessions: myClasses.reduce((acc, c) => acc + (c.sessions?.length || 0), 0),
-    completedSessions: myClasses.reduce((acc, c) => acc + (c.sessions?.filter(s => s.date < "2026-05-15").length || 0), 0),
-    remainingSessions: myClasses.reduce((acc, c) => acc + (c.sessions?.filter(s => s.date >= "2026-05-15").length || 0), 0),
+    completedSessions: myClasses.reduce((acc, c) => acc + (c.sessions?.filter(s => s.date < today).length || 0), 0),
+    remainingSessions: myClasses.reduce((acc, c) => acc + (c.sessions?.filter(s => s.date >= today).length || 0), 0),
   } : null;
 
   const studentKPIs = isStudent ? {
@@ -215,11 +219,7 @@ export default function DashboardOverview({ userRole, userName }) {
     progress: 75 // Mock progress
   } : null;
 
-  const totalAttendance = students.reduce((acc, s) => acc + (s.attendance || 0), 0);
-  const avgAttendance = students.length > 0 ? (totalAttendance / students.length).toFixed(1) : 0;
 
-  const today = "2026-05-15";
-  const tomorrow = "2026-05-16";
 
   const getSessionsByRange = (range, defaultType) => {
     let dates = [];
@@ -308,123 +308,123 @@ export default function DashboardOverview({ userRole, userName }) {
       {/* Stat Cards */}
       <div className="dashboard-grid mb-12" style={{
         display: 'grid',
-        gridTemplateColumns: isTrainer || isStudent ? 'repeat(4, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))',
-        gap: '1.5rem'
+        gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+        gap: '32px'
       }}>
         {isTrainer ? (
           <>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EEF2FF', color: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EEF2FF', color: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <BookOpen size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Batches</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.totalBatches}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Total Batches</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.totalBatches}</p>
               </div>
             </div>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F0FDF4', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F0FDF4', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Shield size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Completed</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.completedBatches}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Completed</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.completedBatches}</p>
               </div>
             </div>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F5F3FF', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F5F3FF', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Users size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Sessions</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.totalSessions}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Total Sessions</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.totalSessions}</p>
               </div>
             </div>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#ECFEFF', color: '#06B6D4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#ECFEFF', color: '#06B6D4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Percent size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sessions Done</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.completedSessions}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Sessions Done</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{trainerKPIs.completedSessions}</p>
               </div>
             </div>
           </>
         ) : isStudent ? (
           <>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EEF2FF', color: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EEF2FF', color: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <UserCheck size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Attendance %</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.attendance}%</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Attendance %</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.attendance}%</p>
               </div>
             </div>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F0FDF4', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F0FDF4', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Trophy size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Performance</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.score}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Performance</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.score}</p>
               </div>
             </div>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F5F3FF', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F5F3FF', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <ClipboardCheck size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Activities</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.activitiesCompleted}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Activities</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.activitiesCompleted}</p>
               </div>
             </div>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#ECFEFF', color: '#06B6D4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#ECFEFF', color: '#06B6D4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Percent size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Progress %</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.progress}%</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Progress %</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{studentKPIs.progress}%</p>
               </div>
             </div>
           </>
         ) : (
           <>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EEF2FF', color: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#EEF2FF', color: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Users size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Trainers</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{users.filter(u => u.role === 'Trainer').length}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Total Trainers</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{users.filter(u => u.role === 'Trainer').length}</p>
               </div>
             </div>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F5F3FF', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#F5F3FF', color: '#8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <UserCheck size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Co Trainers</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{users.filter(u => u.role === 'Co-Trainer').length}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Co Trainers</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{users.filter(u => u.role === 'Co-Trainer').length}</p>
               </div>
             </div>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#ECFEFF', color: '#06B6D4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#ECFEFF', color: '#06B6D4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <BookOpen size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>No. of Batches</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{classes.length}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>No. of Batches</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{classes.length}</p>
               </div>
             </div>
-            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#FFF7ED', color: '#EA580C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '32px', padding: '24px 32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '24px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: '#FFF7ED', color: '#EA580C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Users size={28} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Students</h3>
-                <p style={{ margin: '8px 0 0', fontSize: '2.5rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{users.filter(u => u.role === 'Student').length}</p>
+                <h3 style={{ margin: 0, fontSize: '0.72rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Total Students</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '2.25rem', fontWeight: '900', color: '#111827', lineHeight: 1 }}>{users.filter(u => u.role === 'Student').length}</p>
               </div>
             </div>
           </>
@@ -601,12 +601,12 @@ export default function DashboardOverview({ userRole, userName }) {
                 <tr>
                   {!isStudent && (
                     <>
-                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch</th>
-                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
-                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Time</th>
-                      <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
-                      {showTrainerCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>}
-                      {showCoTrainersCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>}
+                      <th className="sticky-col-1 text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch</th>
+                      <th className="sticky-col-2 text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
+                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Time</th>
+                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
+                      {showTrainerCol && <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>}
+                      {showCoTrainersCol && <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>}
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">No. of Students</th>
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
                       <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
@@ -629,19 +629,97 @@ export default function DashboardOverview({ userRole, userName }) {
                   <tr key={batch.id} className="border-t border-gray-50 text-sm">
                     {!isStudent ? (
                       <>
-                        <td className="py-4 font-bold text-gray-800">{batch.id}</td>
-                        <td className="py-4 text-center font-bold text-gray-600">#{batch.sessionNo}</td>
-                        <td className="py-4 text-gray-500 font-medium">{batch.sessionTime}</td>
-                        <td className="py-4 text-gray-600 font-bold">{batch.lab}</td>
+                        <td className="sticky-col-1 py-4" style={{ whiteSpace: 'nowrap' }}>
+                          <span style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            padding: '6px 12px', 
+                            borderRadius: '12px', 
+                            fontSize: '0.8rem', 
+                            fontWeight: '700', 
+                            background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)', 
+                            color: '#4F46E5',
+                            boxShadow: '0 2px 4px rgba(79, 70, 229, 0.02)'
+                          }}>
+                            {batch.id}
+                          </span>
+                        </td>
+                        <td className="sticky-col-2 py-4 text-center" style={{ whiteSpace: 'nowrap' }}>
+                          <span style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            padding: '4px 10px', 
+                            borderRadius: '8px', 
+                            fontSize: '0.78rem', 
+                            fontWeight: '700', 
+                            backgroundColor: '#F8FAFC', 
+                            color: '#64748B',
+                            border: '1px solid #E2E8F0'
+                          }}>
+                            #{batch.sessionNo}
+                          </span>
+                        </td>
+                        <td className="py-4 text-gray-500 font-medium" style={{ whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
+                            <span style={{ color: '#94A3B8', display: 'flex', alignItems: 'center' }}><Clock size={14} /></span>
+                            <span style={{ color: '#475569', fontWeight: '600' }}>{batch.sessionTime}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 font-bold text-gray-600" style={{ whiteSpace: 'nowrap' }}>
+                          <span style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            gap: '6px',
+                            padding: '6px 12px', 
+                            borderRadius: '10px', 
+                            fontSize: '0.82rem', 
+                            backgroundColor: '#F0FDFA', 
+                            color: '#0D9488',
+                            border: '1px solid #CCFBF1'
+                          }}>
+                            <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#0D9488' }}></span>
+                            {batch.lab}
+                          </span>
+                        </td>
                         {showTrainerCol && (
-                          <td className="py-4 text-gray-800 font-bold">
-                            <div className="flex items-center gap-2">
-                              {batch.trainerData.name}
+                          <td className="py-4 text-gray-800 font-bold" style={{ whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{ 
+                                width: '28px', 
+                                height: '28px', 
+                                borderRadius: '50%', 
+                                backgroundColor: '#EEF2FF', 
+                                color: '#4F46E5', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                fontSize: '0.75rem', 
+                                fontWeight: '700',
+                                border: '1px solid #E0E7FF',
+                                flexShrink: 0
+                              }}>
+                                {batch.trainerData.name.split(' ').pop().charAt(0)}
+                              </div>
+                              <span style={{ color: '#1E293B', fontSize: '0.85rem', fontWeight: '600' }}>{batch.trainerData.name}</span>
                               {batch.transferredFrom && (
                                 <button 
-                                  className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                                  title="Transferred Session"
+                                  style={{ 
+                                    border: 'none', 
+                                    background: 'rgba(245, 158, 11, 0.1)', 
+                                    color: '#D97706', 
+                                    borderRadius: '6px', 
+                                    padding: '4px 6px', 
+                                    cursor: 'pointer', 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s'
+                                  }}
+                                  title={`Transferred Session (From ${batch.transferredFrom})`}
                                   onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
+                                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)'}
+                                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'}
                                 >
                                   <Eye size={12} />
                                 </button>
@@ -650,43 +728,111 @@ export default function DashboardOverview({ userRole, userName }) {
                           </td>
                         )}
                         {showCoTrainersCol && (
-                          <td className="py-4">
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-2">
-                                <div className="flex flex-col">
-                                  {batch.coTrainersData.map((ct, idx) => (
-                                    <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
-                                  ))}
-                                </div>
-                                {batch.transferredCoTrainerFrom && (
-                                  <button 
-                                    className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                                    title="Transferred Co-Trainer"
-                                    onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
-                                  >
-                                    <Eye size={12} />
-                                  </button>
-                                )}
+                          <td className="py-4" style={{ whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                {batch.coTrainersData.map((ct, idx) => (
+                                  <span key={idx} style={{ color: '#475569', fontSize: '0.8rem', fontWeight: '600' }}>{ct.name}</span>
+                                ))}
                               </div>
+                              {batch.transferredCoTrainerFrom && (
+                                <button 
+                                  style={{ 
+                                    border: 'none', 
+                                    background: 'rgba(245, 158, 11, 0.1)', 
+                                    color: '#D97706', 
+                                    borderRadius: '6px', 
+                                    padding: '4px 6px', 
+                                    cursor: 'pointer', 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s'
+                                  }}
+                                  title={`Transferred Co-Trainer (From ${batch.transferredCoTrainerFrom})`}
+                                  onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)'}
+                                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'}
+                                >
+                                  <Eye size={12} />
+                                </button>
+                              )}
                             </div>
                           </td>
                         )}
-                        <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
-                        <td className="py-4 text-center font-bold text-emerald-600">{batch.attendancePct}%</td>
-                        <td className="py-4 text-center">
-                          <div className="flex items-center justify-center gap-3">
-                            <span className="text-red-500 font-bold">{batch.absentCount}</span>
-                            <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 border border-gray-100 shadow-sm" onClick={() => setSelectedBatchForAbsents(batch)}>
-                              <Eye size={14} />
-                            </button>
+                        <td className="py-4 text-center font-bold" style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', color: '#334155' }}>{batch.studentCount}</td>
+                        <td className="py-4 text-center" style={{ whiteSpace: 'nowrap' }}>
+                          <span style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            width: '72px',
+                            padding: '6px 12px', 
+                            borderRadius: '12px', 
+                            fontSize: '0.82rem', 
+                            fontWeight: '700', 
+                            backgroundColor: 'rgba(16, 185, 129, 0.08)', 
+                            color: '#10B981',
+                            border: '1px solid rgba(16, 185, 129, 0.12)'
+                          }}>
+                            {batch.attendancePct}%
+                          </span>
+                        </td>
+                        <td className="py-4 text-center" style={{ whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                            <span style={{ 
+                              display: 'inline-flex', 
+                              alignItems: 'center', 
+                              gap: '6px',
+                              padding: '6px 12px', 
+                              borderRadius: '12px', 
+                              fontSize: '0.82rem', 
+                              fontWeight: '700', 
+                              backgroundColor: batch.absentCount > 0 ? 'rgba(239, 68, 68, 0.08)' : '#F1F5F9', 
+                              color: batch.absentCount > 0 ? '#EF4444' : '#64748B',
+                              border: batch.absentCount > 0 ? '1px solid rgba(239, 68, 68, 0.12)' : '1px solid #E2E8F0'
+                            }}>
+                              <span>{batch.absentCount} Absent</span>
+                              <button 
+                                style={{ 
+                                  border: 'none', 
+                                  background: 'none', 
+                                  color: batch.absentCount > 0 ? '#EF4444' : '#64748B', 
+                                  padding: '0', 
+                                  cursor: 'pointer', 
+                                  display: 'inline-flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center',
+                                  marginLeft: '4px'
+                                }} 
+                                onClick={() => setSelectedBatchForAbsents(batch)}
+                                title="View Absents"
+                              >
+                                <Eye size={14} />
+                              </button>
+                            </span>
                           </div>
                         </td>
-                        <td className="py-4">
-                          <div className="flex items-center justify-center gap-2">
-                            <button className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Comments" onClick={() => setSelectedBatchForComments(batch)}>
-                              <MessageSquare size={16} />
-                            </button>
-                            <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Activity Reports" onClick={() => setSelectedBatchForActivity(batch)}>
+                        <td className="py-4" style={{ whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <button 
+                              style={{ 
+                                border: 'none', 
+                                background: 'rgba(79, 70, 229, 0.08)', 
+                                color: '#4F46E5', 
+                                borderRadius: '8px', 
+                                padding: '8px', 
+                                cursor: 'pointer', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                transition: 'all 0.2s'
+                              }} 
+                              title="Activity Reports" 
+                              onClick={() => setSelectedBatchForActivity(batch)}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(79, 70, 229, 0.16)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(79, 70, 229, 0.08)'}
+                            >
                               <ClipboardList size={16} />
                             </button>
                           </div>
@@ -694,28 +840,41 @@ export default function DashboardOverview({ userRole, userName }) {
                       </>
                     ) : (
                       <>
-                        <td className="py-4 text-gray-500 font-medium">{batch.sessionTime}</td>
-                        <td className="py-4 text-gray-600 font-bold">{batch.lab}</td>
-                        <td className="py-4 text-gray-800 font-bold">
-                          <div className="flex items-center gap-2">
-                            {batch.trainerData.name}
+                        <td className="py-4 text-gray-500 font-medium" style={{ whiteSpace: 'nowrap' }}>{batch.sessionTime}</td>
+                        <td className="py-4 text-gray-600 font-bold" style={{ whiteSpace: 'nowrap' }}>{batch.lab}</td>
+                        <td className="py-4 text-gray-800 font-bold" style={{ whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>{batch.trainerData.name}</span>
                             {batch.transferredFrom && (
                               <button 
-                                className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                style={{ 
+                                  border: 'none', 
+                                  background: 'rgba(245, 158, 11, 0.1)', 
+                                  color: '#D97706', 
+                                  borderRadius: '6px', 
+                                  padding: '4px 6px', 
+                                  cursor: 'pointer', 
+                                  display: 'inline-flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s'
+                                }}
                                 title="Transferred Session"
                                 onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'}
                               >
-                                <Eye size={12} />
+                                <Eye size={13} />
                               </button>
                             )}
                           </div>
                         </td>
-                        <td className="py-4 text-center">
+                        <td className="py-4 text-center" style={{ whiteSpace: 'nowrap' }}>
                           <span className={`badge ${studentData.detailedReport?.sessions?.find(s => s.date === batch.actualDate)?.attendance === 'Present' ? 'badge-green' : 'bg-red-50 text-red-600'}`}>
                             {studentData.detailedReport?.sessions?.find(s => s.date === batch.actualDate)?.attendance || 'Upcoming'}
                           </span>
                         </td>
-                        <td className="py-4 text-center font-bold text-indigo-600">--</td>
+                        <td className="py-4 text-center font-bold text-indigo-600" style={{ whiteSpace: 'nowrap' }}>--</td>
                       </>
                     )}
                   </tr>
@@ -735,31 +894,110 @@ export default function DashboardOverview({ userRole, userName }) {
             <table className="w-full">
               <thead>
                 <tr>
-                  <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Time</th>
-                  <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
-                  {showTrainerCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>}
-                  {!isStudent && (
-                    <>
-                      <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch</th>
-                      {showCoTrainersCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>}
-                    </>
-                  )}
+                  <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch</th>
+                  <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
+                  <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Time</th>
+                  <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
+                  {showTrainerCol && <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>}
+                  {showCoTrainersCol && <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>}
+                  <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">No. of Students</th>
                 </tr>
               </thead>
               <tbody>
                 {tomorrowBatches.map(batch => (
                   <tr key={batch.id} className="border-t border-gray-50 text-sm">
-                    <td className="py-4 text-gray-500 font-medium">{batch.sessionTime}</td>
-                    <td className="py-4 text-gray-600 font-bold">{batch.lab}</td>
+                    <td className="py-4" style={{ whiteSpace: 'nowrap' }}>
+                      <span style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        padding: '6px 12px', 
+                        borderRadius: '12px', 
+                        fontSize: '0.8rem', 
+                        fontWeight: '700', 
+                        background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)', 
+                        color: '#4F46E5',
+                        boxShadow: '0 2px 4px rgba(79, 70, 229, 0.02)'
+                      }}>
+                        {batch.id}
+                      </span>
+                    </td>
+                    <td className="py-4 text-center" style={{ whiteSpace: 'nowrap' }}>
+                      <span style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        padding: '4px 10px', 
+                        borderRadius: '8px', 
+                        fontSize: '0.78rem', 
+                        fontWeight: '700', 
+                        backgroundColor: '#F8FAFC', 
+                        color: '#64748B',
+                        border: '1px solid #E2E8F0'
+                      }}>
+                        #{batch.sessionNo}
+                      </span>
+                    </td>
+                    <td className="py-4 text-gray-500 font-medium" style={{ whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.85rem' }}>
+                        <span style={{ color: '#94A3B8', display: 'flex', alignItems: 'center' }}><Clock size={14} /></span>
+                        <span style={{ color: '#475569', fontWeight: '600' }}>{batch.sessionTime}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 font-bold text-gray-600" style={{ whiteSpace: 'nowrap' }}>
+                      <span style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '6px 12px', 
+                        borderRadius: '10px', 
+                        fontSize: '0.82rem', 
+                        backgroundColor: '#F0FDFA', 
+                        color: '#0D9488',
+                        border: '1px solid #CCFBF1'
+                      }}>
+                        <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#0D9488' }}></span>
+                        {batch.lab}
+                      </span>
+                    </td>
                     {showTrainerCol && (
-                      <td className="py-4 text-gray-800 font-bold">
-                        <div className="flex items-center gap-2">
-                          {batch.trainerData.name}
+                      <td className="py-4 text-gray-800 font-bold" style={{ whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                          <div style={{ 
+                            width: '28px', 
+                            height: '28px', 
+                            borderRadius: '50%', 
+                            backgroundColor: '#EEF2FF', 
+                            color: '#4F46E5', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            fontSize: '0.75rem', 
+                            fontWeight: '700',
+                            border: '1px solid #E0E7FF',
+                            flexShrink: 0
+                          }}>
+                            {batch.trainerData.name.split(' ').pop().charAt(0)}
+                          </div>
+                          <span style={{ color: '#1E293B', fontSize: '0.85rem', fontWeight: '600' }}>{batch.trainerData.name}</span>
                           {batch.transferredFrom && (
                             <button 
-                              className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                              title="Transferred Session"
+                              style={{ 
+                                border: 'none', 
+                                background: 'rgba(245, 158, 11, 0.1)', 
+                                color: '#D97706', 
+                                borderRadius: '6px', 
+                                padding: '4px 6px', 
+                                cursor: 'pointer', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                transition: 'all 0.2s'
+                              }}
+                              title={`Transferred Session (From ${batch.transferredFrom})`}
                               onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'}
                             >
                               <Eye size={12} />
                             </button>
@@ -767,33 +1005,40 @@ export default function DashboardOverview({ userRole, userName }) {
                         </div>
                       </td>
                     )}
-                    {!isStudent && (
-                      <>
-                        <td className="py-4 text-center font-bold text-gray-800">{batch.id}</td>
-                        {showCoTrainersCol && (
-                          <td className="py-4">
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-2">
-                                <div className="flex flex-col">
-                                  {batch.coTrainersData.map((ct, idx) => (
-                                    <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
-                                  ))}
-                                </div>
-                                {batch.transferredCoTrainerFrom && (
-                                  <button 
-                                    className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                                    title="Transferred Co-Trainer"
-                                    onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
-                                  >
-                                    <Eye size={12} />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                        )}
-                      </>
+                    {showCoTrainersCol && (
+                      <td className="py-4" style={{ whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            {batch.coTrainersData.map((ct, idx) => (
+                              <span key={idx} style={{ color: '#475569', fontSize: '0.8rem', fontWeight: '600' }}>{ct.name}</span>
+                            ))}
+                          </div>
+                          {batch.transferredCoTrainerFrom && (
+                            <button 
+                              style={{ 
+                                border: 'none', 
+                                background: 'rgba(245, 158, 11, 0.1)', 
+                                color: '#D97706', 
+                                borderRadius: '6px', 
+                                padding: '4px 6px', 
+                                cursor: 'pointer', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                transition: 'all 0.2s'
+                              }}
+                              title={`Transferred Co-Trainer (From ${batch.transferredCoTrainerFrom})`}
+                              onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'}
+                            >
+                              <Eye size={12} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
                     )}
+                    <td className="py-4 text-center font-bold" style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', color: '#334155' }}>{batch.studentCount}</td>
                   </tr>
                 ))}
               </tbody>
@@ -822,24 +1067,37 @@ export default function DashboardOverview({ userRole, userName }) {
                 <tbody>
                   {studentData.detailedReport?.sessions?.map((sess, idx) => (
                     <tr key={idx} className="border-t border-gray-50 text-sm">
-                      <td className="py-4 text-gray-600 font-bold">#{idx + 1}</td>
-                      <td className="py-4 text-gray-500 font-medium">{sess.date} | 09:00 - 11:00</td>
-                      <td className="py-4 text-gray-600 font-bold">Advanced Computing Lab</td>
-                      <td className="py-4 text-gray-800 font-bold">
-                        <div className="flex items-center gap-2">
-                          {sess.trainer || 'Dr. Sarah Lee'}
+                      <td className="py-4 text-gray-600 font-bold" style={{ whiteSpace: 'nowrap' }}>#{idx + 1}</td>
+                      <td className="py-4 text-gray-500 font-medium" style={{ whiteSpace: 'nowrap' }}>{sess.date} | 09:00 - 11:00</td>
+                      <td className="py-4 text-gray-600 font-bold" style={{ whiteSpace: 'nowrap' }}>Advanced Computing Lab</td>
+                      <td className="py-4 text-gray-800 font-bold" style={{ whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{sess.trainer || 'Dr. Sarah Lee'}</span>
                           {sess.transferredFrom && (
                             <button 
-                              className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                              style={{ 
+                                border: 'none', 
+                                background: 'rgba(245, 158, 11, 0.1)', 
+                                color: '#D97706', 
+                                borderRadius: '6px', 
+                                padding: '4px 6px', 
+                                cursor: 'pointer', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                transition: 'all 0.2s'
+                              }}
                               title="Transferred Session"
                               onClick={() => setTransferInfo({ type: 'Trainer', from: sess.transferredFrom, to: sess.trainer || 'Dr. Sarah Lee' })}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'}
                             >
-                              <Eye size={12} />
+                              <Eye size={13} />
                             </button>
                           )}
                         </div>
                       </td>
-                      <td className="py-4 text-center">
+                      <td className="py-4 text-center" style={{ whiteSpace: 'nowrap' }}>
                         <span className={`badge ${sess.attendance === 'Present' ? 'badge-green' : 'bg-red-50 text-red-600'}`}>
                           {sess.attendance}
                         </span>
@@ -926,19 +1184,19 @@ export default function DashboardOverview({ userRole, userName }) {
                 </div>
               </div>
               <p className="text-xs text-gray-500 font-medium bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                {completedRange.from && completedRange.to ? `Showing ${completedRange.from} to ${completedRange.to}` : "Showing last week's sessions"}
+                {completedRange.from && completedRange.to ? `Showing ${completedRange.from} to ${completedRange.to}` : "Showing last week's Completed Session"}
               </p>
             </div>
             <div className="table-container">
               <table className="w-full">
                 <thead>
                   <tr>
-                    <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch Name</th>
-                    <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
-                    <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
-                    <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
-                    {showTrainerCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>}
-                    {showCoTrainersCol && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>}
+                    <th className="sticky-col-1 text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch Name</th>
+                    <th className="sticky-col-2 text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session No.</th>
+                    <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Session Time</th>
+                    <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Lab</th>
+                    {showTrainerCol && <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer</th>}
+                    {showCoTrainersCol && <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Co Trainers</th>}
                     <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">No. of Students</th>
                     <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Attendance %</th>
                     <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Absent</th>
@@ -948,77 +1206,140 @@ export default function DashboardOverview({ userRole, userName }) {
                 <tbody>
                   {completedBatches.length > 0 ? completedBatches.map((batch, idx) => (
                     <tr key={`${batch.id}-${idx}`} className="border-t border-gray-50 text-sm">
-                      <td className="py-4">
+                      <td className="sticky-col-1 py-4" style={{ whiteSpace: 'nowrap' }}>
                         <div className="flex flex-col">
                           <span className="font-bold text-gray-800">{batch.id}</span>
                           {batch.actualDate && <span className="text-[10px] text-gray-400 font-medium">{batch.actualDate}</span>}
                         </div>
                       </td>
-                      <td className="py-4 text-center font-bold text-gray-600">#{batch.sessionNo}</td>
-                      <td className="py-4 text-gray-500">{batch.sessionTime}</td>
-                      <td className="py-4 text-gray-600 font-medium">{batch.lab}</td>
+                      <td className="sticky-col-2 py-4 text-center font-bold text-gray-600" style={{ whiteSpace: 'nowrap' }}>#{batch.sessionNo}</td>
+                      <td className="py-4 text-gray-500" style={{ whiteSpace: 'nowrap' }}>{batch.sessionTime}</td>
+                      <td className="py-4 text-gray-600 font-medium" style={{ whiteSpace: 'nowrap' }}>{batch.lab}</td>
                       {showTrainerCol && (
-                        <td className="py-4 text-gray-800 font-bold">
-                          <div className="flex items-center gap-2">
-                            {batch.trainerData.name}
+                        <td className="py-4 text-gray-800 font-bold" style={{ whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>{batch.trainerData.name}</span>
                             {batch.transferredFrom && (
                               <button 
-                                className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                                style={{ 
+                                  border: 'none', 
+                                  background: 'rgba(245, 158, 11, 0.1)', 
+                                  color: '#D97706', 
+                                  borderRadius: '6px', 
+                                  padding: '4px 6px', 
+                                  cursor: 'pointer', 
+                                  display: 'inline-flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s'
+                                }}
                                 title="Transferred Session"
                                 onClick={() => setTransferInfo({ type: 'Trainer', from: batch.transferredFrom, to: batch.trainerData.name })}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'}
                               >
-                                <Eye size={12} />
+                                <Eye size={13} />
                               </button>
                             )}
                           </div>
                         </td>
                       )}
                       {showCoTrainersCol && (
-                        <td className="py-4">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                              <div className="flex flex-col">
-                                {batch.coTrainersData.map((ct, idx) => (
-                                  <span key={idx} className="text-gray-600 text-xs">{ct.name}</span>
-                                ))}
-                              </div>
-                              {batch.transferredCoTrainerFrom && (
-                                <button 
-                                  className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                                  title="Transferred Co-Trainer"
-                                  onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
-                                >
-                                  <Eye size={12} />
-                                </button>
-                              )}
+                        <td className="py-4" style={{ whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              {batch.coTrainersData.map((ct, idx) => (
+                                <span key={idx} className="text-gray-600 text-xs font-bold">{ct.name}</span>
+                              ))}
                             </div>
+                            {batch.transferredCoTrainerFrom && (
+                              <button 
+                                style={{ 
+                                  border: 'none', 
+                                  background: 'rgba(245, 158, 11, 0.1)', 
+                                  color: '#D97706', 
+                                  borderRadius: '6px', 
+                                  padding: '4px 6px', 
+                                  cursor: 'pointer', 
+                                  display: 'inline-flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center',
+                                  transition: 'all 0.2s'
+                                }}
+                                title="Transferred Co-Trainer"
+                                onClick={() => setTransferInfo({ type: 'Co-Trainer', from: batch.transferredCoTrainerFrom, to: batch.coTrainersData.map(ct => ct.name).join(', ') })}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(245, 158, 11, 0.1)'}
+                              >
+                                <Eye size={13} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       )}
-                      <td className="py-4 text-center font-medium text-gray-800">{batch.studentCount}</td>
-                      <td className="py-4">
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden" style={{ width: '60px' }}>
-                            <div className={`h-full ${Number(batch.attendancePct) > 80 ? 'bg-green-500' : 'bg-orange-500'}`} style={{ width: `${batch.attendancePct}%` }} />
-                          </div>
-                          <span className="font-bold text-gray-700 text-xs w-8">{batch.attendancePct}%</span>
-                        </div>
+                      <td className="py-4 text-center font-medium text-gray-800" style={{ whiteSpace: 'nowrap' }}>{batch.studentCount}</td>
+                      <td className="py-4 text-center" style={{ whiteSpace: 'nowrap' }}>
+                        <span style={{ 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          width: '72px',
+                          padding: '6px 12px', 
+                          borderRadius: '12px', 
+                          fontSize: '0.82rem', 
+                          fontWeight: '700', 
+                          backgroundColor: 'rgba(16, 185, 129, 0.08)', 
+                          color: '#10B981',
+                          border: '1px solid rgba(16, 185, 129, 0.12)'
+                        }}>
+                          {batch.attendancePct}%
+                        </span>
                       </td>
-                      <td className="py-4 text-center">
-                        <div className="flex items-center justify-center gap-3">
-                          <span className="text-red-500 font-bold">{batch.absentCount}</span>
-                          <button className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 border border-gray-100 shadow-sm" onClick={() => setSelectedBatchForAbsents(batch)}>
+                      <td className="py-4 text-center" style={{ whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                          <span className="text-red-500 font-bold" style={{ fontSize: '0.95rem' }}>{batch.absentCount}</span>
+                          <button 
+                            style={{ 
+                              border: 'none', 
+                              background: 'rgba(239, 68, 68, 0.08)', 
+                              color: '#EF4444', 
+                              borderRadius: '8px', 
+                              padding: '6px', 
+                              cursor: 'pointer', 
+                              display: 'inline-flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              transition: 'all 0.2s'
+                            }} 
+                            onClick={() => setSelectedBatchForAbsents(batch)}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.16)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)'}
+                          >
                             <Eye size={14} />
                           </button>
                         </div>
                       </td>
                       {!isTrainer && (
-                        <td className="py-4">
-                          <div className="flex items-center justify-center gap-2">
-                            <button className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Comments" onClick={() => setSelectedBatchForComments(batch)}>
-                              <MessageSquare size={16} />
-                            </button>
-                            <button className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors" title="Activity Reports" onClick={() => setSelectedBatchForActivity(batch)}>
+                        <td className="py-4" style={{ whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <button 
+                              style={{ 
+                                border: 'none', 
+                                background: 'rgba(79, 70, 229, 0.08)', 
+                                color: '#4F46E5', 
+                                borderRadius: '8px', 
+                                padding: '8px', 
+                                cursor: 'pointer', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                transition: 'all 0.2s'
+                              }} 
+                              title="Activity Reports" 
+                              onClick={() => setSelectedBatchForActivity(batch)}
+                              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(79, 70, 229, 0.16)'}
+                              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(79, 70, 229, 0.08)'}
+                            >
                               <ClipboardList size={16} />
                             </button>
                           </div>
@@ -1039,77 +1360,105 @@ export default function DashboardOverview({ userRole, userName }) {
 
 
       {/* Absent Students Modal */}
-      {selectedBatchForAbsents && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '100%', maxWidth: '450px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9' }}>
-            <div className="flex justify-between items-center mb-6">
-              <div><h2 className="text-2xl font-bold text-gray-800 m-0">Absent Students</h2><p style={{ margin: 0, fontSize: '0.875rem', color: '#6B7280' }}>Batch: {selectedBatchForAbsents.id}</p></div>
-              <button onClick={() => setSelectedBatchForAbsents(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
-            </div>
-            <div className="flex flex-col gap-4" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              {selectedBatchForAbsents.absentStudents.map((student) => (
-                <div key={student.id} className="flex items-center justify-between p-4 bg-red-50 rounded-2xl border border-red-100">
-                  <div className="flex items-center gap-4">
-                    <img src={student.photo} alt={student.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid white' }} />
-                    <div><p className="m-0 font-bold text-red-800">{student.name}</p><p className="m-0 text-xs text-red-400">{student.email}</p></div>
-                  </div>
-                  <div className="text-right">
-                    <p className="m-0 text-[10px] font-bold text-red-300 uppercase">Attendance</p>
-                    <p className="m-0 text-xl font-black text-red-600">{student.attendance}%</p>
+      {selectedBatchForAbsents && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)', padding: '20px' }}>
+          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 30px 60px -12px rgba(15, 23, 42, 0.25)', width: '100%', maxWidth: '500px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: '32px', border: '1px solid rgba(255, 255, 255, 0.2)', overflow: 'hidden' }}>
+            <div style={{ padding: '40px 40px 30px 40px', background: 'linear-gradient(135deg, #F43F5E 0%, #BE123C 100%)', position: 'relative', flexShrink: 0 }}>
+              <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+                <button onClick={() => setSelectedBatchForAbsents(null)} style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', border: 'none', padding: '8px', borderRadius: '12px', color: 'white', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}><X size={20} /></button>
+              </div>
+              <div className="flex items-center gap-4">
+                <div style={{ padding: '12px', backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '16px', backdropFilter: 'blur(10px)', color: 'white' }}>
+                  <Users size={32} />
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 900, color: 'white', letterSpacing: '-0.02em' }}>Absent Students</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span style={{ padding: '4px 10px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>Batch {selectedBatchForAbsents.id}</span>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-            <button className="btn btn-primary w-full mt-8 py-4" onClick={() => setSelectedBatchForAbsents(null)} style={{ justifyContent: 'center' }}>Close</button>
+            <div style={{ overflowY: 'auto', padding: '40px', flex: 1, backgroundColor: '#F8FAFC' }}>
+              <div className="flex flex-col gap-4">
+                {selectedBatchForAbsents.absentStudents.map((student) => (
+                  <div key={student.id} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm transition-shadow hover:shadow-md">
+                    <div className="flex items-center gap-4">
+                      <img src={student.photo} alt={student.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #F1F5F9' }} />
+                      <div><p className="m-0 font-bold text-gray-800">{student.name}</p><p className="m-0 text-xs text-gray-500">{student.email}</p></div>
+                    </div>
+                    <div className="text-right">
+                      <p className="m-0 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Attendance</p>
+                      <p className="m-0 text-xl font-black text-rose-600">{student.attendance}%</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button 
+                style={{ width: '100%', marginTop: '32px', padding: '16px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', color: 'white', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(15, 23, 42, 0.3)', transition: 'transform 0.2s' }}
+                onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'none'}
+                onClick={() => setSelectedBatchForAbsents(null)}>Close Roster</button>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Comments Modal */}
-      {selectedBatchForComments && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '100%', maxWidth: '500px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9' }}>
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800 m-0">Staff Comments</h2>
-                <p style={{ margin: 0, fontSize: '0.875rem', color: '#6B7280' }}>Batch: {selectedBatchForComments.id}</p>
+      {selectedBatchForComments && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)', padding: '20px' }}>
+          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 30px 60px -12px rgba(15, 23, 42, 0.25)', width: '100%', maxWidth: '600px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: '32px', border: '1px solid rgba(255, 255, 255, 0.2)', overflow: 'hidden' }}>
+            <div style={{ padding: '40px 40px 30px 40px', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', position: 'relative', flexShrink: 0 }}>
+              <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+                <button onClick={() => setSelectedBatchForComments(null)} style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', border: 'none', padding: '8px', borderRadius: '12px', color: 'white', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}><X size={20} /></button>
               </div>
-              <button onClick={() => setSelectedBatchForComments(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
-            </div>
-
-            <div className="flex flex-col gap-6" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              {/* Co-Trainer Comments First */}
-              <div>
-                <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider mb-3">{isTrainer ? 'Trainer Feedback' : 'Co-Trainer Feedback'}</h3>
-                {selectedBatchForComments.comments.coTrainer.length > 0 ? (
-                  <ul className="space-y-2">
-                    {selectedBatchForComments.comments.coTrainer.map((c, i) => (
-                      <li key={i} className="p-3 bg-indigo-50 rounded-xl text-sm text-indigo-900 border border-indigo-100">{c}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-400 italic">No co-trainer feedback found.</p>
-                )}
-              </div>
-
-              {/* Trainer Comments Second */}
-              <div>
-                <h3 className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-3">Trainer Feedback</h3>
-                {selectedBatchForComments.comments.trainer.length > 0 ? (
-                  <ul className="space-y-2">
-                    {selectedBatchForComments.comments.trainer.map((c, i) => (
-                      <li key={i} className="p-3 bg-blue-50 rounded-xl text-sm text-blue-900 border border-blue-100">{c}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-400 italic">No trainer feedback found.</p>
-                )}
+              <div className="flex items-center gap-4">
+                <div style={{ padding: '12px', backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '16px', backdropFilter: 'blur(10px)', color: 'white' }}>
+                  <MessageSquare size={32} />
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 900, color: 'white', letterSpacing: '-0.02em' }}>Staff Comments</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span style={{ padding: '4px 10px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>Batch {selectedBatchForComments.id}</span>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <button className="btn btn-primary w-full mt-8 py-4" onClick={() => setSelectedBatchForComments(null)} style={{ justifyContent: 'center' }}>Close</button>
+            <div style={{ overflowY: 'auto', padding: '40px', flex: 1, backgroundColor: '#F8FAFC' }}>
+              <div className="flex flex-col gap-8">
+                <div>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 800, color: '#6D28D9', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>{isTrainer ? 'Trainer Feedback' : 'Co-Trainer Feedback'}</h3>
+                  {selectedBatchForComments.comments.coTrainer.length > 0 ? (
+                    <ul className="space-y-3">
+                      {selectedBatchForComments.comments.coTrainer.map((c, i) => (
+                        <li key={i} style={{ padding: '16px', backgroundColor: 'white', borderRadius: '16px', color: '#4C1D95', border: '1px solid #EDE9FE', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>{c}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p style={{ color: '#94A3B8', fontStyle: 'italic', fontSize: '0.875rem' }}>No co-trainer feedback found.</p>
+                  )}
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 800, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>Trainer Feedback</h3>
+                  {selectedBatchForComments.comments.trainer.length > 0 ? (
+                    <ul className="space-y-3">
+                      {selectedBatchForComments.comments.trainer.map((c, i) => (
+                        <li key={i} style={{ padding: '16px', backgroundColor: 'white', borderRadius: '16px', color: '#1E3A8A', border: '1px solid #DBEAFE', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>{c}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p style={{ color: '#94A3B8', fontStyle: 'italic', fontSize: '0.875rem' }}>No trainer feedback found.</p>
+                  )}
+                </div>
+              </div>
+              <button 
+                style={{ width: '100%', marginTop: '32px', padding: '16px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', color: 'white', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(15, 23, 42, 0.3)', transition: 'transform 0.2s' }}
+                onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'none'}
+                onClick={() => setSelectedBatchForComments(null)}>Close Reviews</button>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Activity Reports Modal */}
@@ -1117,170 +1466,199 @@ export default function DashboardOverview({ userRole, userName }) {
         const batchStudents = users.filter(u => u.batch === selectedBatchForActivity.id && u.role === 'Student');
         const allActivities = Array.from(new Set(batchStudents.flatMap(s => s.detailedReport?.performance?.map(p => p.activity) || [])));
 
-        return (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-            <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '95%', maxWidth: '1000px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9' }}>
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 m-0">Batch Activity Reports</h2>
-                  <p style={{ margin: 0, fontSize: '0.875rem', color: '#6B7280' }}>Batch: {selectedBatchForActivity.id} • Performance Matrix</p>
+        return createPortal(
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)', padding: '20px' }}>
+            <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 30px 60px -12px rgba(15, 23, 42, 0.25)', width: '100%', maxWidth: '1000px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: '32px', border: '1px solid rgba(255, 255, 255, 0.2)', overflow: 'hidden' }}>
+              <div style={{ padding: '40px 40px 30px 40px', background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', position: 'relative', flexShrink: 0 }}>
+                <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+                  <button onClick={() => setSelectedBatchForActivity(null)} style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', border: 'none', padding: '8px', borderRadius: '12px', color: 'white', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}><X size={20} /></button>
                 </div>
-                <button onClick={() => setSelectedBatchForActivity(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
+                <div className="flex items-center gap-4">
+                  <div style={{ padding: '12px', backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '16px', backdropFilter: 'blur(10px)', color: 'white' }}>
+                    <ClipboardList size={32} />
+                  </div>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 900, color: 'white', letterSpacing: '-0.02em' }}>Batch Activity Reports</h2>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span style={{ padding: '4px 10px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>Batch {selectedBatchForActivity.id}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem' }}>Performance Matrix</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-
-              <div className="table-container" style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                <table className="w-full">
-                  <thead>
-                    <tr>
-                      <th className="text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest pb-3">Name</th>
-                      <th className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest pb-3">Average Mark</th>
-                      {allActivities.map((act, i) => (
-                        <th key={i} className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest pb-3 px-4">{act}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {batchStudents.map((student, sIdx) => {
-                      const performances = student.detailedReport?.performance || [];
-                      const scores = performances.map(p => parseInt(p.score.split('/')[0]) || 0);
-                      const avgMark = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '0.0';
-
-                      return (
-                        <tr key={sIdx} className="border-t border-gray-50 text-xs">
-                          <td className="py-3 font-bold text-gray-800">{student.name}</td>
-                          <td className="py-3 text-center">
-                            <span className="font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">{avgMark}%</span>
-                          </td>
-                          {allActivities.map((act, aIdx) => {
-                            const perf = performances.find(p => p.activity === act);
-                            return (
-                              <td key={aIdx} className="py-3 text-center px-4">
-                                {perf ? (
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-gray-800">{perf.score}</span>
-                                    <span className="text-[10px] text-gray-400">({perf.timeTaken})</span>
-                                  </div>
-                                ) : (
-                                  <span className="text-gray-300">--</span>
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div style={{ overflowY: 'auto', padding: '40px', flex: 1, backgroundColor: '#F8FAFC' }}>
+                <div style={{ backgroundColor: 'white', borderRadius: '24px', border: '1px solid #F1F5F9', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #F1F5F9' }}>
+                      <tr>
+                        <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Name</th>
+                        <th style={{ padding: '16px', textAlign: 'center', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Average Mark</th>
+                        {allActivities.map((act, i) => (
+                          <th key={i} style={{ padding: '16px', textAlign: 'center', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{act}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {batchStudents.map((student, sIdx) => {
+                        const performances = student.detailedReport?.performance || [];
+                        const scores = performances.map(p => parseInt(p.score.split('/')[0]) || 0);
+                        const avgMark = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '0.0';
+                        return (
+                          <tr key={sIdx} style={{ borderBottom: sIdx !== batchStudents.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
+                            <td style={{ padding: '16px', fontSize: '0.925rem', color: '#1E293B', fontWeight: 700 }}>{student.name}</td>
+                            <td style={{ padding: '16px', textAlign: 'center' }}>
+                              <span style={{ padding: '6px 12px', backgroundColor: '#EEF2FF', color: '#4F46E5', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 800 }}>{avgMark}%</span>
+                            </td>
+                            {allActivities.map((act, aIdx) => {
+                              const perf = performances.find(p => p.activity === act);
+                              return (
+                                <td key={aIdx} style={{ padding: '16px', textAlign: 'center' }}>
+                                  {perf ? (
+                                    <div className="flex flex-col">
+                                      <span style={{ fontWeight: 700, color: '#1E293B' }}>{perf.score}</span>
+                                      <span style={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: 600 }}>({perf.timeTaken})</span>
+                                    </div>
+                                  ) : (
+                                    <span style={{ color: '#CBD5E1', fontWeight: 800 }}>--</span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="flex justify-end mt-8">
+                  <button 
+                    style={{ padding: '16px 32px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', color: 'white', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(15, 23, 42, 0.3)', transition: 'transform 0.2s' }}
+                    onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'none'}
+                    onClick={() => setSelectedBatchForActivity(null)}>Close Matrix</button>
+                </div>
               </div>
-
-              <button className="btn btn-primary w-full mt-8 py-4" onClick={() => setSelectedBatchForActivity(null)} style={{ justifyContent: 'center' }}>Close Reports</button>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
 
       {/* Session Evaluation Modal */}
-      {selectedBatchForEvaluation && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '100%', maxWidth: '500px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9' }}>
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800 m-0">Evaluate Session</h2>
-                <p style={{ margin: 0, fontSize: '0.875rem', color: '#6B7280' }}>Batch: {selectedBatchForEvaluation.id} • Session {selectedBatchForEvaluation.sessionNo}</p>
+      {selectedBatchForEvaluation && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)', padding: '20px' }}>
+          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 30px 60px -12px rgba(15, 23, 42, 0.25)', width: '100%', maxWidth: '600px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: '32px', border: '1px solid rgba(255, 255, 255, 0.2)', overflow: 'hidden' }}>
+            <div style={{ padding: '40px 40px 30px 40px', background: 'linear-gradient(135deg, #F59E0B 0%, #B45309 100%)', position: 'relative', flexShrink: 0 }}>
+              <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+                <button onClick={() => setSelectedBatchForEvaluation(null)} style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', border: 'none', padding: '8px', borderRadius: '12px', color: 'white', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}><X size={20} /></button>
               </div>
-              <button onClick={() => setSelectedBatchForEvaluation(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
+              <div className="flex items-center gap-4">
+                <div style={{ padding: '12px', backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '16px', backdropFilter: 'blur(10px)', color: 'white' }}>
+                  <Star size={32} />
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 900, color: 'white', letterSpacing: '-0.02em' }}>Evaluate Session</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span style={{ padding: '4px 10px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>Batch {selectedBatchForEvaluation.id}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.875rem' }}>Session {selectedBatchForEvaluation.sessionNo}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            <div className="flex flex-col gap-6">
-              {/* Rating Section */}
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">Performance Rating</label>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      onClick={() => setEvaluationRating(star)}
-                      className="p-1 transition-transform hover:scale-110"
-                    >
-                      <Star
-                        size={32}
-                        className={star <= evaluationRating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}
-                      />
-                    </button>
-                  ))}
+            <div style={{ overflowY: 'auto', padding: '40px', flex: 1, backgroundColor: '#F8FAFC' }}>
+              <div className="flex flex-col gap-8">
+                <div>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'block' }}>Performance Rating</label>
+                  <div className="flex gap-4">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setEvaluationRating(star)}
+                        style={{ background: 'white', border: '1px solid #F1F5F9', padding: '16px', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}
+                        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                      >
+                        <Star size={36} style={{ fill: star <= evaluationRating ? '#F59E0B' : 'transparent', color: star <= evaluationRating ? '#F59E0B' : '#CBD5E1', transition: 'all 0.2s' }} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'block' }}>Administrative Feedback</label>
+                  <textarea
+                    rows={4}
+                    style={{ width: '100%', padding: '20px', backgroundColor: 'white', border: '2px solid #E2E8F0', borderRadius: '20px', outline: 'none', color: '#1E293B', fontSize: '1rem', transition: 'all 0.2s', resize: 'vertical' }}
+                    placeholder="Enter detailed feedback about the trainer, student engagement, or facility quality..."
+                    value={evaluationFeedback}
+                    onChange={(e) => setEvaluationFeedback(e.target.value)}
+                    onFocus={(e) => { e.target.style.borderColor = '#F59E0B'; e.target.style.boxShadow = '0 0 0 4px rgba(245, 158, 11, 0.1)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = '#E2E8F0'; e.target.style.boxShadow = 'none'; }}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-4 mt-8">
+                <button
+                  style={{ flex: 1, padding: '16px', borderRadius: '16px', border: '2px solid #E2E8F0', backgroundColor: 'transparent', color: '#64748B', fontWeight: '800', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                  onMouseOver={(e) => { e.target.style.backgroundColor = '#F1F5F9'; e.target.style.color = '#1E293B'; }}
+                  onMouseOut={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#64748B'; }}
+                  onClick={() => setSelectedBatchForEvaluation(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  style={{ flex: 1, padding: '16px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)', transition: 'transform 0.2s' }}
+                  onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'none'}
+                  onClick={() => {
+                    console.log(`Evaluation Saved for ${selectedBatchForEvaluation.id}: ${evaluationRating} stars, ${evaluationFeedback}`);
+                    setSelectedBatchForEvaluation(null);
+                  }}
+                >
+                  Submit Review
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* Transfer Information Modal */}
+      {transferInfo && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)', padding: '20px' }}>
+          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 30px 60px -12px rgba(15, 23, 42, 0.25)', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', borderRadius: '32px', border: '1px solid rgba(255, 255, 255, 0.2)', overflow: 'hidden' }}>
+            <div style={{ padding: '30px', background: 'linear-gradient(135deg, #F59E0B 0%, #B45309 100%)', position: 'relative', flexShrink: 0, textAlign: 'center' }}>
+              <div style={{ position: 'absolute', top: '16px', right: '16px' }}>
+                <button onClick={() => setTransferInfo(null)} style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', border: 'none', padding: '8px', borderRadius: '12px', color: 'white', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}><X size={20} /></button>
+              </div>
+              <div style={{ display: 'inline-flex', padding: '12px', backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '20px', backdropFilter: 'blur(10px)', color: 'white', marginBottom: '16px' }}>
+                <Info size={40} />
+              </div>
+              <h2 style={{ margin: '0 0 8px 0', fontSize: '1.5rem', fontWeight: 900, color: 'white', letterSpacing: '-0.02em' }}>Transfer Info</h2>
+              <p style={{ margin: 0, color: 'rgba(255,255,255,0.9)', fontSize: '0.875rem', fontWeight: 500 }}>{transferInfo.type} replacement</p>
+            </div>
+            <div style={{ padding: '32px', backgroundColor: '#F8FAFC' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px', border: '1px solid #F1F5F9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+                  <p style={{ margin: '0 0 4px 0', fontSize: '0.75rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Transferred From</p>
+                  <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#EF4444' }}>{transferInfo.from}</p>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0' }}>
+                  <div style={{ width: '2px', height: '16px', backgroundColor: '#E2E8F0', borderRadius: '2px' }}></div>
+                </div>
+                
+                <div style={{ backgroundColor: '#EEF2FF', padding: '20px', borderRadius: '20px', border: '1px solid #E0E7FF' }}>
+                  <p style={{ margin: '0 0 4px 0', fontSize: '0.75rem', fontWeight: 800, color: '#818CF8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assigned To (Current)</p>
+                  <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#4338CA' }}>{transferInfo.to}</p>
                 </div>
               </div>
 
-              {/* Feedback Section */}
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">Administrative Feedback</label>
-                <textarea
-                  rows={4}
-                  className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm leading-relaxed"
-                  placeholder="Enter detailed feedback about the trainer, student engagement, or facility quality..."
-                  value={evaluationFeedback}
-                  onChange={(e) => setEvaluationFeedback(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-4 mt-8">
-              <button
-                className="btn btn-outline flex-1 py-4 justify-center"
-                onClick={() => setSelectedBatchForEvaluation(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary flex-1 py-4 justify-center"
-                style={{ background: 'linear-gradient(to right, #10B981, #059669)', border: 'none' }}
-                onClick={() => {
-                  console.log(`Evaluation Saved for ${selectedBatchForEvaluation.id}: ${evaluationRating} stars, ${evaluationFeedback}`);
-                  setSelectedBatchForEvaluation(null);
-                }}
-              >
-                Submit Review
-              </button>
+              <button 
+                style={{ width: '100%', marginTop: '32px', padding: '16px', borderRadius: '16px', border: 'none', background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', color: 'white', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(15, 23, 42, 0.3)', transition: 'transform 0.2s' }}
+                onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'none'}
+                onClick={() => setTransferInfo(null)}>Dismiss</button>
             </div>
           </div>
-        </div>
-      )}
-      {/* Transfer Information Modal */}
-      {transferInfo && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-          <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '400px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9', textAlign: 'center' }}>
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-amber-50 rounded-full text-amber-600">
-                <Info size={32} />
-              </div>
-            </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Session Transfer Info</h2>
-            <p className="text-gray-500 text-sm mb-6">Details regarding the {transferInfo.type} replacement for this session.</p>
-            
-            <div className="space-y-4 mb-8">
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-left">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transferred From</p>
-                <p className="font-bold text-red-500">{transferInfo.from}</p>
-              </div>
-              
-              <div className="flex justify-center">
-                <div className="w-px h-6 bg-gray-200"></div>
-              </div>
-              
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-left">
-                <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Assigned To (Current)</p>
-                <p className="font-bold text-blue-700">{transferInfo.to}</p>
-              </div>
-            </div>
-
-            <button 
-              className="btn btn-primary w-full py-3 justify-center shadow-lg shadow-blue-200" 
-              onClick={() => setTransferInfo(null)}
-            >
-              Close Details
-            </button>
-          </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

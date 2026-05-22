@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, CheckCircle, Clock, AlertTriangle, Users, ArrowRightLeft } from 'lucide-react';
 import { users } from '../data/mockData';
 
 export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, currentClass, allClasses }) {
@@ -68,34 +69,124 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
     }
   };
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 60,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
+      backgroundColor: 'rgba(15, 23, 42, 0.55)', zIndex: 11000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
+      backdropFilter: 'blur(16px)',
+      animation: 'fadeIn 0.3s ease-out'
     }}>
-      <div className="card animate-fade-in flex-col" style={{ display: 'flex', width: '100%', maxWidth: '600px', maxHeight: '80vh', position: 'relative' }}>
+      <div className="animate-fade-in" style={{ 
+        width: '100%', 
+        maxWidth: '580px', 
+        maxHeight: '85vh', 
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        backgroundColor: 'white',
+        borderRadius: '32px',
+        padding: '36px',
+        boxShadow: '0 30px 60px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.05)',
+        border: '1px solid rgba(226, 232, 240, 0.8)'
+      }}>
+        {/* Close Button */}
         <button 
           onClick={onClose}
-          style={{ position: 'absolute', right: '16px', top: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}
+          style={{ 
+            position: 'absolute', right: '24px', top: '24px', 
+            background: 'none', border: 'none', cursor: 'pointer', 
+            color: '#94A3B8', width: '36px', height: '36px',
+            borderRadius: '50%', backgroundColor: '#F8FAFC',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = '#1E293B';
+            e.currentTarget.style.backgroundColor = '#F1F5F9';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '#94A3B8';
+            e.currentTarget.style.backgroundColor = '#F8FAFC';
+          }}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
-        <h2 style={{ marginBottom: role === 'Transfer-Tabs' ? '0.5rem' : '1rem' }}>
-          {role === 'Transfer-Tabs' ? 'Transfer Session' : `Select ${currentRole}s`}
-        </h2>
+        {/* Modal Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: role === 'Transfer-Tabs' ? '20px' : '24px' }}>
+          <div style={{ 
+            padding: '12px', 
+            background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)', 
+            borderRadius: '16px', 
+            color: '#4F46E5',
+            display: 'flex'
+          }}>
+            {role === 'Transfer-Tabs' ? <ArrowRightLeft size={24} /> : <Users size={24} />}
+          </div>
+          <div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#0F172A', margin: 0, letterSpacing: '-0.025em' }}>
+              {role === 'Transfer-Tabs' ? 'Transfer Session' : `Select ${currentRole}s`}
+            </h2>
+            {currentClass && (
+              <span style={{ 
+                background: '#EEF2FF', 
+                color: '#4F46E5', 
+                padding: '4px 12px', 
+                borderRadius: '8px', 
+                fontSize: '0.75rem', 
+                fontWeight: '700',
+                display: 'inline-block',
+                marginTop: '4px'
+              }}>
+                Class: {currentClass.id}
+              </span>
+            )}
+          </div>
+        </div>
         
+        {/* Tab Controls for Transfer Session */}
         {role === 'Transfer-Tabs' && (
-          <div className="flex border-b border-gray-200 mb-4">
+          <div style={{ 
+            backgroundColor: '#F1F5F9', 
+            borderRadius: '16px', 
+            padding: '4px', 
+            display: 'flex', 
+            gap: '4px',
+            marginBottom: '20px'
+          }}>
             <button 
-              className={`py-2 px-4 font-semibold text-sm ${activeTab === 'Trainer' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '12px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '0.875rem',
+                transition: 'all 0.2s',
+                backgroundColor: activeTab === 'Trainer' ? 'white' : 'transparent',
+                color: activeTab === 'Trainer' ? '#4F46E5' : '#64748B',
+                boxShadow: activeTab === 'Trainer' ? '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)' : 'none'
+              }}
               onClick={() => setActiveTab('Trainer')}
             >
               Transfer Trainer
             </button>
             <button 
-              className={`py-2 px-4 font-semibold text-sm ${activeTab === 'Co-Trainer' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '12px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '0.875rem',
+                transition: 'all 0.2s',
+                backgroundColor: activeTab === 'Co-Trainer' ? 'white' : 'transparent',
+                color: activeTab === 'Co-Trainer' ? '#4F46E5' : '#64748B',
+                boxShadow: activeTab === 'Co-Trainer' ? '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)' : 'none'
+              }}
               onClick={() => setActiveTab('Co-Trainer')}
             >
               Transfer Co-Trainer
@@ -103,7 +194,17 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
           </div>
         )}
         
-        <div className="flex flex-col gap-3" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
+        {/* Scrollable Staff List */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '12px', 
+          overflowY: 'auto', 
+          flex: 1, 
+          paddingRight: '6px',
+          marginRight: '-6px'
+        }}>
+          {/* Clear Option */}
           {(currentRole === 'Trainer' || role === 'Transfer-Tabs') && (
             <div 
               onClick={() => { 
@@ -114,65 +215,150 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
                 }
                 onClose(); 
               }}
-              style={{ padding: '1rem', border: '1px dashed #D1D5DB', borderRadius: '8px', cursor: 'pointer', textAlign: 'center', color: '#6B7280', fontWeight: 500 }}
+              style={{ 
+                padding: '16px', 
+                border: '2px dashed #E2E8F0', 
+                borderRadius: '20px', 
+                cursor: 'pointer', 
+                textAlign: 'center', 
+                color: '#64748B', 
+                fontWeight: '700',
+                fontSize: '0.9rem',
+                backgroundColor: '#F8FAFC',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#F1F5F9';
+                e.currentTarget.style.borderColor = '#CBD5E1';
+                e.currentTarget.style.color = '#334155';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#F8FAFC';
+                e.currentTarget.style.borderColor = '#E2E8F0';
+                e.currentTarget.style.color = '#64748B';
+              }}
             >
-              Clear / Unassign
+              <Users size={16} /> Clear / Unassign Staff
             </div>
           )}
           
           {staffList.map(staff => {
             const hasConflict = checkConflict(staff.name);
             const isSelected = currentRole === 'Co-Trainer' && selectedCoTrainers.includes(staff.name);
+            const isCurrent = (currentRole === 'Trainer' && currentClass?.trainer === staff.name) ||
+                              (currentRole === 'Co-Trainer' && isSelected);
             
             return (
               <div 
                 key={staff.id} 
                 onClick={() => handleSelectStaff(staff.name)}
-                className="flex items-center justify-between"
                 style={{ 
-                  padding: '1rem', 
-                  border: `1px solid ${isSelected ? 'var(--color-primary)' : '#E5E7EB'}`, 
-                  borderRadius: '8px', cursor: 'pointer', 
-                  backgroundColor: isSelected ? '#EFF6FF' : (hasConflict ? '#FEF2F2' : '#F9FAFB'),
-                  opacity: hasConflict && currentRole === 'Trainer' ? 0.6 : 1
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '16px 20px', 
+                  borderRadius: '20px', 
+                  border: '2px solid',
+                  borderColor: isCurrent ? '#4F46E5' : (hasConflict ? '#FEE2E2' : '#F1F5F9'),
+                  backgroundColor: isCurrent ? '#F5F7FF' : (hasConflict ? '#FEF2F2' : '#FFFFFF'),
+                  cursor: 'pointer', 
+                  opacity: hasConflict && currentRole === 'Trainer' ? 0.65 : 1,
+                  transition: 'all 0.2s ease-in-out'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isCurrent && !(hasConflict && currentRole === 'Trainer')) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.borderColor = '#C7D2FE';
+                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(15, 23, 42, 0.04)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isCurrent && !(hasConflict && currentRole === 'Trainer')) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = '#F1F5F9';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
                 }}
               >
-                <div className="flex items-center gap-4">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, minWidth: 0 }}>
                   {currentRole === 'Co-Trainer' && (
                     <input 
                       type="checkbox" 
                       checked={isSelected} 
                       readOnly
-                      style={{ width: '18px', height: '18px', accentColor: 'var(--color-primary)', cursor: 'pointer' }}
+                      style={{ 
+                        width: '18px', 
+                        height: '18px', 
+                        accentColor: '#4F46E5', 
+                        cursor: 'pointer', 
+                        borderRadius: '6px',
+                        flexShrink: 0
+                      }}
                     />
                   )}
-                  <img src={staff.photo} alt={staff.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                  <div>
-                    <h3 style={{ fontSize: '1rem', margin: 0, color: '#1F2937' }}>{staff.name}</h3>
-                    <span style={{ fontSize: '0.875rem', color: '#6B7280' }}>{staff.department}</span>
+                  <img 
+                    src={staff.photo} 
+                    alt={staff.name} 
+                    style={{ 
+                      width: '44px', 
+                      height: '44px', 
+                      borderRadius: '50%', 
+                      objectFit: 'cover',
+                      border: '2px solid #E2E8F0',
+                      flexShrink: 0 
+                    }} 
+                  />
+                  <div style={{ minWidth: 0 }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: isCurrent ? '#1e1b4b' : '#1F2937', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {staff.name}
+                    </h3>
+                    <span style={{ fontSize: '0.825rem', color: '#64748B', display: 'block', marginTop: '2px', fontWeight: '500' }}>
+                      {staff.department}
+                    </span>
                   </div>
                 </div>
                 
-                <div className="flex flex-col items-end gap-1">
-                  <span style={{ fontSize: '0.875rem', color: '#4B5563', fontWeight: 500 }}>
-                    Assigned Sessions: {staff.assignedSessionsCount || 0}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: '#6B7280', fontWeight: 500 }}>
-                    Total Hours: {staff.hours || 0} hrs
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'flex-end', flexDirection: 'column', gap: '6px', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '0.75rem', color: '#64748B', fontWeight: '600' }}>
+                    <span>Sessions: <strong style={{ color: '#475569' }}>{staff.assignedSessionsCount || 0}</strong></span>
+                    <span style={{ marginTop: '1px' }}>Hours: <strong style={{ color: '#475569' }}>{staff.hours || 0}h</strong></span>
+                  </div>
                   
                   {hasConflict ? (
-                    <span className="badge badge-danger" style={{ fontSize: '0.75rem', padding: '2px 6px' }}>
-                      <AlertTriangle size={12} style={{ marginRight: '4px' }}/>
-                      Conflict (Date Clash)
+                    <span style={{ 
+                      fontSize: '0.7rem', 
+                      padding: '4px 10px', 
+                      borderRadius: '9999px',
+                      backgroundColor: '#FFF1F2',
+                      color: '#E11D48',
+                      border: '1px solid #FDA4AF',
+                      fontWeight: '700',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <AlertTriangle size={11} />
+                      Date Clash
                     </span>
                   ) : (
-                    <span className={`badge ${
-                      staff.availability === 'Available' ? 'badge-green' : 'badge-blue'
-                    }`} style={{ fontSize: '0.75rem', padding: '2px 6px' }}>
-                      {staff.availability === 'Available' && <CheckCircle size={12} style={{ marginRight: '4px' }}/>}
-                      {staff.availability !== 'Available' && <Clock size={12} style={{ marginRight: '4px' }}/>}
-                      {staff.availability || 'Unknown'}
+                    <span style={{ 
+                      fontSize: '0.7rem', 
+                      padding: '4px 10px', 
+                      borderRadius: '9999px',
+                      backgroundColor: staff.availability === 'Available' ? '#ECFDF5' : '#EEF2FF',
+                      color: staff.availability === 'Available' ? '#059669' : '#4F46E5',
+                      border: staff.availability === 'Available' ? '1px solid #A7F3D0' : '1px solid #C7D2FE',
+                      fontWeight: '700',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      {staff.availability === 'Available' ? <CheckCircle size={11} /> : <Clock size={11} />}
+                      {staff.availability || 'Available'}
                     </span>
                   )}
                 </div>
@@ -181,13 +367,73 @@ export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, c
           })}
         </div>
 
+        {/* Co-Trainer Action Footer */}
         {currentRole === 'Co-Trainer' && (
-          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #E5E7EB', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-            <button className="btn btn-outline" onClick={onClose}>Cancel</button>
-            <button className="btn btn-primary" onClick={handleApplyCoTrainers}>Apply Selection ({selectedCoTrainers.length})</button>
+          <div style={{ 
+            marginTop: '24px', 
+            paddingTop: '20px', 
+            borderTop: '1px solid #F1F5F9', 
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            gap: '12px' 
+          }}>
+            <button 
+              className="btn" 
+              style={{
+                padding: '12px 24px',
+                borderRadius: '14px',
+                border: '1px solid #E2E8F0',
+                backgroundColor: 'white',
+                color: '#64748B',
+                fontWeight: '700',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#F8FAFC';
+                e.currentTarget.style.color = '#334155';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'white';
+                e.currentTarget.style.color = '#64748B';
+              }}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button 
+              className="btn" 
+              style={{
+                padding: '12px 24px',
+                borderRadius: '14px',
+                border: 'none',
+                backgroundColor: '#4F46E5',
+                color: 'white',
+                fontWeight: '700',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                boxShadow: '0 8px 16px -4px rgba(79, 70, 229, 0.25)',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#4338CA';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 12px 20px -4px rgba(79, 70, 229, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#4F46E5';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 16px -4px rgba(79, 70, 229, 0.25)';
+              }}
+              onClick={handleApplyCoTrainers}
+            >
+              Apply Selection ({selectedCoTrainers.length})
+            </button>
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

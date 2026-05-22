@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { 
-  Users, BookOpen, Clock, MapPin, Edit2, ChevronRight, Eye, 
-  Trash2, Search, Filter, CheckCircle2, MoreVertical, CheckSquare, X,
+  Users, MapPin, Edit2, Eye, 
+  CheckCircle2, CheckSquare, X,
   Calendar, ArrowRightLeft, Plus, Info
 } from 'lucide-react';
-import { classes as initialClasses, users } from '../data/mockData';
+import { classes as initialClasses, users, adjustDate } from '../data/mockData';
 import StaffSelectionModal from './StaffSelectionModal';
 import LabSelectionModal from './LabSelectionModal';
 
@@ -13,6 +13,20 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
   const [classes, setClasses] = useState(initialClasses);
   const [filters, setFilters] = useState({ Active: true, Upcoming: true, Completed: true });
   const isAdmin = userRole === 'Admin' || userRole === 'Trainer' || userRole === 'Co-Trainer';
+
+  const formatSessionDate = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const day = parseInt(parts[2], 10);
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      if (monthIdx >= 0 && monthIdx < 12) {
+        return `${day} ${months[monthIdx]}`;
+      }
+    }
+    return dateStr;
+  };
 
   const handleToggleTask = (classId, role, taskId) => {
     const updatedClasses = classes.map(cls => {
@@ -57,12 +71,13 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
     });
 
     if (changed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClasses(newClasses);
     }
   }, [classes]);
 
   const [activeModal, setActiveModal] = useState(null);
-  const [selectedClassId, setSelectedClassId] = useState(null);
+
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [selectedClassForTasks, setSelectedClassForTasks] = useState(null);
   const [activeClassId, setActiveClassId] = useState(null);
@@ -145,12 +160,12 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
     const feedbackStudentNames = new Set();
     
     const manualData = [
-      { id: 'm1', sessionNo: 4, batch: '1 BCA A', date: '2026-05-15', time: '13:00 - 15:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Alice Johnson', feedback: 'Amazing depth of knowledge in Python.', rating: 5 },
-      { id: 'm2', sessionNo: 4, batch: '1 BCA A', date: '2026-05-15', time: '13:00 - 15:00', staffName: 'James Carter', role: 'Co-Trainer', studentName: 'Alice Johnson', feedback: 'Very helpful during the hands-on lab.', rating: 4 },
-      { id: 'm3', sessionNo: 1, batch: '1 PERFECT', date: '2026-05-15', time: '08:00 - 10:00', staffName: 'Margaret Hamilton', role: 'Trainer', studentName: 'Zara Ali', feedback: 'Flawless execution of the session.', rating: 5 },
-      { id: 'm4', sessionNo: 2, batch: '1 BSC CS', date: '2026-05-14', time: '14:00 - 16:00', staffName: 'Michael Chang', role: 'Trainer', studentName: 'Bob Smith', feedback: 'Good pacing, but complex concepts need more time.', rating: 3 },
-      { id: 'm5', sessionNo: 3, batch: '1 BCA A', date: '2026-05-11', time: '10:00 - 12:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Excellent session on Data Structures.', rating: 5 },
-      { id: 'm6', sessionNo: 1, batch: '1 BBA', date: '2026-05-16', time: '08:00 - 10:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Very engaging and interactive.', rating: 4 },
+      { id: 'm1', sessionNo: 4, batch: '1 BCA A', date: adjustDate('2026-05-15'), time: '13:00 - 15:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Alice Johnson', feedback: 'Amazing depth of knowledge in Python.', rating: 5 },
+      { id: 'm2', sessionNo: 4, batch: '1 BCA A', date: adjustDate('2026-05-15'), time: '13:00 - 15:00', staffName: 'James Carter', role: 'Co-Trainer', studentName: 'Alice Johnson', feedback: 'Very helpful during the hands-on lab.', rating: 4 },
+      { id: 'm3', sessionNo: 1, batch: '1 PERFECT', date: adjustDate('2026-05-15'), time: '08:00 - 10:00', staffName: 'Margaret Hamilton', role: 'Trainer', studentName: 'Zara Ali', feedback: 'Flawless execution of the session.', rating: 5 },
+      { id: 'm4', sessionNo: 2, batch: '1 BSC CS', date: adjustDate('2026-05-14'), time: '14:00 - 16:00', staffName: 'Michael Chang', role: 'Trainer', studentName: 'Bob Smith', feedback: 'Good pacing, but complex concepts need more time.', rating: 3 },
+      { id: 'm5', sessionNo: 3, batch: '1 BCA A', date: adjustDate('2026-05-11'), time: '10:00 - 12:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Excellent session on Data Structures.', rating: 5 },
+      { id: 'm6', sessionNo: 1, batch: '1 BBA', date: adjustDate('2026-05-16'), time: '08:00 - 10:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Very engaging and interactive.', rating: 4 },
     ];
     
     manualData.forEach(item => {
@@ -174,9 +189,7 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
     return batchStudents.filter(student => !feedbackStudentNames.has(student.name));
   };
 
-  const getPendingFeedbackCount = (batchId, trainerName) => {
-    return getPendingFeedbackStudents(batchId, trainerName).length;
-  };
+
   const updateClass = (classId, field, value) => {
     setClasses(classes.map(c => c.id === classId ? { ...c, [field]: value } : c));
     const rawClass = initialClasses.find(c => c.id === classId);
@@ -293,36 +306,38 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
   return (
     <>
     <div className="p-6 animate-fade-in">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Class Management</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'nowrap', gap: '16px' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#111827', whiteSpace: 'nowrap', margin: 0, flexShrink: 0 }}>Class Management</h2>
         
-        <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-          <span className="text-sm font-semibold text-gray-600 mr-2">Filter Status:</span>
-          {['Active', 'Upcoming', 'Completed'].map(status => (
-            <label key={status} className="flex items-center gap-2 cursor-pointer group">
-              <input 
-                type="checkbox" 
-                checked={filters[status]} 
-                onChange={() => setFilters({ ...filters, [status]: !filters[status] })}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className={`text-sm font-medium transition-colors ${filters[status] ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-600'}`}>
-                {status}
-              </span>
-            </label>
-          ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'nowrap', flexShrink: 0 }}>
+          <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#4B5563', whiteSpace: 'nowrap', margin: 0, padding: 0 }}>Filter Status:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'nowrap' }}>
+            {['Active', 'Upcoming', 'Completed'].map(status => (
+              <label key={status} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer', userSelect: 'none', margin: 0, padding: 0, whiteSpace: 'nowrap' }}>
+                <input 
+                  type="checkbox" 
+                  checked={filters[status]} 
+                  onChange={() => setFilters({ ...filters, [status]: !filters[status] })}
+                  style={{ width: '15px', height: '15px', accentColor: 'var(--color-primary)', cursor: 'pointer', margin: 0, padding: 0, verticalAlign: 'middle', flexShrink: 0 }}
+                />
+                <span style={{ fontSize: '0.8rem', fontWeight: '600', color: filters[status] ? '#111827' : '#9CA3AF', transition: 'color 0.2s', lineHeight: '1' }}>
+                  {status}
+                </span>
+              </label>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1.5rem' }}>
         {filteredClasses.map(cls => (
-          <div key={cls.id} style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', overflow: 'hidden', padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px', minHeight: '350px' }}>
+          <div key={cls.id} style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', overflow: 'hidden', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '20px', minHeight: '350px' }}>
             
-            <div className="flex justify-between items-start">
-              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>{cls.id}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#111827', margin: 0 }}>{cls.id}</h2>
               {isAdmin ? (
                 <span style={{
-                  padding: '4px 12px', borderRadius: '4px', fontSize: '0.875rem',
+                  padding: '6px 16px', borderRadius: '9999px', fontSize: '0.875rem',
                   backgroundColor: cls.status === 'Active' ? '#ECFDF5' : cls.status === 'Completed' ? '#EFF6FF' : '#FFFBEB',
                   color: cls.status === 'Active' ? '#059669' : cls.status === 'Completed' ? '#3B82F6' : '#D97706',
                   fontWeight: 700
@@ -334,10 +349,19 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                   value={cls.status}
                   onChange={(e) => updateClass(cls.id, 'status', e.target.value)}
                   style={{
-                    padding: '4px 8px', borderRadius: '4px', border: '1px solid #E5E7EB', fontSize: '0.875rem',
+                    padding: '6px 32px 6px 16px', borderRadius: '9999px', border: 'none', fontSize: '0.875rem',
                     backgroundColor: cls.status === 'Active' ? '#ECFDF5' : cls.status === 'Completed' ? '#EFF6FF' : '#FFFBEB',
                     color: cls.status === 'Active' ? '#059669' : cls.status === 'Completed' ? '#3B82F6' : '#D97706',
-                    fontWeight: 600, outline: 'none', cursor: 'pointer'
+                    fontWeight: 600, outline: 'none', cursor: 'pointer',
+                    appearance: 'none',
+                    backgroundImage: `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+                      `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="${
+                        cls.status === 'Active' ? '#059669' : cls.status === 'Completed' ? '#3B82F6' : '#D97706'
+                      }" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>`
+                    )}")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 12px center',
+                    backgroundSize: '12px'
                   }}
                 >
                   <option value="Upcoming">Upcoming</option>
@@ -347,84 +371,110 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
               )}
             </div>
             
-            <div className="flex flex-col gap-3 mt-2">
+            <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
               
             {/* Sessions Section */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 mb-1" style={{ fontSize: '0.875rem', color: '#4B5563' }}>
-                <Calendar size={16} color="#F59E0B" />
-                <span style={{ fontWeight: 600 }}>Number of Sessions Added: {cls.sessions.length}</span>
-              </div>
-              
-              <div className="flex flex-col gap-2">
-                {cls.sessions.map((session, idx) => (
-                    <div key={idx} 
-                      className="flex flex-col" 
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', fontSize: '0.875rem', color: '#4B5563' }}>
+                  <Calendar size={16} color="#F59E0B" />
+                  <span style={{ fontWeight: 600 }}>Number of Sessions Added: {cls.sessions.length}</span>
+                </div>
+                {cls.sessions.map((session, idx) => {
+                  const hasTransfer = !!(session.transferredFrom || session.transferredCoTrainerFrom || session.transferredTo || session.transferredCoTrainerTo);
+                  return (
+                    <div key={idx}
                       style={{ 
-                        padding: '12px', 
-                        borderRadius: '6px', 
-                        backgroundColor: (session.transferredTo || session.transferredCoTrainerTo) ? '#EEF2FF' : '#F9FAFB', 
-                        border: (session.transferredTo || session.transferredCoTrainerTo) ? '1px solid #C7D2FE' : '1px solid #E5E7EB',
+                        padding: '7px 10px', 
+                        borderRadius: '12px', 
+                        backgroundColor: '#F9FAFB', 
+                        border: '1px solid #E5E7EB',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '6px',
+                        minWidth: 0,
                       }}
                     >
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>
-                          {session.date} • {session.startTime} - {session.endTime}
+                      {/* Left: date/time + optional transfer badge */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, flex: 1 }}>
+                        <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }} title={`${session.date} • ${session.startTime}-${session.endTime}`}>
+                          {formatSessionDate(session.date)} • {session.startTime}-{session.endTime}
                         </span>
-                        {(session.transferredFrom || session.transferredCoTrainerFrom) && (
-                          <button 
-                            className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
-                            onClick={() => setTransferInfo({
-                              type: session.transferredFrom ? 'Trainer' : 'Co-Trainer',
-                              from: session.transferredFrom || session.transferredCoTrainerFrom,
-                              to: session.transferredTo || 'Current assigned staff'
-                            })}
-                          >
-                            <Eye size={12} />
-                          </button>
+                        {hasTransfer && (
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#7C3AED', backgroundColor: '#EDE9FE', borderRadius: '999px', padding: '1px 6px', whiteSpace: 'nowrap', flexShrink: 0, lineHeight: 1.5 }}>
+                            → {session.transferredTo || session.transferredCoTrainerTo || (session.transferredFrom ? cls.trainer : (cls.coTrainers?.[0] || 'Co-Trainer'))}
+                          </span>
                         )}
                       </div>
-                      {!isAdmin && (
-                        <div className="flex items-center gap-4">
+
+                      {/* Right: action icons — always visible for non-admin, Eye only if transferred */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+                        {/* Edit — only for non-admin */}
+                        {!isAdmin && (
+                          <button 
+                            onClick={() => handleEditSession(cls.id, session, idx)} 
+                            style={{ background: 'none', border: 'none', padding: '4px', margin: 0, cursor: 'pointer', color: '#6B7280', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', transition: 'all 0.2s ease', outline: 'none' }}
+                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#E5E7EB'; e.currentTarget.style.color = '#374151'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#6B7280'; }}
+                            title="Edit Session"
+                          >
+                            <Edit2 size={13} color="currentColor" />
+                          </button>
+                        )}
+
+                        {/* Transfer — only for non-admin */}
+                        {!isAdmin && (
                           <button 
                             onClick={() => handleTransferSession(cls.id, idx)} 
                             title="Transfer Session"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: (session.transferredTo || session.transferredCoTrainerTo) ? '#4F46E5' : '#6366F1' }}
+                            style={{ background: 'none', border: 'none', padding: '4px', margin: 0, cursor: 'pointer', color: '#6366F1', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', transition: 'all 0.2s ease', outline: 'none' }}
+                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#EEF2FF'; e.currentTarget.style.color = '#4F46E5'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#6366F1'; }}
                           >
-                            <ArrowRightLeft size={16} />
+                            <ArrowRightLeft size={13} color="currentColor" />
                           </button>
-                          <button onClick={() => handleEditSession(cls.id, session, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
-                            <Edit2 size={16} />
+                        )}
+
+                        {/* Eye — only if session has been transferred */}
+                        {hasTransfer && (
+                          <button 
+                            onClick={() => setTransferInfo({
+                              type: session.transferredFrom ? 'Trainer' : 'Co-Trainer',
+                              from: session.transferredFrom || session.transferredCoTrainerFrom,
+                              to: session.transferredTo || session.transferredCoTrainerTo || 'Current assigned staff'
+                            })}
+                            title="Transfer Details"
+                            style={{ background: 'none', border: 'none', padding: '4px', margin: 0, cursor: 'pointer', color: '#7C3AED', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', transition: 'all 0.2s ease', outline: 'none' }}
+                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#EDE9FE'; e.currentTarget.style.color = '#5B21B6'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#7C3AED'; }}
+                          >
+                            <Eye size={13} color="currentColor" />
                           </button>
-                          <button onClick={() => handleRemoveSession(cls.id, idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}>
-                            <X size={16} />
+                        )}
+
+                        {/* Remove — only for non-admin */}
+                        {!isAdmin && (
+                          <button 
+                            onClick={() => handleRemoveSession(cls.id, idx)} 
+                            style={{ background: 'none', border: 'none', padding: '4px', margin: 0, cursor: 'pointer', color: '#EF4444', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', transition: 'all 0.2s ease', outline: 'none' }}
+                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#FEE2E2'; e.currentTarget.style.color = '#DC2626'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#EF4444'; }}
+                            title="Remove Session"
+                          >
+                            <X size={13} color="currentColor" />
                           </button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                    {session.transferredTo && session.transferredTo !== 'Unassigned' && (
-                      <div className="mt-1 flex items-center">
-                        <span style={{ fontSize: '0.7rem', color: '#4F46E5', fontWeight: 600 }}>
-                          Trainer Transferred to: {session.transferredTo}
-                        </span>
-                      </div>
-                    )}
-                    {session.transferredCoTrainerTo && session.transferredCoTrainerTo !== 'Unassigned' && (
-                      <div className="mt-1 flex items-center">
-                        <span style={{ fontSize: '0.7rem', color: '#4F46E5', fontWeight: 600 }}>
-                          Co-Trainer Transferred to: {session.transferredCoTrainerTo}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               
               {!isAdmin && (
-                <div className="mt-1">
+                <div style={{ marginTop: '4px' }}>
                   {showDatePickerFor === cls.id ? (
-                    <div className="flex flex-col gap-2 p-3 border rounded-xl" style={{ borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '12px', backgroundColor: '#F9FAFB' }}>
                       <input 
                         type="date" 
                         value={newDate} 
@@ -433,12 +483,11 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                       />
                       
                       {newDate && (
-                        <div className="flex flex-col gap-2 mt-2">
-                          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1 pl-1">Select Session Timings</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                          <p style={{ fontSize: '11px', fontWeight: 'bold', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px', paddingLeft: '4px' }}>Select Session Timings</p>
                           
                           <div 
-                            className="flex items-center justify-between" 
-                            style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid', borderColor: selectedSlots.includes('morning') ? '#3B82F6' : '#E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedSlots.includes('morning') ? '#EFF6FF' : 'white' }}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', padding: '12px', border: '1px solid', borderColor: selectedSlots.includes('morning') ? '#3B82F6' : '#E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedSlots.includes('morning') ? '#EFF6FF' : 'white' }}
                             onClick={() => {
                               if (editingSessionIdx !== null) {
                                 setSelectedSlots(['morning']);
@@ -448,14 +497,13 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                             }}
                           >
                             <span style={{ fontWeight: 500, color: '#1F2937' }}>9 AM - 12 PM</span>
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedSlots.includes('morning') ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
-                              {selectedSlots.includes('morning') && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: `2px solid ${selectedSlots.includes('morning') ? '#3B82F6' : '#D1D5DB'}`, backgroundColor: selectedSlots.includes('morning') ? '#3B82F6' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              {selectedSlots.includes('morning') && <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white' }} />}
                             </div>
                           </div>
 
                           <div 
-                            className="flex items-center justify-between" 
-                            style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid', borderColor: selectedSlots.includes('afternoon') ? '#3B82F6' : '#E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedSlots.includes('afternoon') ? '#EFF6FF' : 'white' }}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', padding: '12px', border: '1px solid', borderColor: selectedSlots.includes('afternoon') ? '#3B82F6' : '#E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedSlots.includes('afternoon') ? '#EFF6FF' : 'white' }}
                             onClick={() => {
                               if (editingSessionIdx !== null) {
                                 setSelectedSlots(['afternoon']);
@@ -465,14 +513,13 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                             }}
                           >
                             <span style={{ fontWeight: 500, color: '#1F2937' }}>1 PM - 4 PM</span>
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedSlots.includes('afternoon') ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
-                              {selectedSlots.includes('afternoon') && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: `2px solid ${selectedSlots.includes('afternoon') ? '#3B82F6' : '#D1D5DB'}`, backgroundColor: selectedSlots.includes('afternoon') ? '#3B82F6' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              {selectedSlots.includes('afternoon') && <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white' }} />}
                             </div>
                           </div>
 
                           <div 
-                            className="flex flex-col gap-2" 
-                            style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid', borderColor: selectedSlots.includes('custom') ? '#3B82F6' : '#E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedSlots.includes('custom') ? '#EFF6FF' : 'white' }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.875rem', padding: '12px', border: '1px solid', borderColor: selectedSlots.includes('custom') ? '#3B82F6' : '#E5E7EB', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedSlots.includes('custom') ? '#EFF6FF' : 'white' }}
                             onClick={() => {
                               if (editingSessionIdx !== null) {
                                 setSelectedSlots(['custom']);
@@ -481,26 +528,26 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                               }
                             }}
                           >
-                            <div className="flex items-center justify-between">
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                               <span style={{ fontWeight: 500, color: '#1F2937' }}>Custom Time</span>
-                              <div className="flex items-center gap-3">
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 {selectedSlots.includes('custom') && editingSessionIdx === null && (
                                   <button 
                                     onClick={(e) => { e.stopPropagation(); setCustomSlots([...customSlots, { startTime: '', endTime: '' }]); }}
-                                    className="p-1 hover:bg-blue-200 rounded text-blue-600 transition-colors"
+                                    style={{ padding: '4px', borderRadius: '4px', background: 'none', border: 'none', color: '#3B82F6', cursor: 'pointer', display: 'inline-flex' }}
                                   >
                                     <Plus size={14} />
                                   </button>
                                 )}
-                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedSlots.includes('custom') ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
-                                  {selectedSlots.includes('custom') && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: `2px solid ${selectedSlots.includes('custom') ? '#3B82F6' : '#D1D5DB'}`, backgroundColor: selectedSlots.includes('custom') ? '#3B82F6' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  {selectedSlots.includes('custom') && <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'white' }} />}
                                 </div>
                               </div>
                             </div>
                             {selectedSlots.includes('custom') && (
-                              <div className="flex flex-col gap-3 mt-1" onClick={(e) => e.stopPropagation()}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }} onClick={(e) => e.stopPropagation()}>
                                 {customSlots.map((cs, cIdx) => (
-                                  <div key={cIdx} className="flex items-center gap-2">
+                                  <div key={cIdx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <input 
                                       type="time" 
                                       value={cs.startTime} 
@@ -509,7 +556,7 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                                         newCS[cIdx].startTime = e.target.value;
                                         setCustomSlots(newCS);
                                       }}
-                                      className="flex-1 px-3 py-1.5 border border-gray-200 rounded text-sm outline-none focus:border-blue-500 bg-white font-medium text-gray-700"
+                                      style={{ flex: 1, padding: '6px 10px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '0.875rem', outline: 'none', backgroundColor: 'white', fontWeight: 500, color: '#374151' }}
                                     />
                                     <input 
                                       type="time" 
@@ -519,12 +566,12 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                                         newCS[cIdx].endTime = e.target.value;
                                         setCustomSlots(newCS);
                                       }}
-                                      className="flex-1 px-3 py-1.5 border border-gray-200 rounded text-sm outline-none focus:border-blue-500 bg-white font-medium text-gray-700"
+                                      style={{ flex: 1, padding: '6px 10px', border: '1px solid #E5E7EB', borderRadius: '6px', fontSize: '0.875rem', outline: 'none', backgroundColor: 'white', fontWeight: 500, color: '#374151' }}
                                     />
                                     {customSlots.length > 1 && (
                                       <button 
                                         onClick={() => setCustomSlots(customSlots.filter((_, i) => i !== cIdx))}
-                                        className="text-gray-400 hover:text-red-500 transition-colors"
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', display: 'inline-flex', padding: '4px' }}
                                       >
                                         <X size={14} />
                                       </button>
@@ -537,7 +584,7 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                         </div>
                       )}
 
-                      <div className="flex justify-end gap-2 mt-3">
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
                         <button onClick={() => { setShowDatePickerFor(null); setEditingSessionIdx(null); setNewDate(''); setSelectedSlots(['morning', 'afternoon']); setCustomSlots([{ startTime: '', endTime: '' }]); }} className="btn btn-outline" style={{ padding: '8px 16px', fontSize: '0.875rem', borderRadius: '8px' }}>Cancel</button>
                         <button 
                           onClick={() => handleAddSession(cls.id)} 
@@ -550,148 +597,170 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '10px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', color: '#6B7280', fontWeight: 500, transition: 'all 0.2s ease' }} onMouseOver={(e) => e.target.style.backgroundColor = '#F9FAFB'} onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
+                    <button onClick={() => setShowDatePickerFor(cls.id)} style={{ background: 'none', border: '1px dashed #D1D5DB', width: '100%', padding: '12px', borderRadius: '12px', cursor: 'pointer', fontSize: '0.875rem', color: '#6B7280', fontWeight: 500, transition: 'all 0.2s ease' }} onMouseOver={(e) => e.target.style.backgroundColor = '#F9FAFB'} onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
                       + Add Session
                     </button>
                   )}
                 </div>
               )}
-            </div>
-
-              <div style={{ borderTop: '1px solid #E5E7EB', margin: '8px 0' }}></div>
 
               <div 
-                className="flex items-center justify-between" 
-                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: isAdmin ? 'default' : 'pointer', backgroundColor: '#F9FAFB' }}
+                style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', padding: '12px 16px', border: '1px solid #E5E7EB', borderRadius: '12px', cursor: isAdmin ? 'default' : 'pointer', backgroundColor: '#F8FAFC', gap: '8px', minWidth: 0 }}
                 onClick={() => !isAdmin && handleOpenModal('Lab', cls.id)}
               >
-                <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
-                  <MapPin size={16} color="#8B5CF6" />
-                  <span style={{ fontWeight: 500 }}>Lab:</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4B5563', flexShrink: 0 }}>
+                  <MapPin size={15} color="#8B5CF6" />
+                  <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Lab:</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span style={{ color: cls.lab === 'Unassigned' ? '#9CA3AF' : '#1F2937', fontWeight: 500 }}>{cls.lab}</span>
-                  {!isAdmin && <Edit2 size={12} color="#9CA3AF" />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
+                  <span style={{ color: cls.lab === 'Unassigned' ? '#9CA3AF' : '#1F2937', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{cls.lab}</span>
+                  {!isAdmin && <Edit2 size={11} color="#9CA3AF" style={{ flexShrink: 0 }} />}
                 </div>
               </div>
 
               <div 
-                className="flex items-center justify-between" 
-                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: isAdmin ? 'default' : 'pointer', backgroundColor: '#F9FAFB' }}
+                style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', padding: '12px 16px', border: '1px solid #E5E7EB', borderRadius: '12px', cursor: isAdmin ? 'default' : 'pointer', backgroundColor: '#F8FAFC', gap: '8px', minWidth: 0 }}
                 onClick={() => !isAdmin && handleOpenModal('Trainer', cls.id)}
               >
-                <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
-                  <Users size={16} color="#06B6D4" />
-                  <span style={{ fontWeight: 500 }}>Trainer:</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4B5563', flexShrink: 0 }}>
+                  <Users size={15} color="#06B6D4" />
+                  <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Trainer:</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span style={{ color: cls.trainer === 'Unassigned' ? '#9CA3AF' : '#1F2937', fontWeight: 500 }}>{cls.trainer}</span>
-                  {!isAdmin && <Edit2 size={12} color="#9CA3AF" />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
+                  <span style={{ color: cls.trainer === 'Unassigned' ? '#9CA3AF' : '#1F2937', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{cls.trainer}</span>
+                  {!isAdmin && <Edit2 size={11} color="#9CA3AF" style={{ flexShrink: 0 }} />}
                 </div>
               </div>
 
               <div 
-                className="flex items-center justify-between" 
-                style={{ fontSize: '0.875rem', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '6px', cursor: isAdmin ? 'default' : 'pointer', backgroundColor: '#F9FAFB' }}
+                style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', padding: '12px 16px', border: '1px solid #E5E7EB', borderRadius: '12px', cursor: isAdmin ? 'default' : 'pointer', backgroundColor: '#F8FAFC', gap: '8px', minWidth: 0 }}
                 onClick={() => !isAdmin && handleOpenModal('Co-Trainer', cls.id)}
               >
-                <div className="flex items-center gap-2" style={{ color: '#4B5563' }}>
-                  <Users size={16} color="#6B7280" />
-                  <span style={{ fontWeight: 500 }}>Co-Trainers:</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4B5563', flexShrink: 0 }}>
+                  <Users size={15} color="#6B7280" />
+                  <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>Co-Trainers:</span>
                 </div>
-                <div className="flex items-start gap-2">
-                  <div className="flex flex-col items-end">
-                    {(!cls.coTrainers || cls.coTrainers.length === 0) ? (
-                      <span style={{ color: '#9CA3AF', fontWeight: 500 }}>Unassigned</span>
-                    ) : (
-                      cls.coTrainers.map((ct, idx) => (
-                        <span key={idx} style={{ color: '#1F2937', fontWeight: 500, fontSize: '0.875rem' }}>{ct}</span>
-                      ))
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
+                  <span style={{ color: (!cls.coTrainers || cls.coTrainers.length === 0) ? '#9CA3AF' : '#1F2937', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '155px' }}>
+                    {(!cls.coTrainers || cls.coTrainers.length === 0) ? 'Unassigned' : cls.coTrainers.join(', ')}
+                  </span>
+                  {!isAdmin && <Edit2 size={11} color="#9CA3AF" style={{ flexShrink: 0 }} />}
+                </div>
+              </div>              <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #F1F5F9' }}>
+                  {/* Task Status */}
+                  {(() => {
+                    const roleKey = userRole === 'SuperAdmin' ? 'Admin' : (userRole === 'Admin' ? 'Admin' : (userRole === 'Trainer' ? 'Trainer' : 'Co-Trainer'));
+                    const tasks = cls.tasks?.[roleKey] || [];
+                    const completed = tasks.filter(t => t.completed).length;
+                    const total = tasks.length;
+                    
+                    return (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedClassForTasks(cls);
+                          setIsTaskModalOpen(true);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          height: '40px',
+                          padding: '0 12px',
+                          backgroundColor: '#FFFFFF',
+                          border: '1px solid #374151',
+                          borderRadius: '8px',
+                          color: '#374151',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <CheckSquare size={16} style={{ color: '#374151' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.2 }}>
+                          <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', tracking: '0.05em', color: '#4B5563' }}>Task</span>
+                          <span style={{ fontSize: '12px', fontWeight: '900', color: '#111827' }}>{completed}/{total}</span>
+                        </div>
+                      </button>
+                    );
+                  })()}
+
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleShowReport(cls.id); }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      height: '40px',
+                      padding: '0 20px',
+                      backgroundColor: '#FFFFFF',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#111827',
+                      fontWeight: '600',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#F9FAFB'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#FFFFFF'}
+                  >
+                    <Eye size={16} style={{ color: '#374151' }} />
+                    Show Report
+                  </button>
+                </div>
+
+                {/* Feedback Section */}
+                {((userRole === 'Trainer') || ((userRole === 'Student' || userRole === 'Admin' || userRole === 'SuperAdmin') && cls.feedbackEnabled)) && (
+                  <div style={{ marginTop: '8px', paddingTop: '16px', borderTop: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    {userRole === 'Trainer' && (() => {
+                      const batchStudents = users.filter(u => u.role === 'Student' && u.batch === cls.id);
+                      const totalCount = batchStudents.length;
+                      const pendingCount = getPendingFeedbackStudents(cls.id, cls.trainer).length;
+                      const givenCount = totalCount - pendingCount;
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4B5563' }}>Enable Student Feedback</span>
+                            <button 
+                              onClick={() => updateClass(cls.id, 'feedbackEnabled', !cls.feedbackEnabled)}
+                              style={{
+                                position: 'relative', width: '44px', height: '24px', borderRadius: '12px',
+                                backgroundColor: cls.feedbackEnabled ? '#10B981' : '#E5E7EB',
+                                border: 'none', cursor: 'pointer', transition: 'background-color 0.2s'
+                              }}
+                            >
+                              <div style={{
+                                position: 'absolute', top: '2px', left: cls.feedbackEnabled ? '22px' : '2px',
+                                width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'white',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)', transition: 'left 0.2s'
+                              }} />
+                            </button>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setShowPendingFeedbackFor(cls.id); }}
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 20px', backgroundColor: '#EEF2FF', color: '#4338CA', borderRadius: '12px', fontSize: '0.875rem', fontWeight: 700, border: '1px solid rgba(199, 210, 254, 0.5)', cursor: 'pointer', width: '100%', transition: 'all 0.2s' }}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#E0E7FF'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#EEF2FF'}
+                          >
+                            <Users size={16} style={{ color: '#6366F1' }} />
+                            Feedback ({givenCount}/{totalCount})
+                          </button>
+                        </div>
+                      );
+                    })()}
+                    
+                    {(userRole === 'Student' || userRole === 'Admin' || userRole === 'SuperAdmin') && cls.feedbackEnabled && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setActiveTab('mark-rating'); }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 20px', background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)', color: 'white', borderRadius: '12px', fontSize: '0.875rem', fontWeight: 700, border: 'none', cursor: 'pointer', width: '100%', boxShadow: '0 4px 12px rgba(79,70,229,0.3)', transition: 'all 0.2s' }}
+                        onMouseOver={(e) => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                      >
+                        Provide Feedback
+                      </button>
                     )}
                   </div>
-                  {!isAdmin && <Edit2 size={12} color="#9CA3AF" style={{ marginTop: '4px' }} />}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                {/* Task Status */}
-                {(() => {
-                  const roleKey = userRole === 'SuperAdmin' ? 'Admin' : (userRole === 'Admin' ? 'Admin' : (userRole === 'Trainer' ? 'Trainer' : 'Co-Trainer'));
-                  const tasks = cls.tasks?.[roleKey] || [];
-                  const completed = tasks.filter(t => t.completed).length;
-                  const total = tasks.length;
-                  
-                  return (
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedClassForTasks(cls);
-                        setIsTaskModalOpen(true);
-                      }}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 transition-all group"
-                    >
-                      <CheckSquare size={16} className="group-hover:scale-110 transition-transform" />
-                      <div className="flex flex-col items-start leading-tight">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Task</span>
-                        <span className="text-xs font-black">{completed}/{total}</span>
-                      </div>
-                    </button>
-                  );
-                })()}
-
-                <button 
-                  onClick={(e) => { e.stopPropagation(); handleShowReport(cls.id); }}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95 group"
-                >
-                  <Eye size={18} className="group-hover:scale-110 transition-transform" />
-                  Show Report
-                </button>
-              </div>
-
-              {/* Feedback Section */}
-              <div className="mt-2 pt-4 border-t border-gray-100 flex items-center justify-between w-full">
-                {userRole === 'Trainer' && (() => {
-                  const batchStudents = users.filter(u => u.role === 'Student' && u.batch === cls.id);
-                  const totalCount = batchStudents.length;
-                  const pendingCount = getPendingFeedbackStudents(cls.id, cls.trainer).length;
-                  const givenCount = totalCount - pendingCount;
-                  return (
-                    <div className="flex flex-col gap-3 w-full">
-                      <div className="flex items-center justify-between">
-                        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4B5563' }}>Enable Student Feedback</span>
-                        <button 
-                          onClick={() => updateClass(cls.id, 'feedbackEnabled', !cls.feedbackEnabled)}
-                          style={{
-                            position: 'relative', width: '44px', height: '24px', borderRadius: '12px',
-                            backgroundColor: cls.feedbackEnabled ? '#10B981' : '#E5E7EB',
-                            border: 'none', cursor: 'pointer', transition: 'background-color 0.2s'
-                          }}
-                        >
-                          <div style={{
-                            position: 'absolute', top: '2px', left: cls.feedbackEnabled ? '22px' : '2px',
-                            width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'white',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)', transition: 'left 0.2s'
-                          }} />
-                        </button>
-                      </div>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setShowPendingFeedbackFor(cls.id); }}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-all border border-indigo-100/50 active:scale-95 w-full justify-center"
-                      >
-                        <Users size={16} className="text-indigo-500" />
-                        Feedback ({givenCount}/{totalCount})
-                      </button>
-                    </div>
-                  );
-                })()}
-                
-                {(userRole === 'Student' || userRole === 'Admin' || userRole === 'SuperAdmin') && cls.feedbackEnabled && (
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setActiveTab('mark-rating'); }}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 group w-full justify-center"
-                  >
-                    Provide Feedback
-                  </button>
                 )}
               </div>
 
@@ -720,41 +789,148 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
     />
 
     {/* Transfer Information Modal */}
-    {transferInfo && (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-        <div className="animate-fade-in" style={{ backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '400px', padding: '32px', borderRadius: '32px', border: '1px solid #F1F5F9', textAlign: 'center' }}>
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-amber-50 rounded-full text-amber-600">
+    {transferInfo && createPortal(
+      <div style={{ 
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+        backgroundColor: 'rgba(15, 23, 42, 0.55)', zIndex: 11000, 
+        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+        backdropFilter: 'blur(16px)',
+        animation: 'fadeIn 0.3s ease-out'
+      }}>
+        <div className="animate-fade-in" style={{ 
+          backgroundColor: 'white', 
+          boxShadow: '0 30px 60px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.05)', 
+          width: '420px', 
+          maxHeight: '90vh', 
+          overflowY: 'auto', 
+          padding: '40px 32px', 
+          borderRadius: '32px', 
+          border: '1px solid rgba(226, 232, 240, 0.8)', 
+          textAlign: 'center',
+          position: 'relative'
+        }}>
+          {/* Close button in top corner */}
+          <button 
+            onClick={() => setTransferInfo(null)}
+            style={{ 
+              position: 'absolute', top: '24px', right: '24px', border: 'none', background: 'none',
+              color: '#94A3B8', cursor: 'pointer', transition: 'all 0.2s', width: '32px', height: '32px',
+              borderRadius: '50%', backgroundColor: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#1E293B';
+              e.currentTarget.style.backgroundColor = '#F1F5F9';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#94A3B8';
+              e.currentTarget.style.backgroundColor = '#F8FAFC';
+            }}
+          >
+            <X size={16} />
+          </button>
+
+          <div className="flex justify-center mb-6">
+            <div style={{ 
+              padding: '16px', 
+              background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)', 
+              borderRadius: '24px', 
+              color: '#D97706',
+              boxShadow: '0 10px 15px -3px rgba(251, 191, 36, 0.15)'
+            }}>
               <Info size={32} />
             </div>
           </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Session Transfer Info</h2>
-          <p className="text-gray-500 text-sm mb-6">Details regarding the {transferInfo.type} replacement for this session.</p>
           
-          <div className="space-y-4 mb-8">
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-left">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transferred From</p>
-              <p className="font-bold text-red-500">{transferInfo.from}</p>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#0F172A', marginBottom: '8px', letterSpacing: '-0.02em', margin: 0 }}>
+            Session Transfer Info
+          </h2>
+          <p style={{ color: '#64748B', fontSize: '0.875rem', fontWeight: '500', lineHeight: '1.4', margin: '0 0 28px 0' }}>
+            Details regarding the <strong>{transferInfo.type}</strong> replacement for this session.
+          </p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '32px' }}>
+            {/* From Card */}
+            <div style={{ 
+              backgroundColor: '#FFF5F5', 
+              padding: '18px 24px', 
+              borderRadius: '20px', 
+              border: '1px solid #FED7D7', 
+              textAlign: 'left' 
+            }}>
+              <p style={{ fontSize: '0.65rem', fontWeight: '800', color: '#E53E3E', uppercase: true, tracking: '0.1em', letterSpacing: '0.075em', textTransform: 'uppercase', margin: '0 0 4px 0' }}>
+                Transferred From
+              </p>
+              <p style={{ fontSize: '1.05rem', fontWeight: '800', color: '#9B2C2C', margin: 0 }}>
+                {transferInfo.from}
+              </p>
             </div>
             
-            <div className="flex justify-center">
-              <div className="w-px h-6 bg-gray-200"></div>
+            {/* Visual connector */}
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
+              <div style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '6px', 
+                padding: '6px 14px', 
+                borderRadius: '9999px', 
+                backgroundColor: '#F1F5F9', 
+                border: '1px solid #E2E8F0', 
+                fontSize: '0.75rem', 
+                fontWeight: '700', 
+                color: '#64748B' 
+              }}>
+                <ArrowRightLeft size={12} /> Reassigned
+              </div>
             </div>
             
-            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-left">
-              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Assigned To (Current)</p>
-              <p className="font-bold text-blue-700">{transferInfo.to}</p>
+            {/* To Card */}
+            <div style={{ 
+              backgroundColor: '#F0FDF4', 
+              padding: '18px 24px', 
+              borderRadius: '20px', 
+              border: '1px solid #BBF7D0', 
+              textAlign: 'left' 
+            }}>
+              <p style={{ fontSize: '0.65rem', fontWeight: '800', color: '#16A34A', uppercase: true, tracking: '0.1em', letterSpacing: '0.075em', textTransform: 'uppercase', margin: '0 0 4px 0' }}>
+                Assigned To (Current)
+              </p>
+              <p style={{ fontSize: '1.05rem', fontWeight: '800', color: '#14532D', margin: 0 }}>
+                {transferInfo.to}
+              </p>
             </div>
           </div>
 
           <button 
-            className="btn btn-primary w-full py-3 justify-center shadow-lg shadow-blue-200" 
+            style={{ 
+              width: '100%', 
+              padding: '16px', 
+              backgroundColor: '#1E293B', 
+              color: 'white', 
+              borderRadius: '16px', 
+              border: 'none', 
+              fontWeight: '700', 
+              fontSize: '0.9rem', 
+              cursor: 'pointer', 
+              transition: 'all 0.2s ease-in-out',
+              boxShadow: '0 8px 16px -4px rgba(30, 41, 59, 0.25)'
+            }}
             onClick={() => setTransferInfo(null)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#0F172A';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 12px 20px -4px rgba(15, 23, 42, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#1E293B';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 16px -4px rgba(30, 41, 59, 0.25)';
+            }}
           >
             Close Details
           </button>
         </div>
-      </div>
+      </div>,
+      document.body
     )}
 
     {/* Batch Report Modal */}
@@ -1013,7 +1189,7 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                     <p style={{ margin: 0, color: '#9CA3AF', fontWeight: '600', fontStyle: 'italic' }}>No tasks assigned for your role.</p>
                   </div>
                 ) : (
-                  tasks.map((task, idx) => (
+                  tasks.map(task => (
                     <div 
                       key={task.id} 
                       onClick={() => handleToggleTask(selectedClassForTasks.id, roleKey, task.id)}

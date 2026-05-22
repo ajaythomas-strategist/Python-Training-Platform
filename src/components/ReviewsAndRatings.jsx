@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Star, Filter, Calendar, Users, Search, X, ChevronDown } from 'lucide-react';
-import { users, classes } from '../data/mockData';
+import { users, classes, adjustDate } from '../data/mockData';
 
 export default function ReviewsAndRatings({ userRole, userName }) {
   const [filters, setFilters] = useState({
@@ -20,12 +20,12 @@ export default function ReviewsAndRatings({ userRole, userName }) {
 
   // Manual dummy data for a rich experience
   const manualData = [
-    { id: 'm1', sessionNo: 4, batch: '1 BCA A', date: '2026-05-15', time: '13:00 - 15:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Alice Johnson', feedback: 'Amazing depth of knowledge in Python.', rating: 5 },
-    { id: 'm2', sessionNo: 4, batch: '1 BCA A', date: '2026-05-15', time: '13:00 - 15:00', staffName: 'James Carter', role: 'Co-Trainer', studentName: 'Alice Johnson', feedback: 'Very helpful during the hands-on lab.', rating: 4 },
-    { id: 'm3', sessionNo: 1, batch: '1 PERFECT', date: '2026-05-15', time: '08:00 - 10:00', staffName: 'Margaret Hamilton', role: 'Trainer', studentName: 'Zara Ali', feedback: 'Flawless execution of the session.', rating: 5 },
-    { id: 'm4', sessionNo: 2, batch: '1 BSC CS', date: '2026-05-14', time: '14:00 - 16:00', staffName: 'Michael Chang', role: 'Trainer', studentName: 'Bob Smith', feedback: 'Good pacing, but complex concepts need more time.', rating: 3 },
-    { id: 'm5', sessionNo: 3, batch: '1 BCA A', date: '2026-05-11', time: '10:00 - 12:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Excellent session on Data Structures.', rating: 5 },
-    { id: 'm6', sessionNo: 1, batch: '1 BBA', date: '2026-05-16', time: '08:00 - 10:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Very engaging and interactive.', rating: 4 },
+    { id: 'm1', sessionNo: 4, batch: '1 BCA A', date: adjustDate('2026-05-15'), time: '13:00 - 15:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Alice Johnson', feedback: 'Amazing depth of knowledge in Python.', rating: 5 },
+    { id: 'm2', sessionNo: 4, batch: '1 BCA A', date: adjustDate('2026-05-15'), time: '13:00 - 15:00', staffName: 'James Carter', role: 'Co-Trainer', studentName: 'Alice Johnson', feedback: 'Very helpful during the hands-on lab.', rating: 4 },
+    { id: 'm3', sessionNo: 1, batch: '1 PERFECT', date: adjustDate('2026-05-15'), time: '08:00 - 10:00', staffName: 'Margaret Hamilton', role: 'Trainer', studentName: 'Zara Ali', feedback: 'Flawless execution of the session.', rating: 5 },
+    { id: 'm4', sessionNo: 2, batch: '1 BSC CS', date: adjustDate('2026-05-14'), time: '14:00 - 16:00', staffName: 'Michael Chang', role: 'Trainer', studentName: 'Bob Smith', feedback: 'Good pacing, but complex concepts need more time.', rating: 3 },
+    { id: 'm5', sessionNo: 3, batch: '1 BCA A', date: adjustDate('2026-05-11'), time: '10:00 - 12:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Excellent session on Data Structures.', rating: 5 },
+    { id: 'm6', sessionNo: 1, batch: '1 BBA', date: adjustDate('2026-05-16'), time: '08:00 - 10:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Very engaging and interactive.', rating: 4 },
   ];
 
   allReviews.push(...manualData);
