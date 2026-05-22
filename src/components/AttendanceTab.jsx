@@ -493,9 +493,41 @@ export default function AttendanceTab({ userRole, userName }) {
                 </div>
               </div>
 
-              <p style={{ color: '#4B5563', fontSize: '0.7rem', fontWeight: '700', margin: 0 }}>
-                You may close this screen
-              </p>
+              <button
+                onClick={() => {
+                  setIsMarked(false);
+                  setStudentOtp(['', '', '', '']);
+                  setStudentError('');
+                  setHasError(false);
+                  setMarkedTime('');
+                }}
+                style={{
+                  marginTop: '8px',
+                  padding: '14px 40px',
+                  backgroundColor: 'rgba(255,255,255,0.06)',
+                  color: '#94A3B8',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '16px',
+                  fontWeight: '800',
+                  fontSize: '0.8rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.12em',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(16,185,129,0.15)';
+                  e.currentTarget.style.color = '#10B981';
+                  e.currentTarget.style.borderColor = 'rgba(16,185,129,0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)';
+                  e.currentTarget.style.color = '#94A3B8';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                }}
+              >
+                Close
+              </button>
             </div>
           ) : (
             <div style={{ width: '100%' }}>
