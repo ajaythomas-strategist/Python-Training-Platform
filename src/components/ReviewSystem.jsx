@@ -1,8 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
-import { reviews } from '../data/mockData';
+import { useStore } from '../store/useStore';
+import { baseUrl } from './utils/api';
 
 export default function ReviewSystem() {
+  const [reviews, setReviews] = useState([]);
+  const token = useStore(state => state.token);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${baseUrl}/api/reviews`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.json())
+      .then(data => {
+        // Map data to expected format
+        const mapped = Array.isArray(data) ? data.map(r => ({
+          ...r,
+          trainerName: r.trainer?.name || 'Unknown Trainer',
+          overallScore: r.rating || 0,
+          studentScore: r.rating || 0,
+          adminScore: r.rating || 0,
+          recentFeedback: [{
+            student: r.reviewer?.name || 'Student',
+            rating: r.rating || 0,
+            comment: r.feedback || ''
+          }]
+        })) : [];
+        setReviews(mapped);
+      })
+      .catch(console.error);
+  }, [token]);
+
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">

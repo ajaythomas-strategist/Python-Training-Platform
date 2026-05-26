@@ -1,11 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, Clock, AlertTriangle, Users, ArrowRightLeft } from 'lucide-react';
-import { users } from '../data/mockData';
+import { useStore } from '../store/useStore';
+import { baseUrl } from './utils/api';
 
 export default function StaffSelectionModal({ isOpen, onClose, role, onSelect, currentClass, allClasses }) {
   const [selectedCoTrainers, setSelectedCoTrainers] = useState([]);
   const [activeTab, setActiveTab] = useState('Trainer'); // Used only when role is 'Transfer-Tabs'
+  const [users, setUsers] = useState([]);
+  const token = useStore(state => state.token);
+
+  useEffect(() => {
+    if (!token || !isOpen) return;
+    fetch(`${baseUrl}/api/users`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.json())
+      .then(data => setUsers(Array.isArray(data) ? data.map(u => ({
+        ...u,
+        id: u._id,
+        name: u.fullName || u.name,
+        role: u.role || 'Staff',
+        department: u.trainerProfile?.department || 'Unassigned',
+        availability: u.trainerProfile?.availability || 'Available',
+        rating: u.trainerProfile?.averageRating || 0,
+        reviewCount: u.trainerProfile?.reviewCount || 0
+      })) : []))
+      .catch(console.error);
+  }, [token, isOpen]);
 
   useEffect(() => {
     if (isOpen && currentClass && role === 'Co-Trainer') {

@@ -1,9 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle, AlertTriangle, Building, MapPin } from 'lucide-react';
-import { labs } from '../data/mockData';
+import { X, CheckCircle, AlertTriangle, Building, MapPin, Search } from 'lucide-react';
+import { useStore } from '../store/useStore';
+import { baseUrl } from './utils/api';
 
 export default function LabSelectionModal({ isOpen, onClose, onSelect, currentClass, allClasses }) {
+  const [labs, setLabs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const token = useStore(state => state.token);
+
+  useEffect(() => {
+    if (!token || !isOpen) return;
+    fetch(`${baseUrl}/api/labs`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.json())
+      .then(data => setLabs(Array.isArray(data) ? data.map(l => ({
+        ...l,
+        id: l.name || l._id,
+        name: l.name || `Lab ${l._id.slice(-4)}`,
+        capacity: l.capacity || 30,
+        department: l.department || 'General'
+      })) : []))
+      .catch(console.error);
+  }, [token, isOpen]);
+
   if (!isOpen) return null;
 
   const checkConflict = (labName) => {

@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Star, MessageSquare, AlertCircle } from 'lucide-react';
-import { users } from '../data/mockData';
+import { baseUrl } from './utils/api';
+import { useStore } from '../store/useStore';
 import MissedSessionsModal from './MissedSessionsModal';
 import CommentsModal from './CommentsModal';
 import StudentReportModal from './StudentReportModal';
 import TrainerReportModal from './TrainerReportModal';
+
+const tabs = ['Student', 'Trainer', 'Co-Trainer'];
 
 export default function UserReports() {
   const [activeTab, setActiveTab] = useState('Student');
@@ -12,9 +15,52 @@ export default function UserReports() {
   const [selectedCommentsUser, setSelectedCommentsUser] = useState(null);
   const [selectedDetailedReport, setSelectedDetailedReport] = useState(null);
 
-  const tabs = ['Student', 'Trainer', 'Co-Trainer'];
+  const [users, setUsers] = useState([]);
+  const [attendances, setAttendances] = useState([]);
+  const token = useStore(state => state.token);
 
-  const filteredUsers = users.filter(user => user.role === activeTab);
+  useEffect(() => {
+    if (!token) return;
+    
+    // Fetch users
+    fetch(`${baseUrl}/api/users`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.json())
+      .then(data => setUsers(data))
+      .catch(err => console.error(err));
+      
+    // Fetch all attendance records
+    fetch(`${baseUrl}/api/attendance`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.json())
+      .then(data => setAttendances(data))
+      .catch(err => console.error(err));
+  }, [token]);
+
+  const filteredUsers = users.filter(user => user.role === activeTab).map(u => {
+    // Calculate attendance percentage
+    const userAttendances = attendances.filter(a => a.studentId === u._id);
+    let attendancePercentage = 0;
+    
+    if (userAttendances.length > 0) {
+      const presentCount = userAttendances.filter(a => ['Present', 'Late', 'Excused'].includes(a.status)).length;
+      attendancePercentage = Math.round((presentCount / userAttendances.length) * 100);
+    } else if (u.role !== 'Student') {
+      attendancePercentage = 100;
+    }
+
+    return {
+      ...u,
+      id: u._id,
+      // Add fallback properties to prevent UI crash
+      attendance: attendancePercentage, 
+      score: 'A', 
+      comments: u.studentProfile?.comments || 'No comments yet',
+      sessions: 0, 
+      classes: 0, 
+      hours: 0, 
+      missedSessions: 0, 
+      rating: u.trainerProfile?.averageRating || 0
+    };
+  });
 
   return (
     <div className="animate-fade-in">

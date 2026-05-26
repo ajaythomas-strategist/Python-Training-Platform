@@ -5,7 +5,9 @@ import {
   Fingerprint, Monitor, Users, Play, Pause, RefreshCw, 
   ChevronRight, AlertCircle, Clock, Maximize2, Minimize2
 } from 'lucide-react';
-import { users, classes } from '../data/mockData';
+import { useStore } from '../store/useStore';
+import { baseUrl } from './utils/api';
+import { io } from 'socket.io-client';
 
 const simulationPool = [
   { id: 'd1', name: 'Alexander Wright' },
@@ -210,6 +212,9 @@ const liveFeedStyles = `
 `;
 
 export default function AttendanceTab({ userRole, userName }) {
+  const token = useStore((state) => state.token);
+  const user = useStore((state) => state.user);
+  
   // Common State
   const [activeBatch, setActiveBatch] = useState(null);
   const [sessionStatus, setSessionStatus] = useState('idle'); // 'idle', 'active', 'summary'
@@ -219,6 +224,28 @@ export default function AttendanceTab({ userRole, userName }) {
   const [waitingQueue, setWaitingQueue] = useState([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const verifiedListRef = useRef(null);
+
+  const [classes, setClasses] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    if (!token) return;
+    Promise.all([
+      fetch(`${baseUrl}/api/classes`, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json()),
+      fetch(`${baseUrl}/api/users`, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json())
+    ]).then(([classesData, usersData]) => {
+      const mappedClasses = Array.isArray(classesData) ? classesData.map(c => ({
+        ...c,
+        id: c.className,
+        name: c.className,
+        trainer: c.assignedTrainer?.name || '',
+        coTrainers: c.coTrainers?.map(ct => ct.name) || [],
+        students: usersData.filter(u => u.studentProfile?.batch === c._id).length
+      })) : [];
+      setClasses(mappedClasses);
+      setUsers(Array.isArray(usersData) ? usersData : []);
+    }).catch(console.error);
+  }, [token]);
   
   // Student State
   const [studentOtp, setStudentOtp] = useState(['', '', '', '']);
@@ -317,6 +344,35 @@ export default function AttendanceTab({ userRole, userName }) {
     setSessionStatus('summary');
   };
 
+  // --- SOCKET.IO INTEGRATION ---
+  useEffect(() => {
+    if (!activeBatch || sessionStatus !== 'active') return;
+
+    const socket = io(baseUrl, {
+      transports: ['websocket', 'polling']
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket');
+      // Using sessionCode as the room name for this demo
+      socket.emit('join_session', sessionCode);
+    });
+
+    socket.on('attendance_update', (record) => {
+      // Add real student to radar with current timestamp
+      const realStudent = {
+        id: record.studentId._id || record._id,
+        name: record.studentId.name || 'Real Student',
+        joinedAt: Date.now()
+      };
+      setRadarStudents(prev => [...prev, realStudent]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [activeBatch, sessionStatus, sessionCode]);
+
   // Single clean simulation engine using refs to avoid stale-closure issues
   const simStateRef = useRef({ presentStudents: [], radarStudents: [], waitingQueue: [] });
   
@@ -393,7 +449,7 @@ export default function AttendanceTab({ userRole, userName }) {
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const enteredCode = studentOtp.join('');
     if (enteredCode.length === 4 && /^\d{4}$/.test(enteredCode)) {
       // Correct: mark attendance
@@ -402,6 +458,25 @@ export default function AttendanceTab({ userRole, userName }) {
       setHasError(false);
       const now = new Date();
       setMarkedTime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+
+      // API Call to broadcast via Socket.io
+      // In a real app we'd map enteredCode -> classId. For demo, we use user's batch or a dummy ID.
+      try {
+        const dummyClassId = "60b8d295f1d2c72b8c9f1b99"; // Fallback ObjectId
+        await fetch(`${baseUrl}/api/attendance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            classId: dummyClassId,
+            sessionId: enteredCode.padEnd(24, '0'), // Fake ObjectId based on session code so it joins the socket room
+            studentId: user?._id || "60b8d295f1d2c72b8c9f1b99",
+            status: 'Present'
+          })
+        });
+      } catch (err) {
+        console.error("Failed to sync attendance with server:", err);
+      }
+
     } else {
       // Wrong: show error + shake
       setStudentError('Incorrect code. Please check the projector and try again.');

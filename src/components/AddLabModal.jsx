@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Monitor, Shield, Users, Cpu, Book, Save, PlusCircle } from 'lucide-react';
+import { X, Monitor, Users, Cpu, Book, Save, PlusCircle } from 'lucide-react';
 
 export default function AddLabModal({ isOpen, onClose, onAdd }) {
   const [formData, setFormData] = useState({
-    id: '',
     name: '',
     department: '',
     capacity: ''
@@ -16,7 +15,7 @@ export default function AddLabModal({ isOpen, onClose, onAdd }) {
     e.preventDefault();
     onAdd({ ...formData, capacity: parseInt(formData.capacity) });
     onClose();
-    setFormData({ id: '', name: '', department: '', capacity: '' });
+    setFormData({ name: '', department: '', capacity: '' });
   };
 
   const inputGroupStyle = {
@@ -106,41 +105,21 @@ export default function AddLabModal({ isOpen, onClose, onAdd }) {
         <form onSubmit={handleSubmit} style={{ padding: '40px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-              {/* Lab ID */}
-              <div style={inputGroupStyle}>
-                <label style={labelStyle}>Lab Identification</label>
-                <div style={inputWrapperStyle}>
-                  <Shield size={20} style={iconStyle} />
-                  <input 
-                    required
-                    type="text" 
-                    placeholder="e.g. LAB-10"
-                    value={formData.id}
-                    onChange={(e) => setFormData({...formData, id: e.target.value})}
-                    style={inputStyle}
-                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.backgroundColor = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = '#F1F5F9'; e.target.style.backgroundColor = '#F8FAFC'; e.target.style.boxShadow = 'none'; }}
-                  />
-                </div>
-              </div>
-
-              {/* Lab Name */}
-              <div style={inputGroupStyle}>
-                <label style={labelStyle}>Lab Display Name</label>
-                <div style={inputWrapperStyle}>
-                  <Book size={20} style={iconStyle} />
-                  <input 
-                    required
-                    type="text" 
-                    placeholder="e.g. AI Innovation Hub"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    style={inputStyle}
-                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.backgroundColor = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = '#F1F5F9'; e.target.style.backgroundColor = '#F8FAFC'; e.target.style.boxShadow = 'none'; }}
-                  />
-                </div>
+            {/* Lab Name - full width */}
+            <div style={inputGroupStyle}>
+              <label style={labelStyle}>Lab Display Name</label>
+              <div style={inputWrapperStyle}>
+                <Book size={20} style={iconStyle} />
+                <input 
+                  required
+                  type="text" 
+                  placeholder="e.g. AI Innovation Hub"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  style={inputStyle}
+                  onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.backgroundColor = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
+                  onBlur={(e) => { e.target.style.borderColor = '#F1F5F9'; e.target.style.backgroundColor = '#F8FAFC'; e.target.style.boxShadow = 'none'; }}
+                />
               </div>
             </div>
 

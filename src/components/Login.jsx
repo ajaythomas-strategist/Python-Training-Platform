@@ -1,27 +1,22 @@
 import React, { useState } from 'react';
 import { Lock, User, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { useStore } from '../store/useStore';
+import toast from 'react-hot-toast';
 
-export default function Login({ onLogin }) {
+export default function Login() {
+  const login = useStore((state) => state.login);
+  const isLoading = useStore((state) => state.isLoading);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Credentials Check
-    if (username === '8129214289' && password === 'AjayThomas@1') {
-      onLogin('SuperAdmin', 'Super Admin');
-    } else if (username === '101' && password === '101') {
-      onLogin('Admin', 'Standard Admin');
-    } else if (username === '201' && password === '201') {
-      onLogin('Trainer', 'Dr. Sarah Lee');
-    } else if (username === '301' && password === '301') {
-      onLogin('Co-Trainer', 'James Carter');
-    } else if (username === '401' && password === '401') {
-      onLogin('Student', 'Emily Davis');
-    } else {
-      setError('Invalid username or password');
+    try {
+      await login(username, password);
+      toast.success('Successfully logged in!');
+    } catch (err) {
+      toast.error(err.message || 'Invalid username or password');
     }
   };
 
@@ -112,14 +107,9 @@ export default function Login({ onLogin }) {
             </div>
           </div>
 
-          {error && (
-            <p style={{ margin: 0, color: '#EF4444', fontSize: '0.875rem', fontWeight: 600, textAlign: 'center' }}>
-              {error}
-            </p>
-          )}
-
           <button 
             type="submit" 
+            disabled={isLoading}
             className="btn btn-primary"
             style={{ 
               padding: '16px', 
@@ -129,10 +119,12 @@ export default function Login({ onLogin }) {
               justifyContent: 'center',
               marginTop: '12px',
               background: 'linear-gradient(to right, #4F46E5, #7C3AED)',
-              boxShadow: '0 10px 15px -3px rgba(79, 70, 229, 0.3)'
+              boxShadow: '0 10px 15px -3px rgba(79, 70, 229, 0.3)',
+              opacity: isLoading ? 0.7 : 1,
+              cursor: isLoading ? 'not-allowed' : 'pointer'
             }}
           >
-            Sign In
+            {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 

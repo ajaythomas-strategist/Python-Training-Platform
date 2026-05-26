@@ -1,5 +1,7 @@
+import React, { useState, useEffect } from 'react';
 import { Trophy, Star, Medal, Crown } from 'lucide-react';
-import { users, classes } from '../data/mockData';
+import { baseUrl } from './utils/api';
+import { useStore } from '../store/useStore';
 
 function LeaderboardCard({ title, subtitle, badgeText, badgeBg, icon: Icon, iconColor, hoverBorderColor, radialBg, items, isRating }) {
   return (
@@ -192,6 +194,36 @@ function LeaderboardCard({ title, subtitle, badgeText, badgeBg, icon: Icon, icon
 }
 
 export default function Leaderboard({ userRole, userName }) {
+  const [users, setUsers] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const token = useStore(state => state.token);
+
+  useEffect(() => {
+    if (!token) return;
+    Promise.all([
+      fetch(`${baseUrl}/api/users`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${baseUrl}/api/classes`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())
+    ]).then(([usersData, classesData]) => {
+      // Map API data to avoid UI crash
+      const mappedUsers = Array.isArray(usersData) ? usersData.map(u => ({
+        ...u,
+        id: u._id,
+        score: '85%', // Default fallback since DB lacks test scores
+        batch: u.studentProfile?.batch || 'Unassigned',
+        rating: u.trainerProfile?.averageRating || 0
+      })) : [];
+      
+      const mappedClasses = Array.isArray(classesData) ? classesData.map(c => ({
+        ...c,
+        id: c.className,
+        trainer: c.assignedTrainer?.name || '',
+        coTrainers: c.coTrainers?.map(ct => ct.name) || []
+      })) : [];
+      
+      setUsers(mappedUsers);
+      setClasses(mappedClasses);
+    }).catch(err => console.error(err));
+  }, [token]);
   const trainers = users.filter(u => u.role === 'Trainer');
   const coTrainers = users.filter(u => u.role === 'Co-Trainer');
   const students = users.filter(u => u.role === 'Student');

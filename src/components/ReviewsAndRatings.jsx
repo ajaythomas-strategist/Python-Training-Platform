@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
-import { Star, Filter, Calendar, Users, Search, X, ChevronDown, Lock, MessageSquare } from 'lucide-react';
-import { users, classes, adjustDate } from '../data/mockData';
-import { privateCommentsStore, trainerReviewsStore } from '../data/commentsStore';
+import React, { useState, useEffect } from 'react';
+import { Star, Users, X, MessageSquare, Lock } from 'lucide-react';
+import { useStore } from '../store/useStore';
+import { baseUrl } from './utils/api';
+import { privateCommentsStore } from '../data/commentsStore';
 
 export default function ReviewsAndRatings({ userRole, userName }) {
+  const token = useStore((state) => state.token);
+  const user = useStore((state) => state.user);
+  
+  const [reviews, setReviews] = useState([]);
+  const [classesList, setClassesList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [filters, setFilters] = useState({
     batch: '',
     dateFrom: '',
@@ -13,81 +21,84 @@ export default function ReviewsAndRatings({ userRole, userName }) {
     ratingMax: ''
   });
 
-  const students = users.filter(u => u.role === 'Student');
   const isTrainerRole = userRole === 'Trainer';
+  const isAdminOrSuper = userRole === 'Admin' || userRole === 'SuperAdmin';
 
-  // Derive all individual reviews from mock data with more dummy entries
-  const allReviews = [];
-
-  // Manual dummy data for a rich experience
-  const manualData = [
-    { id: 'm1', sessionNo: 4, batch: '1 BCA A', date: adjustDate('2026-05-15'), time: '13:00 - 15:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Alice Johnson', feedback: 'Amazing depth of knowledge in Python.', rating: 5 },
-    { id: 'm2', sessionNo: 4, batch: '1 BCA A', date: adjustDate('2026-05-15'), time: '13:00 - 15:00', staffName: 'James Carter', role: 'Co-Trainer', studentName: 'Alice Johnson', feedback: 'Very helpful during the hands-on lab.', rating: 4 },
-    { id: 'm3', sessionNo: 1, batch: '1 PERFECT', date: adjustDate('2026-05-15'), time: '08:00 - 10:00', staffName: 'Margaret Hamilton', role: 'Trainer', studentName: 'Zara Ali', feedback: 'Flawless execution of the session.', rating: 5 },
-    { id: 'm4', sessionNo: 2, batch: '1 BSC CS', date: adjustDate('2026-05-14'), time: '14:00 - 16:00', staffName: 'Michael Chang', role: 'Trainer', studentName: 'Bob Smith', feedback: 'Good pacing, but complex concepts need more time.', rating: 3 },
-    { id: 'm5', sessionNo: 3, batch: '1 BCA A', date: adjustDate('2026-05-11'), time: '10:00 - 12:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Excellent session on Data Structures.', rating: 5 },
-    { id: 'm6', sessionNo: 1, batch: '1 BBA', date: adjustDate('2026-05-16'), time: '08:00 - 10:00', staffName: 'Dr. Sarah Lee', role: 'Trainer', studentName: 'Emily Davis', feedback: 'Very engaging and interactive.', rating: 4 },
-  ];
-
-  allReviews.push(...manualData);
-  allReviews.push(...trainerReviewsStore);
-
-  classes.forEach(cls => {
-    cls.sessions.forEach((session, sIdx) => {
-      const batchStudents = students.filter(s => s.batch === cls.id);
-      batchStudents.forEach(student => {
-        const staff = [cls.trainer, ...(cls.coTrainers || [])];
-        staff.forEach(staffName => {
-          const staffMember = users.find(u => u.name === staffName);
-          if (!staffMember) return;
-          const hash = (student.id * 1000 + sIdx + new Date(session.date).getTime()) % 100;
-          if (hash > 70) { 
-            allReviews.push({
-              id: `${cls.id}-${session.date}-${student.id}-${staffMember.id}`,
-              sessionNo: sIdx + 1,
-              batch: cls.id,
-              date: session.date,
-              time: `${session.startTime} - ${session.endTime}`,
-              staffName: staffMember.name,
-              role: staffMember.role,
-              studentName: student.name,
-              feedback: "Consistent and professional delivery.",
-              rating: 4 + (hash % 2)
-            });
-          }
+  // 1. Fetch data
+  useEffect(() => {
+    if (!token) return;
+    
+    const fetchReviews = async () => {
+      try {
+        setLoading(true);
+        // If trainer, fetch only their reviews. Otherwise fetch all (Admins).
+        // For Students, we might fetch all if allowed, but usually students only see their trainers. Let's fetch all for simplicity, or we can use the same endpoint.
+        const endpoint = isTrainerRole && user?._id 
+          ? `/api/reviews/trainer/${user._id}` 
+          : '/api/reviews';
+          
+        const res = await fetch(`${baseUrl}${endpoint}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-      });
-    });
-  });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setReviews(data);
+        }
 
-  const baseReviews = isTrainerRole ? allReviews.filter(r => r.staffName === userName) : allReviews;
+        // Fetch classes for batch filter dropdown
+        const classRes = await fetch(`${baseUrl}/api/classes`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (classRes.ok) {
+          const classData = await classRes.json();
+          setClassesList(classData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch reviews:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredReviews = baseReviews.filter(review => {
-    const matchBatch = !filters.batch || review.batch === filters.batch;
-    const matchName = isTrainerRole || !filters.name || review.staffName === filters.name;
+    fetchReviews();
+  }, [token, isTrainerRole, user]);
+
+  // 2. Filter logic
+  const filteredReviews = reviews.filter(review => {
+    // review.classId is populated with { _id, batchId }
+    // review.trainerId is populated with { _id, name }
+    
+    const batchName = review.classId?.batchId || 'Unknown Batch';
+    const trainerName = review.trainerId?.name || 'Unknown Trainer';
+    const reviewDate = new Date(review.createdAt).toISOString().split('T')[0];
+
+    const matchBatch = !filters.batch || batchName === filters.batch;
+    const matchName = isTrainerRole || !filters.name || trainerName === filters.name;
     const matchRatingMin = !filters.ratingMin || review.rating >= Number(filters.ratingMin);
     const matchRatingMax = !filters.ratingMax || review.rating <= Number(filters.ratingMax);
     
     let matchDate = true;
     if (filters.dateFrom && filters.dateTo) {
-      matchDate = review.date >= filters.dateFrom && review.date <= filters.dateTo;
+      matchDate = reviewDate >= filters.dateFrom && reviewDate <= filters.dateTo;
     } else if (filters.dateFrom) {
-      matchDate = review.date >= filters.dateFrom;
+      matchDate = reviewDate >= filters.dateFrom;
     } else if (filters.dateTo) {
-      matchDate = review.date <= filters.dateTo;
+      matchDate = reviewDate <= filters.dateTo;
     }
 
     return matchBatch && matchName && matchRatingMin && matchRatingMax && matchDate;
   });
 
-  const uniqueBatches = [...new Set(classes.map(c => c.id))];
-  const uniqueTrainers = [...new Set(allReviews.map(r => r.staffName))].sort();
+  // Extract unique batches and trainers for dropdowns
+  const uniqueBatches = [...new Set(classesList.map(c => c.batchId))];
+  const uniqueTrainers = [...new Set(reviews.map(r => r.trainerId?.name).filter(Boolean))].sort();
 
-  // Calculate summary stats
-  const trainerRatings = baseReviews.map(r => r.rating);
-  const totalReviews = trainerRatings.length;
-  const averageRating = totalReviews > 0 ? (trainerRatings.reduce((a, b) => a + b, 0) / totalReviews).toFixed(1) : '0.0';
-  const excellenceRatio = totalReviews > 0 ? Math.round((trainerRatings.filter(r => r >= 4).length / totalReviews) * 100) : 0;
+  // Summary stats (Trainer specific or Global)
+  const ratings = filteredReviews.map(r => r.rating);
+  const totalReviews = ratings.length;
+  const averageRating = totalReviews > 0 ? (ratings.reduce((a, b) => a + b, 0) / totalReviews).toFixed(1) : '0.0';
+  const excellenceRatio = totalReviews > 0 ? Math.round((ratings.filter(r => r >= 4).length / totalReviews) * 100) : 0;
 
   return (
     <div className="animate-fade-in p-6">
@@ -102,7 +113,7 @@ export default function ReviewsAndRatings({ userRole, userName }) {
         </div>
       </div>
 
-      {isTrainerRole && (
+      {(isTrainerRole || isAdminOrSuper) && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '24px', marginBottom: '32px' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '32px', border: '1px solid #F1F5F9', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.03)', padding: '32px', display: 'flex', alignItems: 'center', gap: '24px' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '20px', backgroundColor: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
@@ -136,41 +147,25 @@ export default function ReviewsAndRatings({ userRole, userName }) {
         </div>
       )}
 
-      {/* Primary Filters (Unified Single Row Bar - Optimized Spacing) */}
+      {/* Primary Filters */}
       <div className="card mb-8" style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB', padding: '1.25rem 2rem', marginBottom: '0.5cm' }}>
         <div className="flex items-center justify-between gap-4">
-          {/* Date Range Group */}
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-gray-600 whitespace-nowrap">From:</span>
-              <input 
-                type="date"
-                className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none shadow-sm focus:ring-2 focus:ring-indigo-500/20"
-                value={filters.dateFrom}
-                onChange={(e) => setFilters(f => ({ ...f, dateFrom: e.target.value }))}
-              />
+              <input type="date" className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none" value={filters.dateFrom} onChange={(e) => setFilters(f => ({ ...f, dateFrom: e.target.value }))} />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-gray-600 whitespace-nowrap">To:</span>
-              <input 
-                type="date"
-                className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none shadow-sm focus:ring-2 focus:ring-indigo-500/20"
-                value={filters.dateTo}
-                onChange={(e) => setFilters(f => ({ ...f, dateTo: e.target.value }))}
-              />
+              <input type="date" className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none" value={filters.dateTo} onChange={(e) => setFilters(f => ({ ...f, dateTo: e.target.value }))} />
             </div>
           </div>
 
           <div className="w-px h-8 bg-gray-200"></div>
 
-          {/* Batch Selection */}
           <div className="flex items-center gap-3">
             <span className="text-sm font-bold text-gray-600 whitespace-nowrap">Batch:</span>
-            <select 
-              className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm outline-none shadow-sm focus:ring-2 focus:ring-indigo-500/20 transition-all min-w-[120px]"
-              value={filters.batch}
-              onChange={(e) => setFilters(f => ({ ...f, batch: e.target.value }))}
-            >
+            <select className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm outline-none min-w-[120px]" value={filters.batch} onChange={(e) => setFilters(f => ({ ...f, batch: e.target.value }))}>
               <option value="">All Batches</option>
               {uniqueBatches.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
@@ -178,54 +173,33 @@ export default function ReviewsAndRatings({ userRole, userName }) {
 
           {!isTrainerRole && (
             <>
-              {/* Trainer Selection */}
               <div className="flex items-center gap-3">
                 <span className="text-sm font-bold text-gray-600 whitespace-nowrap">Trainer:</span>
-                <select 
-                  className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm outline-none shadow-sm focus:ring-2 focus:ring-indigo-500/20 transition-all min-w-[160px]"
-                  value={filters.name}
-                  onChange={(e) => setFilters(f => ({ ...f, name: e.target.value }))}
-                >
+                <select className="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm outline-none min-w-[160px]" value={filters.name} onChange={(e) => setFilters(f => ({ ...f, name: e.target.value }))}>
                   <option value="">All Trainers</option>
                   {uniqueTrainers.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-
               <div className="w-px h-8 bg-gray-200"></div>
             </>
           )}
 
-          {/* Rating Filter */}
           <div className="flex items-center gap-3">
             <span className="text-sm font-bold text-gray-600 whitespace-nowrap">Rating:</span>
             <div className="flex items-center gap-2">
-              <select 
-                className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-xs outline-none shadow-sm focus:ring-2 focus:ring-indigo-500/20 min-w-[90px]"
-                value={filters.ratingMin}
-                onChange={(e) => setFilters(f => ({ ...f, ratingMin: e.target.value }))}
-              >
+              <select className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-xs outline-none min-w-[90px]" value={filters.ratingMin} onChange={(e) => setFilters(f => ({ ...f, ratingMin: e.target.value }))}>
                 <option value="">Min (≥)</option>
                 {[1,2,3,4,5].map(r => <option key={r} value={r}>{r} ★ +</option>)}
               </select>
               <span className="text-gray-300">to</span>
-              <select 
-                className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-xs outline-none shadow-sm focus:ring-2 focus:ring-indigo-500/20 min-w-[90px]"
-                value={filters.ratingMax}
-                onChange={(e) => setFilters(f => ({ ...f, ratingMax: e.target.value }))}
-              >
+              <select className="bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-xs outline-none min-w-[90px]" value={filters.ratingMax} onChange={(e) => setFilters(f => ({ ...f, ratingMax: e.target.value }))}>
                 <option value="">Max (≤)</option>
                 {[1,2,3,4,5].map(r => <option key={r} value={r}>{r} ★ -</option>)}
               </select>
             </div>
           </div>
 
-          <button 
-            onClick={() => setFilters({ batch: '', dateFrom: '', dateTo: '', name: '', ratingMin: '', ratingMax: '' })}
-            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-            title="Clear All Filters"
-          >
-            <X size={20} />
-          </button>
+          <button onClick={() => setFilters({ batch: '', dateFrom: '', dateTo: '', name: '', ratingMin: '', ratingMax: '' })} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Clear All Filters"><X size={20} /></button>
         </div>
       </div>
 
@@ -242,58 +216,58 @@ export default function ReviewsAndRatings({ userRole, userName }) {
           <table className="w-full">
             <thead>
               <tr>
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Date</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Batch</th>
                 {!isTrainerRole && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Trainer Name</th>}
-                {!isTrainerRole && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Role</th>}
-                {!isTrainerRole && <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Student</th>}
+                <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Reviewer</th>
                 <th className="text-left text-xs font-bold text-gray-400 uppercase tracking-widest pb-4 w-1/2">Feedback</th>
                 <th className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest pb-4">Rating</th>
               </tr>
             </thead>
             <tbody>
-              {filteredReviews.length > 0 ? filteredReviews.map((rev) => (
-                <tr key={rev.id} className="border-t border-gray-50 text-sm hover:bg-gray-50/50 transition-colors">
-                  <td className="py-4">
-                    <span className="badge badge-blue">{rev.batch}</span>
-                  </td>
-                  {!isTrainerRole && (
-                    <td className="py-4">
-                      <span className="font-bold text-gray-800">{rev.staffName}</span>
-                    </td>
-                  )}
-                  {!isTrainerRole && (
-                    <td className="py-4">
-                      <span className={`text-xs font-bold ${rev.role === 'Trainer' ? 'text-indigo-600' : 'text-purple-600'}`}>
-                        {rev.role}
-                      </span>
-                    </td>
-                  )}
-                  {!isTrainerRole && (
-                    <td className="py-4 text-gray-600 font-medium">
-                      {rev.studentName}
-                    </td>
-                  )}
-                  <td className="py-4">
-                    <p className="m-0 text-gray-500 leading-relaxed italic">"{rev.feedback}"</p>
-                  </td>
-                  <td className="py-4 text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="flex gap-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            size={12} 
-                            className={i < rev.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'} 
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs font-black text-gray-800">{rev.rating}.0</span>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan={isTrainerRole ? "5" : "6"} className="py-12 text-center text-gray-400 italic font-medium">
+                    Loading records...
                   </td>
                 </tr>
-              )) : (
+              ) : filteredReviews.length > 0 ? (
+                filteredReviews.map((rev) => (
+                  <tr key={rev._id} className="border-t border-gray-50 text-sm hover:bg-gray-50/50 transition-colors">
+                    <td className="py-4 text-gray-600 font-medium">
+                      {new Date(rev.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-4">
+                      <span className="badge badge-blue">{rev.classId?.batchId || 'Unknown'}</span>
+                    </td>
+                    {!isTrainerRole && (
+                      <td className="py-4">
+                        <span className="font-bold text-gray-800">{rev.trainerId?.name}</span>
+                      </td>
+                    )}
+                    <td className="py-4">
+                      <span className={`text-xs font-bold ${rev.reviewerId?.role === 'Trainer' ? 'text-indigo-600' : 'text-purple-600'}`}>
+                        {rev.reviewerId?.name} ({rev.reviewerId?.role})
+                      </span>
+                    </td>
+                    <td className="py-4">
+                      <p className="m-0 text-gray-500 leading-relaxed italic">"{rev.comments || 'No written feedback'}"</p>
+                    </td>
+                    <td className="py-4 text-center">
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} size={12} className={i < rev.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200'} />
+                          ))}
+                        </div>
+                        <span className="text-xs font-black text-gray-800">{rev.rating}.0</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
-                  <td colSpan={isTrainerRole ? "3" : "6"} className="py-12 text-center text-gray-400 italic font-medium">
+                  <td colSpan={isTrainerRole ? "5" : "6"} className="py-12 text-center text-gray-400 italic font-medium">
                     No reviews found matching your current filters.
                   </td>
                 </tr>
@@ -303,10 +277,9 @@ export default function ReviewsAndRatings({ userRole, userName }) {
         </div>
       </div>
 
-      {/* Private Student Comments — visible only to SuperAdmin, Admin, Trainer */}
+      {/* Private Student Comments */}
       {(userRole === 'SuperAdmin' || userRole === 'Admin' || userRole === 'Trainer') && (
         <div className="card flex-col" style={{ gap: '1.5rem', marginTop: '1.5rem' }}>
-          {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
@@ -353,13 +326,7 @@ export default function ReviewsAndRatings({ userRole, userName }) {
                       {c.rating ? (
                         <div style={{ display: 'flex', gap: '2px' }}>
                           {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              size={12} 
-                              fill={i < c.rating ? '#F59E0B' : 'transparent'}
-                              color={i < c.rating ? '#F59E0B' : '#E2E8F0'}
-                              strokeWidth={i < c.rating ? 0 : 2}
-                            />
+                            <Star key={i} size={12} fill={i < c.rating ? '#F59E0B' : 'transparent'} color={i < c.rating ? '#F59E0B' : '#E2E8F0'} strokeWidth={i < c.rating ? 0 : 2} />
                           ))}
                         </div>
                       ) : (

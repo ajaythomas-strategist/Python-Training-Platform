@@ -28,12 +28,12 @@ export default function MaintenanceModal({ isOpen, onClose, onSetMaintenance, la
       return;
     }
 
-    onSetMaintenance(lab.id, { startDate, endDate, reason: 'Maintenance' });
+    onSetMaintenance(lab._id || lab.id, { startDate, endDate, reason: 'Maintenance' });
     onClose();
   };
 
   const handleClear = () => {
-    onSetMaintenance(lab.id, null);
+    onSetMaintenance(lab._id || lab.id, null);
     onClose();
   };
 

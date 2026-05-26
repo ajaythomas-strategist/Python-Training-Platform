@@ -1,14 +1,15 @@
-import React from 'react';
-import { LayoutDashboard, Users, BookOpen, Star, FlaskConical, ShieldAlert, LogOut, Trophy } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { LayoutDashboard, Users, Shield, GraduationCap, Briefcase, UserCheck, Filter, LogOut, Star, BookOpen, FlaskConical, ShieldAlert, Trophy } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { appRoutes } from '../routes';
 
-import { classes, users } from '../data/mockData';
 
-export default function Sidebar({ activeTab, setActiveTab, onLogout, userRole, userName }) {
-  const studentObj = userRole === 'Student' ? users.find(u => u.name === userName && u.role === 'Student') : null;
-  const isFeedbackEnabledForStudent = studentObj 
-    ? classes.find(c => c.id === studentObj.batch)?.feedbackEnabled 
-    : false;
+export default function Sidebar({ onLogout, userRole, userName }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeTab = location.pathname.substring(1) || 'dashboard';
 
+const isFeedbackEnabledForStudent = false;
   const allItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={20} />, roles: ['SuperAdmin', 'Admin', 'Trainer', 'Co-Trainer'] },
@@ -30,7 +31,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, userRole, u
   });
 
   return (
-    <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column' }}>
+    <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column', fontFamily: 'Arial, sans-serif' }}>
       <div className="sidebar-logo flex-col items-start gap-1">
         <div className="flex items-center gap-2">
           <div className="avatar">{userName ? userName.charAt(0) : 'TM'}</div>
@@ -46,7 +47,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, userRole, u
           <div
             key={item.id}
             className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => navigate(`/${item.id}`)}
           >
             {item.icon}
             <span>{item.label}</span>
