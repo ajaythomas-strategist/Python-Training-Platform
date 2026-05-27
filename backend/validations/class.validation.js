@@ -32,4 +32,7 @@ export const updateClassSchema = Joi.object({
     assignedLab: Joi.string().regex(objectIdPattern).message('Invalid Lab ID format').optional(),
     status: Joi.string().valid('Active', 'Completed').optional(),
     startDate: Joi.date().iso().optional(),
+    completedTasks: Joi.array()
+        .items(Joi.string().regex(objectIdPattern).message('Invalid Guideline ID format'))
+        .optional(),
 });

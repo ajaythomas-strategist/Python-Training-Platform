@@ -60,18 +60,53 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
         return dateStr;
     };
 
-    const handleToggleTask = (classId, role, taskId) => {
-        const updatedClasses = classes.map((cls) => {
-            if (cls.id === classId) {
-                const updatedTasks = { ...cls.tasks };
-                updatedTasks[role] = updatedTasks[role].map((task) =>
-                    task.id === taskId ? { ...task, completed: !task.completed } : task,
-                );
-                return { ...cls, tasks: updatedTasks };
-            }
-            return cls;
-        });
-        setClasses(updatedClasses);
+    const handleToggleTask = async (classId, role, taskId) => {
+        // Find the class and the current completedTasks
+        const cls = classes.find((c) => c.id === classId);
+        if (!cls) return;
+
+        const allTasksForClass = [
+            ...(cls.tasks.Trainer || []),
+            ...(cls.tasks.Admin || []),
+            ...(cls.tasks['Co-Trainer'] || []),
+        ];
+        const toggledTask = allTasksForClass.find((t) => t.id === taskId);
+        if (!toggledTask) return;
+
+        const isCurrentlyCompleted = toggledTask.completed;
+        // Build new completedTasks array
+        const currentCompleted = allTasksForClass.filter((t) => t.completed).map((t) => t.id);
+        const newCompleted = isCurrentlyCompleted
+            ? currentCompleted.filter((id) => id !== taskId)
+            : [...currentCompleted, taskId];
+
+        // Optimistic UI update
+        setClasses((prev) =>
+            prev.map((c) => {
+                if (c.id !== classId) return c;
+                const updatedTasks = {};
+                for (const r of ['Trainer', 'Admin', 'Co-Trainer']) {
+                    updatedTasks[r] = (c.tasks[r] || []).map((t) =>
+                        t.id === taskId ? { ...t, completed: !isCurrentlyCompleted } : t,
+                    );
+                }
+                return { ...c, tasks: updatedTasks };
+            }),
+        );
+
+        // Persist to backend
+        try {
+            await fetch(`${baseUrl}/api/classes/${cls._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ completedTasks: newCompleted }),
+            });
+        } catch (err) {
+            console.error('Failed to save task state', err);
+        }
     };
 
     const getComputedStatus = (cls) => {
@@ -101,14 +136,24 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (!res.ok) throw new Error('Failed');
-                const [data, usersData, labsData, sessionsData] = await Promise.all([
+                const [data, usersData, labsData, sessionsData, guidelinesResp] = await Promise.all([
                     res.json(),
                     fetch(`${baseUrl}/api/users`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
                     fetch(`${baseUrl}/api/labs`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-                    fetch(`${baseUrl}/api/sessions/all`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : [])
+                    fetch(`${baseUrl}/api/sessions/all`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : []),
+                    fetch(`${baseUrl}/api/guidelines`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : { grouped: false, data: [] }),
                 ]);
                 setUsers(Array.isArray(usersData) ? usersData : []);
                 setLabs(Array.isArray(labsData) ? labsData : []);
+
+                // Flatten guidelines into a single array regardless of grouped/flat response
+                let allGuidelines = [];
+                if (guidelinesResp.grouped) {
+                    // SuperAdmin/Admin: grouped object => flatten
+                    allGuidelines = Object.values(guidelinesResp.data).flat();
+                } else {
+                    allGuidelines = Array.isArray(guidelinesResp.data) ? guidelinesResp.data : [];
+                }
 
                 // Map backend to frontend schema
                 const mapped = data.map((backendCls) => {
@@ -120,7 +165,25 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                         transferredTo: s.transferredTo?.name || s.transferredTo || null,
                         transferredCoTrainerTo: s.transferredCoTrainerTo?.name || s.transferredCoTrainerTo || null
                     }));
-                    
+
+                    // Build completedTask ID set from the class record
+                    const completedIds = new Set(
+                        (backendCls.completedTasks || []).map((t) => t._id || t)
+                    );
+
+                    // Build tasks object: group guidelines by role, mark completion
+                    const tasks = {};
+                    for (const guideline of allGuidelines) {
+                        const r = guideline.role;
+                        if (!tasks[r]) tasks[r] = [];
+                        tasks[r].push({
+                            id: guideline._id,
+                            text: guideline.text,
+                            role: r,
+                            completed: completedIds.has(guideline._id),
+                        });
+                    }
+
                     return {
                         _id: backendCls._id,
                         id: backendCls.className,
@@ -129,7 +192,7 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                         coTrainers: backendCls.coTrainers?.map((u) => u.name) || [],
                         lab: backendCls.assignedLab?.name || 'Unassigned',
                         sessions: classSessions,
-                        tasks: { Trainer: [], Admin: [] },
+                        tasks,
                     };
                 });
                 setClasses(mapped);
@@ -1971,15 +2034,20 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                                         >
                                             {/* Task Status */}
                                             {(() => {
-                                                const roleKey =
-                                                    userRole === 'SuperAdmin'
-                                                        ? 'Admin'
-                                                        : userRole === 'Admin'
-                                                          ? 'Admin'
-                                                          : userRole === 'Trainer'
-                                                            ? 'Trainer'
-                                                            : 'Co-Trainer';
-                                                const tasks = cls.tasks?.[roleKey] || [];
+                                                // SuperAdmin sees all tasks; others only see their own role
+                                                const isSuperAdmin = userRole === 'SuperAdmin';
+                                                let tasks;
+                                                if (isSuperAdmin) {
+                                                    tasks = Object.values(cls.tasks || {}).flat();
+                                                } else {
+                                                    const roleKey =
+                                                        userRole === 'Admin'
+                                                            ? 'Admin'
+                                                            : userRole === 'Trainer'
+                                                              ? 'Trainer'
+                                                              : 'Co-Trainer';
+                                                    tasks = cls.tasks?.[roleKey] || [];
+                                                }
                                                 const completed = tasks.filter(
                                                     (t) => t.completed,
                                                 ).length;
@@ -3082,15 +3150,24 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                 selectedClassForTasks &&
                 createPortal(
                     (() => {
-                        const roleKey =
-                            userRole === 'SuperAdmin'
-                                ? 'Admin'
-                                : userRole === 'Admin'
-                                  ? 'Admin'
-                                  : userRole === 'Trainer'
-                                    ? 'Trainer'
-                                    : 'Co-Trainer';
-                        const tasks = selectedClassForTasks.tasks?.[roleKey] || [];
+                        const isSuperAdmin = userRole === 'SuperAdmin';
+                        // SuperAdmin sees all tasks (flat); others see only their role's tasks
+                        let tasks;
+                        let roleKey;
+                        if (isSuperAdmin) {
+                            tasks = Object.values(
+                                selectedClassForTasks.tasks || {},
+                            ).flat();
+                            roleKey = null;
+                        } else {
+                            roleKey =
+                                userRole === 'Admin'
+                                    ? 'Admin'
+                                    : userRole === 'Trainer'
+                                      ? 'Trainer'
+                                      : 'Co-Trainer';
+                            tasks = selectedClassForTasks.tasks?.[roleKey] || [];
+                        }
                         const completedCount = tasks.filter((t) => t.completed).length;
                         const progress =
                             tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
@@ -3352,23 +3429,60 @@ export default function ClassManagement({ userRole, userName, setActiveTab }) {
                                                             )}
                                                         </div>
                                                         <div style={{ flex: 1 }}>
-                                                            <span
-                                                                style={{
-                                                                    fontSize: '0.925rem',
-                                                                    fontWeight: '700',
-                                                                    color: task.completed
-                                                                        ? '#065F46'
-                                                                        : '#374151',
-                                                                    textDecoration: task.completed
-                                                                        ? 'line-through'
-                                                                        : 'none',
-                                                                    opacity: task.completed
-                                                                        ? 0.6
-                                                                        : 1,
-                                                                }}
-                                                            >
-                                                                {task.text}
-                                                            </span>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                                                <span
+                                                                    style={{
+                                                                        fontSize: '0.925rem',
+                                                                        fontWeight: '700',
+                                                                        color: task.completed
+                                                                            ? '#065F46'
+                                                                            : '#374151',
+                                                                        textDecoration: task.completed
+                                                                            ? 'line-through'
+                                                                            : 'none',
+                                                                        opacity: task.completed
+                                                                            ? 0.6
+                                                                            : 1,
+                                                                    }}
+                                                                >
+                                                                    {task.text}
+                                                                </span>
+                                                                {/* Role badge — only for SuperAdmin */}
+                                                                {isSuperAdmin && task.role && (
+                                                                    <span
+                                                                        style={{
+                                                                            fontSize: '0.6rem',
+                                                                            fontWeight: '800',
+                                                                            textTransform: 'uppercase',
+                                                                            letterSpacing: '0.08em',
+                                                                            padding: '2px 8px',
+                                                                            borderRadius: '9999px',
+                                                                            backgroundColor:
+                                                                                task.role === 'Trainer'
+                                                                                    ? '#EFF6FF'
+                                                                                    : task.role === 'Admin'
+                                                                                      ? '#FEF3C7'
+                                                                                      : '#F3E8FF',
+                                                                            color:
+                                                                                task.role === 'Trainer'
+                                                                                    ? '#1D4ED8'
+                                                                                    : task.role === 'Admin'
+                                                                                      ? '#92400E'
+                                                                                      : '#6D28D9',
+                                                                            border: '1px solid',
+                                                                            borderColor:
+                                                                                task.role === 'Trainer'
+                                                                                    ? '#BFDBFE'
+                                                                                    : task.role === 'Admin'
+                                                                                      ? '#FDE68A'
+                                                                                      : '#DDD6FE',
+                                                                            flexShrink: 0,
+                                                                        }}
+                                                                    >
+                                                                        {task.role}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             {task.completed && (
                                                                 <div
                                                                     style={{

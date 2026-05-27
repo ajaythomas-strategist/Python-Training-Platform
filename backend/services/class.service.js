@@ -44,14 +44,16 @@ export const getAllClasses = async () => {
     return await Class.find()
         .populate('assignedTrainer', 'name email role')
         .populate('coTrainers', 'name email role')
-        .populate('assignedLab', 'name');
+        .populate('assignedLab', 'name')
+        .populate('completedTasks', '_id');
 };
 
 export const getClassById = async (id) => {
     const foundClass = await Class.findById(id)
         .populate('assignedTrainer', 'name email role')
         .populate('coTrainers', 'name email role')
-        .populate('assignedLab', 'name');
+        .populate('assignedLab', 'name')
+        .populate('completedTasks', '_id');
 
     if (!foundClass) throw new Error('Class not found');
     return foundClass;

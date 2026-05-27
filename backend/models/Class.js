@@ -33,6 +33,12 @@ const classSchema = new mongoose.Schema(
             type: Date,
             required: false,
         },
+        completedTasks: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Guideline',
+            },
+        ],
     },
     {
         timestamps: true,
